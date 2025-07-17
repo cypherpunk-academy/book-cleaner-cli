@@ -1,0 +1,36 @@
+{
+    "jsc": {
+        "parser": {
+            "syntax": "typescript",
+            "tsx": false,
+            "decorators": true,
+            "dynamicImport": true
+        },
+        "transform": {
+            "legacyDecorator": true,
+            "decoratorMetadata": true
+        },
+        "target": "es2020",
+        "loose": false,
+        "externalHelpers": false,
+        "keepClassNames": true,
+        "baseUrl": "./src",
+        "paths": {
+            "@/*": ["*"],
+            "@/types/*": ["types/*"],
+            "@/utils/*": ["utils/*"],
+            "@/services/*": ["services/*"],
+            "@/cli/*": ["cli/*"],
+            "@/pipeline/*": ["pipeline/*"]
+        }
+    },
+    "module": {
+        "type": "commonjs",
+        "strict": false,
+        "strictMode": true,
+        "lazy": false,
+        "noInterop": false
+    },
+    "minify": false,
+    "sourceMaps": true
+}
