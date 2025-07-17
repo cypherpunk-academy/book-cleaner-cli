@@ -6,7 +6,7 @@ A sophisticated Node.js/TypeScript CLI tool for automated book processing with A
 
 -   🔄 **Multi-Phase Pipeline**: 4 main phases with comprehensive text processing
 -   🤖 **AI Integration**: DeepSeek API integration for text cleanup
--   📊 **Multiple Format Support**: PDF, EPUB, TXT, and DOCX input formats
+-   📊 **Multiple Format Support**: PDF, EPUB, and TXT input formats
 -   🔧 **Configuration Management**: YAML-based config with environment variable support
 -   📝 **Tagged Logging**: Pino-based logging with component-specific log levels
 -   🎯 **OCR Processing**: Tesseract integration with text comparison

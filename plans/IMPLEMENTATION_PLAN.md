@@ -97,28 +97,162 @@ book-cleaner-cli/
 
 ### 2.1 File Format Detection & Validation
 
-**Duration:** 2-3 days
+**Duration:** 3-4 days
+
+**Overview:**
+Implement comprehensive file format detection that goes beyond simple extension checking to validate actual file content, structure, and processing capabilities. This prevents security issues and processing failures while optimizing the pipeline for different file types.
+
+**Supported Formats:**
+
+-   **PDF**: Text-based, image-based, or hybrid content (max 10MB)
+-   **EPUB**: Standard EPUB 2.0/3.0 (DRM-protected files rejected)
+-   **TXT**: Plain text files with encoding detection
 
 **Deliverables:**
 
--   [ ] Implement file format detection
--   [ ] Create file validation system
--   [ ] Build filename parsing for metadata extraction
--   [ ] Setup input file preprocessing
--   [ ] Create format-specific handlers
+**Core Detection System:**
+
+-   [ ] Implement magic number detection for format identification
+-   [ ] Create file header analysis (first 16 bytes minimum)
+-   [ ] Build extension vs. content validation with mismatch warnings
+-   [ ] Implement file size validation (10MB limit for PDFs)
+-   [ ] Create confidence scoring system for format detection
+
+**Format-Specific Validation:**
+
+**PDF Validation:**
+
+-   [ ] Detect PDF magic number (`%PDF-1.x`) and version
+-   [ ] Validate PDF structure integrity using pdf-parse
+-   [ ] Classify PDF content type:
+    -   Text-based: Contains extractable embedded text
+    -   Image-based: Requires OCR processing
+    -   Hybrid: Mixed content requiring both approaches
+-   [ ] Extract basic metadata (page count, creation date, title/author)
+-   [ ] Assess text extraction quality and coverage
+
+**EPUB Validation:**
+
+-   [ ] Validate ZIP file structure (magic number `PK\x03\x04`)
+-   [ ] Verify EPUB-specific files (META-INF/container.xml, \*.opf)
+-   [ ] Detect EPUB version (2.0 vs 3.0) for appropriate parsing
+-   [ ] **DRM Detection & Rejection:**
+    -   Check for DRM indicators in rights metadata
+    -   Scan for encrypted content files
+    -   Validate accessibility of text content
+    -   Generate clear error messages for DRM-protected files
+-   [ ] Validate table of contents and chapter structure
+-   [ ] Extract embedded metadata (title, author, publisher, language)
+
+**Text File Validation:**
+
+-   [ ] Implement encoding detection (UTF-8, UTF-16, Latin1)
+-   [ ] Validate text content vs. binary data (printable character ratio)
+-   [ ] Check for Byte Order Mark (BOM) handling
+-   [ ] Detect and handle different line ending formats
+-   [ ] Validate minimum content length (>100 characters)
+-   [ ] Check for common encoding issues (replacement characters)
+
+**Security & Error Handling:**
+
+-   [ ] Implement file size limits and validation
+-   [ ] Prevent path traversal attacks in filename parsing
+-   [ ] Validate file permissions and accessibility
+-   [ ] Create comprehensive error messages with actionable guidance
+-   [ ] Handle corrupted or malformed files gracefully
+-   [ ] Implement timeout mechanisms for large file processing
+
+**Metadata Extraction:**
+
+-   [ ] Parse filename patterns: `<author>#<title>[#<book-index>].<extension>`
+-   [ ] Extract and validate author, title, and book index
+-   [ ] Handle special characters and encoding in filenames
+-   [ ] Generate default metadata for files without embedded info
+-   [ ] Validate metadata consistency across filename and content
 
 **Key Components:**
 
--   `src/services/FormatDetectionService.ts`
--   `src/services/FilenameParser.ts`
--   `src/validators/FileValidator.ts`
--   `src/handlers/` - Format-specific handler base classes
+```typescript
+src/services/
+├── FileFormatDetector.ts       // Main detection service
+├── FilenameParser.ts           // Metadata extraction from filenames
+├── SecurityValidator.ts        // File security and size validation
+└── FormatValidators/
+    ├── PDFValidator.ts         // PDF-specific validation
+    ├── EPUBValidator.ts        // EPUB validation and DRM detection
+    └── TextValidator.ts        // Text file encoding and content validation
+
+src/types/
+├── FileFormat.ts               // Format detection result types
+├── ValidationResult.ts         // Validation outcome types
+└── SecurityTypes.ts           // Security validation types
+
+src/constants/
+└── FormatConstants.ts          // Magic numbers, size limits, patterns
+```
+
+**Implementation Details:**
+
+**Magic Number Detection:**
+
+```typescript
+const MAGIC_NUMBERS = {
+    PDF: [0x25, 0x50, 0x44, 0x46], // %PDF
+    EPUB: [0x50, 0x4b, 0x03, 0x04], // ZIP signature
+    UTF8_BOM: [0xef, 0xbb, 0xbf], // UTF-8 BOM
+    UTF16_LE: [0xff, 0xfe], // UTF-16 LE BOM
+};
+```
+
+**File Size Validation:**
+
+-   PDF files: Maximum 10MB (configurable)
+-   EPUB files: Maximum 5MB (typical size)
+-   Text files: Maximum 1MB (reasonable limit)
+
+**Error Message Examples:**
+
+```
+- "File format mismatch: Extension suggests PDF but content is ZIP"
+- "EPUB file is DRM-protected and cannot be processed"
+- "PDF file exceeds maximum size limit of 10MB"
+- "Text file contains binary content and cannot be processed"
+- "File appears to be corrupted or malformed"
+```
 
 **Testing:**
 
--   Format detection accuracy tests
--   Filename parsing tests with various patterns
--   File validation edge cases
+**Format Detection Tests:**
+
+-   [ ] Magic number detection accuracy (100% for supported formats)
+-   [ ] Extension vs. content mismatch detection
+-   [ ] Corrupted file handling
+-   [ ] Security validation (oversized files, malicious content)
+-   [ ] Performance testing with large files (up to 10MB)
+
+**Format-Specific Tests:**
+
+-   [ ] PDF content type classification (text/image/hybrid)
+-   [ ] EPUB DRM detection accuracy
+-   [ ] Text encoding detection (UTF-8, Latin1, Windows-1252)
+-   [ ] Filename parsing with various patterns and edge cases
+-   [ ] Metadata extraction accuracy and consistency
+
+**Edge Cases:**
+
+-   [ ] Empty files and minimum size validation
+-   [ ] Files with multiple extensions (e.g., .txt.pdf)
+-   [ ] Unicode characters in filenames
+-   [ ] Files with missing or invalid metadata
+-   [ ] Network-mounted files and permission issues
+
+**Success Criteria:**
+
+-   100% accuracy for supported format detection
+-   Zero false positives for DRM-protected EPUB detection
+-   Sub-second validation for files up to 10MB
+-   Clear, actionable error messages for all failure cases
+-   Graceful handling of all file corruption scenarios
 
 ### 2.2 PDF Text Extraction
 
