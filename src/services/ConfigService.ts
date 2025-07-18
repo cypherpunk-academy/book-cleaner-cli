@@ -26,6 +26,7 @@ import type { BookConfig, FilenameMetadata, LogLevel, PipelineConfig } from "@/t
 import { AppError } from "@/utils/AppError";
 import yaml from "js-yaml";
 import type { LoggerService } from "./LoggerService";
+import { BookStructureService, type BookStructureInfo } from "./BookStructureService";
 
 /**
  * Configuration service for loading and managing book-specific configurations
@@ -34,16 +35,18 @@ export class ConfigService {
   private readonly logger: LoggerService;
   private readonly configDir: string;
   private readonly configCache: Map<string, BookConfig> = new Map();
+  private readonly bookStructureService: BookStructureService;
 
   constructor(logger: LoggerService, configDir: string = DEFAULT_CONFIG_DIR) {
     this.logger = logger;
     this.configDir = configDir;
+    this.bookStructureService = new BookStructureService(logger, configDir);
   }
 
   /**
    * Load configuration for a specific book based on filename metadata
    */
-  public async loadBookConfig(metadata: FilenameMetadata): Promise<BookConfig> {
+  public async loadBookConfig(metadata: FilenameMetadata, inputFilePath?: string): Promise<BookConfig> {
     const configKey = this.getConfigKey(metadata);
 
     // Check cache first
@@ -57,10 +60,31 @@ export class ConfigService {
     const configLogger = this.logger.getConfigLogger(LOG_COMPONENTS.CONFIG_SERVICE);
 
     try {
-      const config = await this.loadConfigFromFile(configKey);
+      // Try to load book structure file
+      const bookStructure = await this.bookStructureService.loadBookStructure(metadata);
 
-      // Validate configuration
-      this.validateConfig(config);
+      // Check if file information needs updating
+      if (inputFilePath) {
+        const needsUpdate = await this.bookStructureService.checkIfUpdateNeeded(metadata, inputFilePath);
+        if (needsUpdate) {
+          const shouldUpdate = await this.bookStructureService.promptForUpdate(metadata, needsUpdate);
+          if (shouldUpdate) {
+            await this.bookStructureService.updateBookStructure(metadata, inputFilePath);
+            configLogger.info(
+              {
+                author: metadata.author,
+                title: metadata.title,
+                configKey,
+                changes: needsUpdate,
+              },
+              "Configuration file updated with new information",
+            );
+          }
+        }
+      }
+
+      // Create BookConfig from book structure
+      const config = this.createBookConfigFromStructure(bookStructure);
 
       // Cache the configuration
       this.configCache.set(configKey, config);
@@ -83,18 +107,28 @@ export class ConfigService {
           configKey,
           error: error instanceof Error ? error.message : String(error),
         },
-        "Failed to load specific configuration, falling back to default",
+        "Failed to load specific configuration, creating new one",
       );
 
-      // Fall back to default configuration
-      const defaultConfig = await this.loadDefaultConfig();
+      // Create a new book structure file
+      const bookStructure = await this.bookStructureService.createBookStructure(metadata, inputFilePath);
 
-      // Override with metadata
-      defaultConfig.author = metadata.author;
-      defaultConfig.title = metadata.title;
+      // Create BookConfig from book structure
+      const config = this.createBookConfigFromStructure(bookStructure);
 
-      this.configCache.set(configKey, defaultConfig);
-      return defaultConfig;
+      // Cache the configuration
+      this.configCache.set(configKey, config);
+
+      configLogger.info(
+        {
+          author: metadata.author,
+          title: metadata.title,
+          configKey,
+        },
+        "Created new book-specific configuration",
+      );
+
+      return config;
     }
   }
 
@@ -161,12 +195,19 @@ export class ConfigService {
 
     try {
       const configContent = await fs.readFile(configPath, "utf-8");
-      const config = yaml.load(configContent) as BookConfig;
+      const bookStructure = yaml.load(configContent) as any;
+
+      // Convert book structure to full BookConfig
+      const defaultConfig = this.createMinimalConfig();
+      
+      // Override with book structure information
+      if (bookStructure.author) defaultConfig.author = bookStructure.author;
+      if (bookStructure.title) defaultConfig.title = bookStructure.title;
 
       // Merge with environment variables
-      this.mergeEnvironmentVariables(config);
+      this.mergeEnvironmentVariables(defaultConfig);
 
-      return config;
+      return defaultConfig;
     } catch (error) {
       throw new AppError(
         ERROR_CODES.CONFIG_INVALID,
@@ -391,32 +432,30 @@ export class ConfigService {
    * Get all available configurations
    */
   public async getAvailableConfigs(): Promise<string[]> {
-    try {
-      const files = await fs.readdir(this.configDir);
-      return files
-        .filter((file) => file.endsWith(CONFIG_FILE_EXTENSION))
-        .map((file) => file.replace(CONFIG_FILE_EXTENSION, ""));
-    } catch (_error) {
-      return [];
-    }
+    return await this.bookStructureService.getAvailableBookStructures();
   }
 
   /**
    * Check if configuration exists for metadata
    */
   public async configExists(metadata: FilenameMetadata): Promise<boolean> {
-    const configKey = this.getConfigKey(metadata);
-    const configPath = path.join(
-      this.configDir,
-      `${configKey}${CONFIG_FILE_EXTENSION}`,
-    );
+    return await this.bookStructureService.exists(metadata);
+  }
 
-    try {
-      await fs.access(configPath);
-      return true;
-    } catch {
-      return false;
-    }
+  /**
+   * Create BookConfig from book structure information
+   */
+  private createBookConfigFromStructure(bookStructure: BookStructureInfo): BookConfig {
+    const config = this.createMinimalConfig();
+    
+    // Override with book structure information
+    config.author = bookStructure.author;
+    config.title = bookStructure.title;
+
+    // Merge with environment variables
+    this.mergeEnvironmentVariables(config);
+
+    return config;
   }
 
   /**
@@ -449,4 +488,6 @@ export class ConfigService {
       );
     }
   }
+
+
 }

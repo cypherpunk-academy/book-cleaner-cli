@@ -11,8 +11,13 @@ import {
   LOG_COMPONENTS,
   LOG_LEVELS,
   MESSAGE_TEMPLATES,
+  PIPELINE_PHASES,
 } from "@/constants";
 import { PipelineManager } from "@/pipeline/PipelineManager";
+import { DataLoadingPhase } from "@/pipeline/DataLoadingPhase";
+import { TextNormalizationPhase } from "@/pipeline/TextNormalizationPhase";
+import { EvaluationPhase } from "@/pipeline/EvaluationPhase";
+import { AIEnhancementsPhase } from "@/pipeline/AIEnhancementsPhase";
 import { ConfigService } from "@/services/ConfigService";
 import {
   type LoggerService,
@@ -60,6 +65,30 @@ export class CleanBookCommand {
     this.configService = new ConfigService(this.logger);
     this.fileUtils = new FileUtils(this.logger);
     this.pipelineManager = new PipelineManager(this.logger);
+
+    // Register pipeline phases
+    this.registerPipelinePhases();
+  }
+
+  /**
+   * Register all pipeline phases
+   */
+  private registerPipelinePhases(): void {
+    const dataLoadingPhase = new DataLoadingPhase(this.logger);
+    const textNormalizationPhase = new TextNormalizationPhase(this.logger);
+    const evaluationPhase = new EvaluationPhase(this.logger);
+    const aiEnhancementsPhase = new AIEnhancementsPhase(this.logger);
+
+    this.pipelineManager.registerPhase(PIPELINE_PHASES.DATA_LOADING, dataLoadingPhase);
+    this.pipelineManager.registerPhase(
+      PIPELINE_PHASES.TEXT_NORMALIZATION,
+      textNormalizationPhase,
+    );
+    this.pipelineManager.registerPhase(PIPELINE_PHASES.EVALUATION, evaluationPhase);
+    this.pipelineManager.registerPhase(
+      PIPELINE_PHASES.AI_ENHANCEMENTS,
+      aiEnhancementsPhase,
+    );
   }
 
   /**
@@ -133,7 +162,7 @@ export class CleanBookCommand {
       const metadata = this.parseFilenameMetadata(cliOptions);
 
       // Load configuration
-      const bookConfig = await this.configService.loadBookConfig(metadata);
+      const bookConfig = await this.configService.loadBookConfig(metadata, cliOptions.inputFile);
 
       // Create pipeline configuration
       const pipelineConfig = this.configService.createPipelineConfig(

@@ -1,10 +1,10 @@
 {
   "name": "book-cleaner-cli",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "CLI tool for transforming raw book sources into clean, readable Markdown with comprehensive metadata",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "bin": {
-    "clean-book": "dist/index.js"
+    "clean-book": "dist/src/index.js"
   },
   "scripts": {
     "build": "swc src -d dist --config-file .swcrc",
@@ -64,6 +64,7 @@
     "@types/pdf-parse": "^1.1.4",
     "@types/uuid": "^9.0.8",
     "jest": "^29.7.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
   "engines": {

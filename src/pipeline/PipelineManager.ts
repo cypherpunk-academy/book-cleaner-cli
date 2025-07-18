@@ -18,6 +18,7 @@ import {
   PipelineStatus,
   ProcessingMetadata,
   type ProgressCallback,
+  type SupportedFormat,
 } from "@/types";
 import { AppError } from "@/utils/AppError";
 import type { AbstractPhase } from "./AbstractPhase";
@@ -398,7 +399,7 @@ export class PipelineManager {
   /**
    * Get file format from filename
    */
-  private getFileFormat(filename: string): "pdf" | "epub" | "txt" | "docx" {
+  private getFileFormat(filename: string): SupportedFormat {
     const ext = filename.toLowerCase().split(".").pop();
 
     switch (ext) {
@@ -408,8 +409,6 @@ export class PipelineManager {
         return "epub";
       case "txt":
         return "txt";
-      case "docx":
-        return "docx";
       default:
         return "txt"; // Default fallback
     }

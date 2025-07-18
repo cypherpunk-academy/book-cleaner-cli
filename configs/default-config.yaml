@@ -1,0 +1,47 @@
+author: 
+title: 
+book-index:
+original:
+  - type: pdf-text | pdf-ocr | pdf-text-ocr | text | epub
+  - size: MB
+
+text-before-first-chapter:
+text-after-last-chapter:
+first-page:
+last-page:
+
+header-type:
+  - level1:
+    - format:
+
+structure:
+  - type: chapter
+    title: 
+    number: 
+    content:
+      - type: paragraph
+        first-five-words: 
+      - type: sub-chapter
+        title:
+        number:
+        content:
+          - type: paragraph
+            first-five-words:
+          - type: paragraph
+            first-five-words:
+      - type: sub-chapter
+        title:
+        number:
+        content:
+          - type: paragraph
+            first-five-words:
+          - type: paragraph
+            first-five-words:
+
+footnotes:
+  - index:
+  - original-index:
+  - five-words-before:
+  - footnote:
+    - text first page
+    - text next page

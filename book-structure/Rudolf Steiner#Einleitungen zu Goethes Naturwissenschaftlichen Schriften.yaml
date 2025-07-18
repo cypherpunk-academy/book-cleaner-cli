@@ -1,0 +1,44 @@
+author: Rudolf Steiner
+title: Einleitungen zu Goethes Naturwissenschaftlichen Schriften
+book-index: '1'
+original:
+  - type: pdf-text-ocr
+  - size: 15916374
+  - pages: 350
+text-before-first-chapter: null
+text-after-last-chapter: null
+first-page: null
+last-page: null
+header-type:
+  - level1:
+      - format: null
+structure:
+  - type: chapter
+    title: null
+    number: null
+    content:
+      - type: paragraph
+        first-five-words: null
+      - type: sub-chapter
+        title: null
+        number: null
+        content:
+          - type: paragraph
+            first-five-words: null
+          - type: paragraph
+            first-five-words: null
+      - type: sub-chapter
+        title: null
+        number: null
+        content:
+          - type: paragraph
+            first-five-words: null
+          - type: paragraph
+            first-five-words: null
+footnotes:
+  - index: null
+  - original-index: null
+  - five-words-before: null
+  - footnote:
+      - text first page
+      - text next page

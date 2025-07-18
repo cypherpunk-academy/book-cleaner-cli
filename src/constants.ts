@@ -3,10 +3,16 @@
  * All string constants should be defined here to avoid magic strings in code
  */
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 // ==================== Application Constants ====================
 
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync(join(__dirname, "../../package.json"), "utf8"));
+
 export const APP_NAME = "Book Cleaner CLI";
-export const APP_VERSION = "1.0.0";
+export const APP_VERSION = packageJson.version;
 export const APP_DESCRIPTION =
   "Transform raw book sources into clean, readable Markdown with comprehensive metadata";
 
@@ -52,9 +58,9 @@ export const PIPELINE_STATUS = {
 
 // ==================== Configuration Constants ====================
 
-export const DEFAULT_CONFIG_DIR = "configs";
-export const DEFAULT_CONFIG_FILE = "default.config";
-export const CONFIG_FILE_EXTENSION = ".config";
+export const DEFAULT_CONFIG_DIR = "book-structure";
+export const DEFAULT_CONFIG_FILE = "default-book-structure.yaml";
+export const CONFIG_FILE_EXTENSION = ".yaml";
 
 export const DEFAULT_OUTPUT_DIR = "output";
 export const DEFAULT_LOG_LEVEL = "info";
@@ -252,7 +258,7 @@ export const VALIDATION_PATTERNS = {
   FILENAME_CHARS: /^[a-zA-Z0-9_\-#\s\.]+$/,
   CHAPTER_NUMBER: /^(\d+)\.?(\d+)?$/,
   FOOTNOTE_REFERENCE: /^\d+$/,
-  FILENAME_METADATA: /^(.+)#(.+?)(?:#(.+?))?$/,
+  FILENAME_METADATA: /^([^#]+)#([^#]+)(?:#([^#]+))?$/,
 } as const;
 
 export const VALIDATION_LIMITS = {
@@ -346,7 +352,7 @@ export const ENV_VARS = {
 // ==================== Regex Patterns ====================
 
 export const REGEX_PATTERNS = {
-  FILENAME_METADATA: /^(.+)#(.+?)(?:#(.+?))?\.(.+)$/,
+  FILENAME_METADATA: /^([^#]+)#([^#]+)(?:#([^#]+))?\.(.+)$/,
   CHAPTER_HEADING: /^(?:Kapitel|Chapter|Teil|Part)\s+(\d+)(?:\.(\d+))?/i,
   FOOTNOTE_REFERENCE: /\[(\d+)\]|\((\d+)\)|(\d+)\)/g,
   PARAGRAPH_BREAK: /\n\s*\n/g,
