@@ -1,7 +1,7 @@
 import { LOG_COMPONENTS } from "@/constants";
-import { AbstractPhase } from "./AbstractPhase";
 import type { LoggerService } from "@/services/LoggerService";
 import type { PipelineState, ProgressCallback } from "@/types";
+import { AbstractPhase } from "./AbstractPhase";
 
 /**
  * Phase 2: Text Normalization & AI Cleaning
@@ -14,10 +14,6 @@ import type { PipelineState, ProgressCallback } from "@/types";
  * TODO: Full implementation coming soon
  */
 export class TextNormalizationPhase extends AbstractPhase {
-  constructor(logger: LoggerService) {
-    super(logger);
-  }
-
   public override getName(): string {
     return "Text Normalization & AI Cleaning";
   }

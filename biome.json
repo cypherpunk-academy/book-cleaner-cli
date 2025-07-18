@@ -42,7 +42,8 @@
         "noArguments": "error",
         "noVar": "error",
         "useConst": "error",
-        "useTemplate": "error"
+        "useTemplate": "error",
+        "noNonNullAssertion": "error"
       },
       "suspicious": {
         "noAsyncPromiseExecutor": "error",
@@ -57,7 +58,7 @@
         "noDuplicateObjectKeys": "error",
         "noDuplicateParameters": "error",
         "noEmptyBlockStatements": "error",
-        "noExplicitAny": "warn",
+        "noExplicitAny": "error",
         "noExtraNonNullAssertion": "error",
         "noFallthroughSwitchClause": "error",
         "noFunctionAssign": "error",
@@ -112,6 +113,12 @@
         "rules": {
           "suspicious": {
             "noExplicitAny": "error"
+          },
+          "style": {
+            "noNonNullAssertion": "error"
+          },
+          "correctness": {
+            "noUnusedVariables": "error"
           }
         }
       }

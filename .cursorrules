@@ -1,0 +1,304 @@
+# .cursorrules for book-cleaner-cli project
+
+## ⚠️ CRITICAL: TypeScript Strict Configuration
+
+This project uses **STRICT TypeScript** with `exactOptionalPropertyTypes: true`. AI assistants MUST:
+
+1. **Never assign `undefined` to optional properties** - use conditional assignment instead
+2. **Always check `src/constants.ts`** before defining new constants
+3. **Use proper type guards** instead of type assertions or `any`
+4. **Handle array/object access safely** due to `noUncheckedIndexedAccess: true`
+
+**📖 READ FIRST**: `docs/AI_CODING_GUIDELINES.md` contains detailed patterns and examples.
+
+## 🔧 TypeScript Language Server Issues
+
+If you encounter "Cannot find module" errors in the IDE:
+
+1. **Quick Fix**: Run `npm run fix-ts` to automatically diagnose and fix common issues
+2. **Manual Fix**: In VS Code/Cursor, press `Ctrl+Shift+P` and run "TypeScript: Restart TS Server"
+3. **Verification**: Run `npm run build` - if it succeeds, it's just an IDE issue
+
+**Note**: The build uses SWC and works correctly even when the IDE shows module resolution errors.
+
+## Project Overview
+
+This is a TypeScript/Node.js CLI application for cleaning and processing book files (PDF, EPUB, TXT) using AI-powered text cleaning and OCR comparison.
+
+## Tech Stack
+
+-   **Runtime**: Node.js 18+ LTS
+-   **Language**: TypeScript (strict mode)
+-   **Compiler**: SWC (Speedy Web Compiler)
+-   **Linter/Formatter**: Biome
+-   **Testing**: Jest with @swc/jest
+-   **CLI Framework**: Commander.js
+-   **Logging**: Pino (structured logging)
+-   **AI Integration**: DeepSeek API
+
+## Architecture Guidelines
+
+### 1. Project Structure
+
+```
+src/
+├── cli/           # Command-line interface
+├── pipeline/      # Pipeline phases and management
+├── services/      # Business logic services
+├── utils/         # Utility functions
+├── types/         # TypeScript type definitions
+└── constants.ts   # All application constants
+```
+
+### 2. Import/Export Conventions
+
+-   Use path mapping with `@/` aliases (configured in tsconfig.json and .swcrc)
+-   Always use `import type` for type-only imports
+-   Group imports: external modules first, then internal modules
+-   Use barrel exports in index.ts files when appropriate
+
+Example:
+
+```typescript
+// External imports
+import { Command } from 'commander';
+import pino from 'pino';
+
+// Type imports
+import type { LoggerConfig, PipelineState } from '@/types';
+
+// Internal imports
+import { LOG_LEVELS } from '@/constants';
+import { LoggerService } from '@/services/LoggerService';
+```
+
+### 3. Constants Management
+
+-   **CRITICAL**: Always check `src/constants.ts` for existing constants before defining new ones
+-   Never use string literals in code - always define constants in `constants.ts`
+-   Group constants by category (LOG_LEVELS, FILE_EXTENSIONS, ERROR_CODES, etc.)
+-   Use SCREAMING_SNAKE_CASE for constants
+
+### 4. Error Handling
+
+-   Use the custom `AppError` class for application-specific errors
+-   Always include context and cause chaining in errors
+-   **FORBIDDEN**: Never resolve TypeScript errors with `any` keyword - use proper typing instead
+-   **DeepSeek Integration**: If DeepSeek API fails, exit the application - no fallback mechanisms
+
+### 5. TypeScript Best Practices
+
+-   Use strict mode (already configured)
+-   Prefer `type` over `interface` for simple type definitions
+-   Use `interface` for objects that might be extended
+-   Always define return types for functions
+-   Use generic types where appropriate
+-   **FORBIDDEN**: Never use the `any` keyword in any circumstances
+    -   Not in production code
+    -   Not in test code
+    -   Not in development code
+    -   Use proper type definitions, unions, or unknown instead
+-   **FORBIDDEN**: Never use non-null assertions (`!`)
+    -   Use proper type guards instead
+    -   Use optional chaining (`?.`) when appropriate
+    -   Use nullish coalescing (`??`) when appropriate
+    -   Implement proper null/undefined checks
+
+### 6. Pipeline Architecture
+
+-   All pipeline phases must extend `AbstractPhase`
+-   Use the `PipelineManager` for phase orchestration
+-   Each phase should be idempotent and stateless where possible
+-   Implement proper cleanup in phase destructors
+-   Use tagged logging for phase-specific logs
+-   In the pipeline als phases and steps are organized in folders and subfolders like phase_1_Text_Extraction_And_Format_Processing and step_1_File_Format_Detection_And_Validation
+
+### 7. Logging Standards
+
+-   Use the `LoggerService` with tagged logging
+-   Each component should have its own logger instance
+-   Log levels: ERROR, WARN, INFO, DEBUG, TRACE
+-   Include context objects in log messages
+-   Use structured logging format (JSON)
+
+Example:
+
+```typescript
+const logger = LoggerService.getLogger('PIPELINE', 'TextExtraction');
+logger.info('Starting text extraction', {
+    filename: file.name,
+    format: file.format,
+    size: file.size,
+});
+```
+
+### 8. Testing Guidelines
+
+-   Use Jest with SWC transformer for fast test execution
+-   Target 80% code coverage minimum
+-   Test files should be named `*.test.ts`
+-   Use proper TypeScript types in tests
+-   Mock external dependencies (file system, HTTP calls, etc.)
+-   Test error conditions and edge cases
+
+### 9. Configuration Management
+
+-   Use the `ConfigService` for loading book configurations
+-   Support YAML configuration files
+-   Follow naming pattern: `<author>#<title>.config.yaml`
+-   Environment variables override config file values
+-   Validate configuration schemas
+
+### 10. File Handling
+
+-   Use `FileUtils` for all file operations
+-   Support filename pattern: `<author>#<title>[#<book-index>].<extension>`
+-   Validate file formats before processing
+-   Handle file encoding properly (UTF-8 default)
+-   Implement proper file cleanup in error scenarios
+
+### 11. Performance Considerations
+
+-   Use SWC for fast compilation and development
+-   Implement progress reporting for long-running operations
+-   Use streaming for large file processing
+-   Monitor memory usage during text processing
+-   Cache frequently accessed configurations
+
+### 12. Security Guidelines
+
+-   Validate all user inputs
+-   Sanitize file paths to prevent directory traversal
+-   Don't log sensitive information (API keys, user data)
+-   Use environment variables for sensitive configuration
+-   Implement proper error messages that don't leak internals
+
+## Code Style (Biome Configuration)
+
+### Formatting Rules
+
+-   Indent: 2 spaces
+-   Line width: 88 characters
+-   Semicolons: always
+-   Quotes: double quotes
+-   Trailing commas: ES5 style
+-   Arrow parentheses: always
+
+### Naming Conventions
+
+-   Variables/functions: camelCase
+-   Classes: PascalCase
+-   Constants: SCREAMING_SNAKE_CASE
+-   Types/Interfaces: PascalCase
+-   Files: kebab-case or PascalCase for classes
+
+## Development Workflow
+
+### Scripts
+
+-   `npm run dev` - Development mode with SWC node register
+-   `npm run build` - Production build with SWC
+-   `npm run test` - Run tests with Jest
+-   `npm run lint` - Check code with Biome
+-   `npm run lint:fix` - Fix linting issues automatically
+-   `npm run fix-ts` - Fix TypeScript language server issues
+
+### Git Hooks
+
+-   Pre-commit: Run linting and type checking
+-   Pre-push: Run full test suite
+
+## AI Integration Guidelines
+
+### DeepSeek API
+
+-   Use structured prompts for text cleaning
+-   Implement proper retry logic with exponential backoff
+-   Handle rate limiting gracefully
+-   Log all API interactions for debugging
+-   **Critical**: Exit application on DeepSeek failures (no fallbacks)
+
+### Text Processing
+
+-   Preserve original text structure when possible
+-   Handle different text encodings correctly
+-   Use OCR comparison for quality validation
+-   Implement text diff algorithms for change tracking
+
+## Common Patterns
+
+### Service Pattern
+
+```typescript
+export class ExampleService {
+    private readonly logger = LoggerService.getLogger('SERVICE', 'Example');
+
+    constructor(private readonly config: ServiceConfig) {}
+
+    async processData(input: InputType): Promise<OutputType> {
+        this.logger.info('Processing data', { inputId: input.id });
+        // Implementation
+    }
+}
+```
+
+### Error Handling Pattern
+
+```typescript
+try {
+    const result = await riskyOperation();
+    return result;
+} catch (error) {
+    throw new AppError(
+        ERROR_CODES.PROCESSING_FAILED,
+        'Failed to process data',
+        { operation: 'example' },
+        error,
+    );
+}
+```
+
+### Configuration Pattern
+
+```typescript
+const config = await ConfigService.loadConfig(filename);
+if (!config) {
+    throw new AppError(ERROR_CODES.CONFIG_NOT_FOUND, 'Configuration not found');
+}
+```
+
+## Documentation Requirements
+
+-   All public methods must have JSDoc comments
+-   Include parameter and return type descriptions
+-   Document complex algorithms and business logic
+-   Maintain README.md with usage examples
+-   Update IMPLEMENTATION_PLAN.md for architectural changes
+
+## Dependencies Management
+
+-   Pin major versions in package.json
+-   Use `npm ci` in CI/CD pipelines
+-   Regular dependency updates and security audits
+-   Prefer well-maintained packages with active communities
+-   Document any special dependency requirements
+
+## Environment Setup
+
+-   Node.js 18+ LTS required
+-   Use `.env` files for local development
+-   Support multiple environments (dev, test, prod)
+-   Validate environment variables at startup
+-   Provide clear setup instructions in README
+
+## Performance Monitoring
+
+-   Track pipeline execution times
+-   Monitor memory usage during processing
+-   Log performance metrics
+-   Implement timeout mechanisms for long operations
+-   Profile critical paths regularly
+
+---
+
+_This .cursorrules file should be updated as the project evolves and new patterns emerge._ 

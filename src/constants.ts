@@ -9,7 +9,13 @@ import { join } from "node:path";
 // ==================== Application Constants ====================
 
 // Read version from package.json
-const packageJson = JSON.parse(readFileSync(join(__dirname, "../../package.json"), "utf8"));
+let packageJson: { version: string } = { version: "0.1.0" };
+try {
+  packageJson = JSON.parse(readFileSync(join(__dirname, "../../package.json"), "utf8"));
+} catch {
+  // Fallback if package.json not found
+  packageJson = { version: "0.1.0" };
+}
 
 export const APP_NAME = "Book Cleaner CLI";
 export const APP_VERSION = packageJson.version;

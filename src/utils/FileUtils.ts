@@ -438,4 +438,27 @@ export class FileUtils {
       .replace(/\s+/g, "_")
       .substring(0, VALIDATION_LIMITS.MAX_FILENAME_LENGTH);
   }
+
+  /**
+   * Generate consistent configuration key from metadata
+   * Always includes book index if present to ensure uniqueness
+   */
+  static generateConfigKey(metadata: FilenameMetadata): string {
+    if (!metadata.author || !metadata.title) {
+      throw new Error("Author and title are required for configuration key generation");
+    }
+
+    const parts = [metadata.author, metadata.title];
+    if (metadata.bookIndex) {
+      parts.push(metadata.bookIndex);
+    }
+    return parts.join(VALIDATION_PATTERNS.AUTHOR_TITLE_SEPARATOR);
+  }
+
+  /**
+   * Generate configuration filename with extension
+   */
+  static generateConfigFilename(metadata: FilenameMetadata): string {
+    return `${FileUtils.generateConfigKey(metadata)}.yaml`;
+  }
 }

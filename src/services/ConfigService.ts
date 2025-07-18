@@ -24,9 +24,10 @@ import {
 } from "@/constants";
 import type { BookConfig, FilenameMetadata, LogLevel, PipelineConfig } from "@/types";
 import { AppError } from "@/utils/AppError";
+import { FileUtils } from "@/utils/FileUtils";
 import yaml from "js-yaml";
+import { type BookStructureInfo, BookStructureService } from "./BookStructureService";
 import type { LoggerService } from "./LoggerService";
-import { BookStructureService, type BookStructureInfo } from "./BookStructureService";
 
 /**
  * Configuration service for loading and managing book-specific configurations
@@ -46,7 +47,10 @@ export class ConfigService {
   /**
    * Load configuration for a specific book based on filename metadata
    */
-  public async loadBookConfig(metadata: FilenameMetadata, inputFilePath?: string): Promise<BookConfig> {
+  public async loadBookConfig(
+    metadata: FilenameMetadata,
+    inputFilePath?: string,
+  ): Promise<BookConfig> {
     const configKey = this.getConfigKey(metadata);
 
     // Check cache first
@@ -65,11 +69,20 @@ export class ConfigService {
 
       // Check if file information needs updating
       if (inputFilePath) {
-        const needsUpdate = await this.bookStructureService.checkIfUpdateNeeded(metadata, inputFilePath);
+        const needsUpdate = await this.bookStructureService.checkIfUpdateNeeded(
+          metadata,
+          inputFilePath,
+        );
         if (needsUpdate) {
-          const shouldUpdate = await this.bookStructureService.promptForUpdate(metadata, needsUpdate);
+          const shouldUpdate = await this.bookStructureService.promptForUpdate(
+            metadata,
+            needsUpdate,
+          );
           if (shouldUpdate) {
-            await this.bookStructureService.updateBookStructure(metadata, inputFilePath);
+            await this.bookStructureService.updateBookStructure(
+              metadata,
+              inputFilePath,
+            );
             configLogger.info(
               {
                 author: metadata.author,
@@ -111,7 +124,10 @@ export class ConfigService {
       );
 
       // Create a new book structure file
-      const bookStructure = await this.bookStructureService.createBookStructure(metadata, inputFilePath);
+      const bookStructure = await this.bookStructureService.createBookStructure(
+        metadata,
+        inputFilePath,
+      );
 
       // Create BookConfig from book structure
       const config = this.createBookConfigFromStructure(bookStructure);
@@ -195,11 +211,15 @@ export class ConfigService {
 
     try {
       const configContent = await fs.readFile(configPath, "utf-8");
-      const bookStructure = yaml.load(configContent) as any;
+      const bookStructure = yaml.load(configContent) as {
+        author?: string;
+        title?: string;
+        [key: string]: unknown;
+      };
 
       // Convert book structure to full BookConfig
       const defaultConfig = this.createMinimalConfig();
-      
+
       // Override with book structure information
       if (bookStructure.author) defaultConfig.author = bookStructure.author;
       if (bookStructure.title) defaultConfig.title = bookStructure.title;
@@ -365,7 +385,7 @@ export class ConfigService {
    * Generate configuration key from metadata
    */
   private getConfigKey(metadata: FilenameMetadata): string {
-    return `${metadata.author}${VALIDATION_PATTERNS.AUTHOR_TITLE_SEPARATOR}${metadata.title}`;
+    return FileUtils.generateConfigKey(metadata);
   }
 
   /**
@@ -447,7 +467,7 @@ export class ConfigService {
    */
   private createBookConfigFromStructure(bookStructure: BookStructureInfo): BookConfig {
     const config = this.createMinimalConfig();
-    
+
     // Override with book structure information
     config.author = bookStructure.author;
     config.title = bookStructure.title;
@@ -488,6 +508,4 @@ export class ConfigService {
       );
     }
   }
-
-
 }

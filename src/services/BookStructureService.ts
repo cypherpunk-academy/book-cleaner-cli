@@ -1,6 +1,5 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import yaml from "js-yaml";
 import {
   CONFIG_FILE_EXTENSION,
   DEFAULT_CONFIG_DIR,
@@ -10,8 +9,10 @@ import {
   LOG_COMPONENTS,
   VALIDATION_PATTERNS,
 } from "@/constants";
-import type { FilenameMetadata, FileFormatResult } from "@/types";
+import type { FileFormatResult, FilenameMetadata } from "@/types";
 import { AppError } from "@/utils/AppError";
+import { FileUtils } from "@/utils/FileUtils";
+import yaml from "js-yaml";
 import type { LoggerService } from "./LoggerService";
 
 /**
@@ -38,6 +39,17 @@ interface BookStructureInfo {
 }
 
 /**
+ * Raw YAML structure for book configuration files
+ */
+interface RawBookStructureYaml {
+  author?: string;
+  title?: string;
+  "book-index"?: string;
+  original?: Array<Record<string, unknown>>;
+  [key: string]: unknown;
+}
+
+/**
  * Service for managing book structure YAML files
  */
 export class BookStructureService {
@@ -55,7 +67,10 @@ export class BookStructureService {
    */
   public async exists(metadata: FilenameMetadata): Promise<boolean> {
     const configKey = this.getConfigKey(metadata);
-    const configPath = path.join(this.configDir, `${configKey}${CONFIG_FILE_EXTENSION}`);
+    const configPath = path.join(
+      this.configDir,
+      `${configKey}${CONFIG_FILE_EXTENSION}`,
+    );
 
     try {
       await fs.access(configPath);
@@ -68,20 +83,36 @@ export class BookStructureService {
   /**
    * Load book structure information from YAML file
    */
-  public async loadBookStructure(metadata: FilenameMetadata): Promise<BookStructureInfo> {
+  public async loadBookStructure(
+    metadata: FilenameMetadata,
+  ): Promise<BookStructureInfo> {
     const configKey = this.getConfigKey(metadata);
-    const configPath = path.join(this.configDir, `${configKey}${CONFIG_FILE_EXTENSION}`);
+    const configPath = path.join(
+      this.configDir,
+      `${configKey}${CONFIG_FILE_EXTENSION}`,
+    );
 
     try {
       const configContent = await fs.readFile(configPath, "utf-8");
-      const bookStructure = yaml.load(configContent) as any;
+      const bookStructure = yaml.load(configContent) as RawBookStructureYaml;
 
-      return {
+      const result: BookStructureInfo = {
         author: bookStructure.author || metadata.author,
         title: bookStructure.title || metadata.title,
-        bookIndex: bookStructure["book-index"] || metadata.bookIndex,
-        original: bookStructure.original || [],
+        original: (bookStructure.original || []) as Array<{
+          type?: string;
+          size?: number;
+          pages?: number;
+        }>,
       };
+
+      // Only add bookIndex if it has a value
+      const bookIndexValue = bookStructure["book-index"] || metadata.bookIndex;
+      if (bookIndexValue) {
+        result.bookIndex = bookIndexValue;
+      }
+
+      return result;
     } catch (error) {
       throw new AppError(
         ERROR_CODES.CONFIG_INVALID,
@@ -100,18 +131,21 @@ export class BookStructureService {
   /**
    * Create a new book structure file based on the default template
    */
-  public async createBookStructure(metadata: FilenameMetadata, inputFilePath?: string): Promise<BookStructureInfo> {
+  public async createBookStructure(
+    metadata: FilenameMetadata,
+    inputFilePath?: string,
+  ): Promise<BookStructureInfo> {
     const defaultTemplatePath = path.join(this.configDir, DEFAULT_CONFIG_FILE);
-    
+
     try {
       // Load the default template
       const templateContent = await fs.readFile(defaultTemplatePath, "utf-8");
-      const templateConfig = yaml.load(templateContent) as any;
+      const templateConfig = yaml.load(templateContent) as RawBookStructureYaml;
 
       // Fill in the metadata
       templateConfig.author = metadata.author;
       templateConfig.title = metadata.title;
-      
+
       // Extract book index from filename if present
       const bookIndex = metadata.bookIndex || "";
       if (bookIndex) {
@@ -126,41 +160,44 @@ export class BookStructureService {
       // Update the original section in the template
       if (templateConfig.original && Array.isArray(templateConfig.original)) {
         // Filter out and rebuild the original array properly
-        const updatedOriginal = [];
-        
+        const updatedOriginal: Record<string, unknown>[] = [];
+
         for (const item of templateConfig.original) {
-          if (typeof item === 'object' && item !== null) {
-            const updatedItem: any = {};
-            
+          if (typeof item === "object" && item !== null) {
+            const updatedItem: Record<string, unknown> = {};
+
             // Handle type field
             if (item.type !== undefined) {
               updatedItem.type = fileType;
             }
-            
+
             // Handle size field
             if (item.size !== undefined) {
               updatedItem.size = fileSize;
             }
-            
+
             // Handle pages field - only for non-text files
             if (item.pages !== undefined && fileType !== "text") {
               const pageCount = await this.getPageCount(filePath, fileType);
               updatedItem.pages = pageCount;
             }
-            
+
             // Only add the item if it has content
             if (Object.keys(updatedItem).length > 0) {
               updatedOriginal.push(updatedItem);
             }
           }
         }
-        
+
         templateConfig.original = updatedOriginal;
       }
 
       // Save the new book-specific config file
       const configKey = this.getConfigKey(metadata);
-      const configPath = path.join(this.configDir, `${configKey}${CONFIG_FILE_EXTENSION}`);
+      const configPath = path.join(
+        this.configDir,
+        `${configKey}${CONFIG_FILE_EXTENSION}`,
+      );
 
       // Ensure config directory exists
       await fs.mkdir(this.configDir, { recursive: true });
@@ -184,12 +221,23 @@ export class BookStructureService {
         "Book structure file created successfully",
       );
 
-      return {
-        author: templateConfig.author,
-        title: templateConfig.title,
-        bookIndex: templateConfig["book-index"],
-        original: templateConfig.original,
+      const result: BookStructureInfo = {
+        author: templateConfig.author || metadata.author,
+        title: templateConfig.title || metadata.title,
+        original: templateConfig.original as Array<{
+          type?: string;
+          size?: number;
+          pages?: number;
+        }>,
       };
+
+      // Only add bookIndex if it has a value
+      const bookIndexValue = templateConfig["book-index"];
+      if (bookIndexValue) {
+        result.bookIndex = bookIndexValue;
+      }
+
+      return result;
     } catch (error) {
       throw new AppError(
         ERROR_CODES.CONFIG_INVALID,
@@ -197,7 +245,7 @@ export class BookStructureService {
         "createBookStructure",
         ERROR_MESSAGES[ERROR_CODES.CONFIG_INVALID].replace(
           "{details}",
-          `Failed to create book structure file`,
+          "Failed to create book structure file",
         ),
         { metadata },
         error instanceof Error ? error : new Error(String(error)),
@@ -208,7 +256,10 @@ export class BookStructureService {
   /**
    * Check if book structure file needs updating based on file analysis
    */
-  public async checkIfUpdateNeeded(metadata: FilenameMetadata, inputFilePath: string): Promise<ConfigUpdateInfo | null> {
+  public async checkIfUpdateNeeded(
+    metadata: FilenameMetadata,
+    inputFilePath: string,
+  ): Promise<ConfigUpdateInfo | null> {
     try {
       // Get current file information
       const currentFileType = await this.determineFileType(inputFilePath);
@@ -217,16 +268,19 @@ export class BookStructureService {
 
       // Load the raw YAML to check original section
       const configKey = this.getConfigKey(metadata);
-      const configPath = path.join(this.configDir, `${configKey}${CONFIG_FILE_EXTENSION}`);
+      const configPath = path.join(
+        this.configDir,
+        `${configKey}${CONFIG_FILE_EXTENSION}`,
+      );
       const configContent = await fs.readFile(configPath, "utf-8");
-      const rawConfig = yaml.load(configContent) as any;
+      const rawConfig = yaml.load(configContent) as RawBookStructureYaml;
 
       let changes: ConfigUpdateInfo | null = null;
 
       // Check if original section exists and has the expected structure
       if (rawConfig.original && Array.isArray(rawConfig.original)) {
         const originalInfo = this.extractOriginalInfo(rawConfig.original);
-        
+
         // Compare file type
         if (originalInfo.type !== currentFileType) {
           changes = changes || {};
@@ -247,7 +301,7 @@ export class BookStructureService {
       }
 
       return changes;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -255,9 +309,12 @@ export class BookStructureService {
   /**
    * Prompt user for configuration update
    */
-  public async promptForUpdate(metadata: FilenameMetadata, changes: ConfigUpdateInfo): Promise<boolean> {
+  public async promptForUpdate(
+    metadata: FilenameMetadata,
+    changes: ConfigUpdateInfo,
+  ): Promise<boolean> {
     const configLogger = this.logger.getConfigLogger(LOG_COMPONENTS.CONFIG_SERVICE);
-    
+
     configLogger.warn(
       {
         author: metadata.author,
@@ -275,13 +332,19 @@ export class BookStructureService {
   /**
    * Update book structure file with new information
    */
-  public async updateBookStructure(metadata: FilenameMetadata, inputFilePath: string): Promise<void> {
+  public async updateBookStructure(
+    metadata: FilenameMetadata,
+    inputFilePath: string,
+  ): Promise<void> {
     const configKey = this.getConfigKey(metadata);
-    const configPath = path.join(this.configDir, `${configKey}${CONFIG_FILE_EXTENSION}`);
-    
+    const configPath = path.join(
+      this.configDir,
+      `${configKey}${CONFIG_FILE_EXTENSION}`,
+    );
+
     // Load the raw YAML to preserve structure
     const configContent = await fs.readFile(configPath, "utf-8");
-    const templateConfig = yaml.load(configContent) as any;
+    const templateConfig = yaml.load(configContent) as RawBookStructureYaml;
 
     // Get current file information
     const fileType = await this.determineFileType(inputFilePath);
@@ -291,34 +354,34 @@ export class BookStructureService {
     if (templateConfig.original && Array.isArray(templateConfig.original)) {
       // Filter out and rebuild the original array properly
       const updatedOriginal = [];
-      
+
       for (const item of templateConfig.original) {
-        if (typeof item === 'object' && item !== null) {
-          const updatedItem: any = {};
-          
+        if (typeof item === "object" && item !== null) {
+          const updatedItem: Record<string, unknown> = {};
+
           // Handle type field
           if (item.type !== undefined) {
             updatedItem.type = fileType;
           }
-          
+
           // Handle size field
           if (item.size !== undefined) {
             updatedItem.size = fileSize;
           }
-          
+
           // Handle pages field - only for non-text files
           if (item.pages !== undefined && fileType !== "text") {
             const pageCount = await this.getPageCount(inputFilePath, fileType);
             updatedItem.pages = pageCount;
           }
-          
+
           // Only add the item if it has content
           if (Object.keys(updatedItem).length > 0) {
             updatedOriginal.push(updatedItem);
           }
         }
       }
-      
+
       templateConfig.original = updatedOriginal;
     }
 
@@ -361,23 +424,27 @@ export class BookStructureService {
    * Generate configuration key from metadata
    */
   private getConfigKey(metadata: FilenameMetadata): string {
-    return `${metadata.author}${VALIDATION_PATTERNS.AUTHOR_TITLE_SEPARATOR}${metadata.title}`;
+    return FileUtils.generateConfigKey(metadata);
   }
 
   /**
    * Extract original information from config
    */
-  private extractOriginalInfo(originalArray: any[]): { type?: string; size?: number; pages?: number } {
+  private extractOriginalInfo(originalArray: Record<string, unknown>[]): {
+    type?: string;
+    size?: number;
+    pages?: number;
+  } {
     const info: { type?: string; size?: number; pages?: number } = {};
-    
+
     for (const item of originalArray) {
-      if (typeof item === 'object' && item !== null) {
-        if (item.type !== undefined) info.type = item.type;
-        if (item.size !== undefined) info.size = item.size;
-        if (item.pages !== undefined) info.pages = item.pages;
+      if (typeof item === "object" && item !== null) {
+        if (item.type !== undefined) info.type = item.type as string;
+        if (item.size !== undefined) info.size = item.size as number;
+        if (item.pages !== undefined) info.pages = item.pages as number;
       }
     }
-    
+
     return info;
   }
 
@@ -387,12 +454,14 @@ export class BookStructureService {
   private async determineFileType(filePath: string): Promise<string> {
     try {
       const ext = path.extname(filePath).toLowerCase();
-      
+
       if (ext === ".pdf") {
         // Use the existing FileFormatDetector for proper PDF analysis
-        const { FileFormatDetector } = await import("../pipeline/phase_1_Text_Extraction_And_Format_Processing/step_1_File_Format_Detection_And_Validation/FileFormatDetector");
+        const { FileFormatDetector } = await import(
+          "../pipeline/phase_1_Text_Extraction_And_Format_Processing/step_1_File_Format_Detection_And_Validation/FileFormatDetector"
+        );
         const detector = new FileFormatDetector(this.logger);
-        
+
         // Create FileInfo object for detection
         const stats = await fs.stat(filePath);
         const fileInfo = {
@@ -403,38 +472,39 @@ export class BookStructureService {
           mimeType: "application/pdf",
           lastModified: stats.mtime,
         };
-        
+
         // Perform proper format detection
         const formatResult = await detector.detectFormat(fileInfo);
-        
+
         // Store format result for later use
         this.lastFormatResult = formatResult;
-        
+
         // Determine type based on content analysis
         if (formatResult.metadata.contentType === "text_based") {
           return "text"; // Pure text-based PDF (treat as text)
-        } else if (formatResult.metadata.contentType === "hybrid") {
-          return "pdf-text-ocr"; // Mixed content (text + images)
-        } else if (formatResult.metadata.contentType === "image_based") {
-          return "pdf-ocr"; // Primarily image-based
-        } else {
-          return "pdf-text-ocr"; // Default for unknown content type
         }
-      } else if (ext === ".epub") {
-        return "epub";
-      } else {
-        return "text";
+        if (formatResult.metadata.contentType === "hybrid") {
+          return "pdf-text-ocr"; // Mixed content (text + images)
+        }
+        if (formatResult.metadata.contentType === "image_based") {
+          return "pdf-ocr"; // Primarily image-based
+        }
+        return "pdf-text-ocr"; // Default for unknown content type
       }
-    } catch (error) {
+      if (ext === ".epub") {
+        return "epub";
+      }
+      return "text";
+    } catch (_error) {
       // If analysis fails, fall back to extension-based detection
       const ext = path.extname(filePath).toLowerCase();
       if (ext === ".pdf") {
         return "pdf-text-ocr"; // Default for PDF
-      } else if (ext === ".epub") {
-        return "epub";
-      } else {
-        return "text";
       }
+      if (ext === ".epub") {
+        return "epub";
+      }
+      return "text";
     }
   }
 
@@ -445,7 +515,7 @@ export class BookStructureService {
     try {
       const stats = await fs.stat(filePath);
       return stats.size;
-    } catch (error) {
+    } catch (_error) {
       return 0;
     }
   }
@@ -460,7 +530,7 @@ export class BookStructureService {
       }
 
       // If we have a cached format result, use it
-      if (this.lastFormatResult && this.lastFormatResult.metadata.pageCount) {
+      if (this.lastFormatResult?.metadata.pageCount) {
         return this.lastFormatResult.metadata.pageCount;
       }
 
@@ -473,10 +543,10 @@ export class BookStructureService {
       }
 
       return 0;
-    } catch (error) {
+    } catch (_error) {
       return 0;
     }
   }
 }
 
-export type { ConfigUpdateInfo, BookStructureInfo }; 
+export type { ConfigUpdateInfo, BookStructureInfo };

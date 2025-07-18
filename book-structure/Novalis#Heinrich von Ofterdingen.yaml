@@ -6,8 +6,8 @@ original:
   - size: 515764
 text-before-first-chapter: null
 text-after-last-chapter: null
-first-page: null
-last-page: null
+first-author-content-page: 2
+last-author-content-page: 93
 header-type:
   - level1:
       - format: null

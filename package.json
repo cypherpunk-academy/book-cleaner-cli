@@ -19,6 +19,8 @@
     "format": "biome format . --write",
     "analyze-structure": "node -r @swc-node/register scripts/analyze-book-structure.ts",
     "test-format-detection": "node -r @swc-node/register scripts/test-format-detection.ts",
+    "test:step1-2": "node -r @swc-node/register scripts/test-step1-2.ts",
+    "fix-ts": "node scripts/fix-ts-resolution.js",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },

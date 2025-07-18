@@ -13,11 +13,11 @@ import {
   MESSAGE_TEMPLATES,
   PIPELINE_PHASES,
 } from "@/constants";
-import { PipelineManager } from "@/pipeline/PipelineManager";
-import { DataLoadingPhase } from "@/pipeline/DataLoadingPhase";
-import { TextNormalizationPhase } from "@/pipeline/TextNormalizationPhase";
-import { EvaluationPhase } from "@/pipeline/EvaluationPhase";
 import { AIEnhancementsPhase } from "@/pipeline/AIEnhancementsPhase";
+import { DataLoadingPhase } from "@/pipeline/DataLoadingPhase";
+import { EvaluationPhase } from "@/pipeline/EvaluationPhase";
+import { PipelineManager } from "@/pipeline/PipelineManager";
+import { TextNormalizationPhase } from "@/pipeline/TextNormalizationPhase";
 import { ConfigService } from "@/services/ConfigService";
 import {
   type LoggerService,
@@ -36,7 +36,7 @@ import { AppError, isAppError } from "@/utils/AppError";
 import { FileUtils } from "@/utils/FileUtils";
 import chalk from "chalk";
 import { Command } from "commander";
-import ora, { type Ora } from "ora";
+// import ora, { type Ora } from "ora"; // Removed to fix interactive prompt issues
 
 // Commander.js option types (following .cursorrules #5 - no any keyword)
 interface CommanderOptions {
@@ -58,7 +58,7 @@ export class CleanBookCommand {
   private configService: ConfigService;
   private fileUtils: FileUtils;
   private pipelineManager: PipelineManager;
-  private spinner: Ora | null = null;
+  // private spinner: Ora | null = null; // Removed to fix interactive prompt issues
 
   constructor() {
     this.logger = createDefaultLoggerService();
@@ -162,7 +162,10 @@ export class CleanBookCommand {
       const metadata = this.parseFilenameMetadata(cliOptions);
 
       // Load configuration
-      const bookConfig = await this.configService.loadBookConfig(metadata, cliOptions.inputFile);
+      const bookConfig = await this.configService.loadBookConfig(
+        metadata,
+        cliOptions.inputFile,
+      );
 
       // Create pipeline configuration
       const pipelineConfig = this.configService.createPipelineConfig(
@@ -342,13 +345,11 @@ export class CleanBookCommand {
         );
       });
     } else {
-      // Use spinner for normal mode
-      this.spinner = ora("Initializing...").start();
+      // Use simple console output instead of spinner
+      console.log("Initializing...");
 
       this.pipelineManager.setProgressCallback((progress: ProgressInfo) => {
-        if (this.spinner) {
-          this.spinner.text = `${progress.phase}: ${progress.message} (${progress.percentage}%)`;
-        }
+        console.log(`${progress.phase}: ${progress.message} (${progress.percentage}%)`);
       });
     }
   }
@@ -357,10 +358,7 @@ export class CleanBookCommand {
    * Handle errors
    */
   private async handleError(error: unknown): Promise<void> {
-    if (this.spinner) {
-      this.spinner.fail("Processing failed");
-      this.spinner = null;
-    }
+    console.log("✖ Processing failed");
 
     const cliLogger = this.logger.getCLILogger(LOG_COMPONENTS.CLI_COMMAND);
 
@@ -439,10 +437,7 @@ export class CleanBookCommand {
    */
   private async cleanup(): Promise<void> {
     try {
-      if (this.spinner) {
-        this.spinner.stop();
-      }
-
+      // Cleanup pipeline and logger
       await this.pipelineManager.cleanup();
       this.logger.flush();
     } catch (_error) {

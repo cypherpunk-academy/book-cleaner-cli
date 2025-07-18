@@ -4,10 +4,11 @@ book-index: null
 original:
   - type: epub
   - size: 110766
-text-before-first-chapter: null
-text-after-last-chapter: null
-first-page: null
-last-page: null
+  - pages: 0
+text-before-first-chapter: Hamburger Ausgabe, Band 6
+text-after-last-chapter: Ende dieses Projekt Gutenberg Etexes
+first-author-content-page: null
+last-author-content-page: null
 header-type:
   - level1:
       - format: null

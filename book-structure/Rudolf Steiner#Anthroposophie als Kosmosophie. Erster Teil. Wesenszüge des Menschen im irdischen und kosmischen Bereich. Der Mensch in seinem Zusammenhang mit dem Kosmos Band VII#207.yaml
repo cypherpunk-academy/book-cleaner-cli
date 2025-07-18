@@ -1,14 +1,16 @@
 author: Rudolf Steiner
-title: Einleitungen zu Goethes Naturwissenschaftlichen Schriften
-book-index: '1'
+title: >-
+  Anthroposophie als Kosmosophie. Erster Teil. Wesenszüge des Menschen im irdischen und kosmischen Bereich. Der Mensch
+  in seinem Zusammenhang mit dem Kosmos Band VII
+book-index: '207'
 original:
   - type: pdf-text-ocr
-  - size: 15916374
-  - pages: 350
+  - size: 9986019
+  - pages: 196
 text-before-first-chapter: null
 text-after-last-chapter: null
-first-page: null
-last-page: null
+first-author-content-page: 13
+last-author-content-page: 185
 header-type:
   - level1:
       - format: null

@@ -4,10 +4,10 @@ book-index: null
 original:
   - type: text
   - size: 153698
-text-before-first-chapter: null
-text-after-last-chapter: null
-first-page: null
-last-page: null
+text-before-first-chapter: (Symposion)
+text-after-last-chapter: ''
+first-author-content-page: null
+last-author-content-page: null
 header-type:
   - level1:
       - format: null

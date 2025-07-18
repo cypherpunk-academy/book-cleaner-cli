@@ -121,7 +121,9 @@ export class StructureAnalyzer {
     const headers: StructureHeader[] = [];
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
+      const rawLine = lines[i];
+      if (!rawLine) continue;
+      const line = rawLine.trim();
       if (line.length === 0) continue;
 
       // Check each header pattern
@@ -173,12 +175,11 @@ export class StructureAnalyzer {
       const level = this.determineLevel(type, number);
       const confidence = this.calculateHeaderConfidence(match, line, type);
 
-      return {
+      const header: StructureHeader = {
         id,
         type,
         level,
         title,
-        number,
         lineNumber,
         confidence,
         pattern,
@@ -187,6 +188,12 @@ export class StructureAnalyzer {
         wordCount: title.split(/\s+/).length,
         children: [],
       };
+
+      if (number !== undefined) {
+        header.number = number;
+      }
+
+      return header;
     } catch (_error) {
       return null;
     }
@@ -198,8 +205,9 @@ export class StructureAnalyzer {
   private extractTitle(match: RegExpMatchArray, line: string): string {
     // Try to get title from various capture groups
     for (let i = match.length - 1; i >= 1; i--) {
-      if (match[i] && match[i].trim().length > 0) {
-        const candidate = match[i].trim();
+      const matchPart = match[i];
+      if (matchPart && matchPart.trim().length > 0) {
+        const candidate = matchPart.trim();
         if (candidate.length > 1 && !/^\d+$/.test(candidate)) {
           return candidate;
         }
@@ -214,8 +222,9 @@ export class StructureAnalyzer {
   private extractNumber(match: RegExpMatchArray): string | undefined {
     // Look for numeric or roman numeral patterns
     for (let i = 1; i < match.length; i++) {
-      if (match[i] && (/^\d+$/.test(match[i]) || /^[IVXLCDM]+$/i.test(match[i]))) {
-        return match[i];
+      const matchPart = match[i];
+      if (matchPart && (/^\d+$/.test(matchPart) || /^[IVXLCDM]+$/i.test(matchPart))) {
+        return matchPart;
       }
     }
     return undefined;
@@ -266,7 +275,9 @@ export class StructureAnalyzer {
     const footnotes: StructureFootnote[] = [];
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
+      const rawLine = lines[i];
+      if (!rawLine) continue;
+      const line = rawLine.trim();
       if (line.length === 0) continue;
 
       // Check for footnote markers
@@ -334,7 +345,7 @@ export class StructureAnalyzer {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      if (line.trim().length === 0) {
+      if (!line || line.trim().length === 0) {
         if (currentParagraph.length > 0) {
           const paragraph = this.createParagraph(
             currentParagraph,
@@ -370,9 +381,12 @@ export class StructureAnalyzer {
     const text = lines.join(" ").trim();
     if (text.length === 0) return null;
 
-    const type = this.determineParagraphType(lines[0]);
-    const level = this.determineParagraphLevel(lines[0]);
-    const markers = this.extractParagraphMarkers(lines[0]);
+    const firstLine = lines[0];
+    if (!firstLine) return null;
+
+    const type = this.determineParagraphType(firstLine);
+    const level = this.determineParagraphLevel(firstLine);
+    const markers = this.extractParagraphMarkers(firstLine);
 
     return {
       id: uuidv4(),
@@ -429,7 +443,9 @@ export class StructureAnalyzer {
     const dialogues: StructureDialogue[] = [];
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
+      const rawLine = lines[i];
+      if (!rawLine) continue;
+      const line = rawLine.trim();
       if (line.length === 0) continue;
 
       for (const pattern of STRUCTURE_ANALYSIS_PATTERNS.DIALOGUE_MARKERS) {
@@ -460,14 +476,19 @@ export class StructureAnalyzer {
 
       if (!speaker || !text) return null;
 
-      return {
+      const dialogue: StructureDialogue = {
         id: uuidv4(),
         speaker,
         text,
         lineNumber,
-        speakerNote,
         confidence: STRUCTURE_ANALYSIS_CONFIDENCE.HIGH,
       };
+
+      if (speakerNote) {
+        dialogue.speakerNote = speakerNote;
+      }
+
+      return dialogue;
     } catch (_error) {
       return null;
     }
@@ -525,8 +546,11 @@ export class StructureAnalyzer {
   private checkNumberingConsistency(headers: StructureHeader[]): boolean {
     const typeGroups = headers.reduce(
       (groups, header) => {
-        if (!groups[header.type]) groups[header.type] = [];
-        groups[header.type].push(header);
+        const currentGroup = groups[header.type];
+        if (!currentGroup) {
+          groups[header.type] = [];
+        }
+        groups[header.type]?.push(header);
         return groups;
       },
       {} as Record<string, StructureHeader[]>,
@@ -534,19 +558,22 @@ export class StructureAnalyzer {
 
     for (const type in typeGroups) {
       const group = typeGroups[type];
-      if (group.length > 1) {
-        const numbers = group.map((h) => h.number).filter((n) => n !== undefined);
-        if (numbers.length !== group.length) return false;
+      if (!group || group.length <= 1) continue;
 
-        // Check if numeric sequence is consistent
-        const numericNumbers = numbers
-          .filter((n): n is string => typeof n === "string" && /^\d+$/.test(n))
-          .map((n) => Number.parseInt(n, 10));
-        if (numericNumbers.length > 1) {
-          numericNumbers.sort((a, b) => a - b);
-          for (let i = 1; i < numericNumbers.length; i++) {
-            if (numericNumbers[i] !== numericNumbers[i - 1] + 1) return false;
-          }
+      const numbers = group.map((h) => h.number).filter((n) => n !== undefined);
+      if (numbers.length !== group.length) return false;
+
+      // Check if numeric sequence is consistent
+      const numericNumbers = numbers
+        .filter((n): n is string => typeof n === "string" && /^\d+$/.test(n))
+        .map((n) => Number.parseInt(n, 10));
+      if (numericNumbers.length > 1) {
+        numericNumbers.sort((a, b) => a - b);
+        for (let i = 1; i < numericNumbers.length; i++) {
+          const current = numericNumbers[i];
+          const previous = numericNumbers[i - 1];
+          if (current === undefined || previous === undefined) continue;
+          if (current !== previous + 1) return false;
         }
       }
     }

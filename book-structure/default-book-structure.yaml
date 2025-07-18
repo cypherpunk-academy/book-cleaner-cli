@@ -7,8 +7,8 @@ original:
   - pages:
 text-before-first-chapter:
 text-after-last-chapter:
-first-page:
-last-page:
+first-author-content-page:
+last-author-content-page:
 
 header-type:
   - level1:

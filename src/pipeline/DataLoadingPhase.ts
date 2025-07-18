@@ -1,9 +1,17 @@
 import { ERROR_CODES, LOG_COMPONENTS } from "@/constants";
-import { AppError } from "@/utils/AppError";
-import { FileFormatDetector } from "./phase_1_Text_Extraction_And_Format_Processing/step_1_File_Format_Detection_And_Validation/FileFormatDetector";
-import { AbstractPhase } from "./AbstractPhase";
 import type { LoggerService } from "@/services/LoggerService";
-import type { PipelineState, ProgressCallback, FileInfo } from "@/types";
+import type {
+  FileFormatResult,
+  FileInfo,
+  FilenameMetadata,
+  PipelineState,
+  ProgressCallback,
+} from "@/types";
+import { AppError } from "@/utils/AppError";
+import { FileUtils } from "@/utils/FileUtils";
+import { AbstractPhase } from "./AbstractPhase";
+import { FileFormatDetector } from "./phase_1_Text_Extraction_And_Format_Processing/step_1_File_Format_Detection_And_Validation/FileFormatDetector";
+import { TextExtractor } from "./phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/TextExtractor";
 
 /**
  * Phase 1: Data Loading & Format Detection
@@ -11,14 +19,18 @@ import type { PipelineState, ProgressCallback, FileInfo } from "@/types";
  * This phase handles:
  * - File format detection and validation
  * - Basic metadata extraction
- * - Initial text extraction
+ * - Text extraction based on book structure
  */
 export class DataLoadingPhase extends AbstractPhase {
   private formatDetector: FileFormatDetector;
+  private textExtractor: TextExtractor;
+  private fileUtils: FileUtils;
 
   constructor(logger: LoggerService) {
     super(logger);
     this.formatDetector = new FileFormatDetector(logger);
+    this.textExtractor = new TextExtractor(logger, "./book-structure");
+    this.fileUtils = new FileUtils(logger);
   }
 
   public override getName(): string {
@@ -26,7 +38,7 @@ export class DataLoadingPhase extends AbstractPhase {
   }
 
   public override getDescription(): string {
-    return "Detects file format, validates structure, and extracts basic metadata";
+    return "Detects file format, validates structure, and extracts text based on book structure";
   }
 
   public override async execute(
@@ -83,10 +95,62 @@ export class DataLoadingPhase extends AbstractPhase {
         progressCallback({
           phase: this.getName(),
           step: "format-detection",
+          current: 50,
+          total: 100,
+          percentage: 50,
+          message: "File format detected successfully",
+        });
+      }
+
+      // Step 1.2: Text Extraction Based on Book Structure
+      pipelineLogger.info(
+        {
+          pipelineId: state.id,
+          format: formatResult.format,
+        },
+        "Starting text extraction based on book structure",
+      );
+
+      // Update progress
+      if (progressCallback) {
+        progressCallback({
+          phase: this.getName(),
+          step: "text-extraction",
+          current: 60,
+          total: 100,
+          percentage: 60,
+          message: "Extracting text based on book structure...",
+        });
+      }
+
+      // Parse filename metadata
+      const metadata = this.fileUtils.parseFilename(state.inputFile);
+
+      // Determine file type and boundaries
+      const fileType = this.determineFileType(formatResult);
+      const hasPages = this.hasPages(formatResult);
+
+      // Extract text using TextExtractor
+      const textExtractionResult = await this.textExtractor.extractText(
+        fileInfo,
+        metadata,
+        {
+          hasPages,
+          boundaries: {}, // Will be populated by TextExtractor from book structure
+          fileType,
+          outputDir: state.outputDir,
+        },
+      );
+
+      // Update progress
+      if (progressCallback) {
+        progressCallback({
+          phase: this.getName(),
+          step: "text-extraction",
           current: 100,
           total: 100,
           percentage: 100,
-          message: "File format detected successfully",
+          message: "Text extraction completed successfully",
         });
       }
 
@@ -94,7 +158,11 @@ export class DataLoadingPhase extends AbstractPhase {
       const result = {
         phase: "data_loading",
         success: true,
-        data: formatResult,
+        data: {
+          formatResult,
+          textExtractionResult,
+          metadata,
+        },
         timestamp: new Date(),
       };
 
@@ -103,6 +171,8 @@ export class DataLoadingPhase extends AbstractPhase {
           pipelineId: state.id,
           format: formatResult.format,
           confidence: formatResult.confidence,
+          extractedTextLength: textExtractionResult.extractedText.length,
+          textFiles: textExtractionResult.textFiles,
         },
         "Data loading phase completed successfully",
       );
@@ -126,5 +196,35 @@ export class DataLoadingPhase extends AbstractPhase {
         error instanceof Error ? error : new Error(String(error)),
       );
     }
+  }
+
+  /**
+   * Determine file type based on format detection result
+   */
+  private determineFileType(formatResult: FileFormatResult): string {
+    if (formatResult.format === "pdf") {
+      // Use content type from format detection
+      switch (formatResult.metadata?.contentType) {
+        case "text_based":
+          return "pdf-text";
+        case "image_based":
+          return "pdf-ocr";
+        case "hybrid":
+          return "pdf-text-ocr";
+        default:
+          return "pdf-text-ocr"; // Default to hybrid
+      }
+    }
+    if (formatResult.format === "epub") {
+      return "epub";
+    }
+    return "text";
+  }
+
+  /**
+   * Determine if file has pages
+   */
+  private hasPages(formatResult: FileFormatResult): boolean {
+    return formatResult.format === "pdf" || (formatResult.metadata?.pageCount ?? 0) > 0;
   }
 }
