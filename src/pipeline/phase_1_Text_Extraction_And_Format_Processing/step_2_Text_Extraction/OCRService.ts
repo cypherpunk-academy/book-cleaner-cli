@@ -119,6 +119,9 @@ export class OCRService {
       [/\bkiinstler/gi, "künstler"], // künstlerisch (kiinstler is OCR error)
       [/\bzuriick/gi, "zurück"], // zurück (zuriick is OCR error)
       [/\bRiickzug/gi, "Rückzug"], // Rückzug (Riickzug is OCR error)
+      [/\bverfafit\b/gi, "verfaßt"], // verfaßt (verfafit is a common OCR error for verfaßt)
+      [/\bverfaflen\b/gi, "verfaßten"], // verfaßten (verfaflen is a common OCR error for verfaßten)
+      [/\bverfafler\b/gi, "verfaßter"], // verfaßter (verfafler is a common OCR error for verfaßter)
 
       // ä corrections - only clear non-words
       [/\berklaren\b/gi, "erklären"], // erklären (erklaren is not a word)

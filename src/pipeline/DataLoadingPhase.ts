@@ -12,24 +12,27 @@ import { FileUtils } from "../utils/FileUtils";
 import { AbstractPhase } from "./AbstractPhase";
 import { FileFormatDetector } from "./phase_1_Text_Extraction_And_Format_Processing/step_1_File_Format_Detection_And_Validation/FileFormatDetector";
 import { TextExtractor } from "./phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/TextExtractor";
+import { TextEnhancer } from "./phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Quality_Enhancement/TextEnhancer";
 
 /**
  * Phase 1: Data Loading & Format Detection
  *
  * This phase handles:
- * - File format detection and validation
- * - Basic metadata extraction
- * - Text extraction based on book structure
+ * - Step 1: File format detection and validation
+ * - Step 2: Text extraction based on book structure
+ * - Step 3: Text quality enhancement
  */
 export class DataLoadingPhase extends AbstractPhase {
   private formatDetector: FileFormatDetector;
   private textExtractor: TextExtractor;
+  private textEnhancer: TextEnhancer;
   private fileUtils: FileUtils;
 
   constructor(logger: LoggerService, configService: ConfigService) {
     super(logger);
     this.formatDetector = new FileFormatDetector(logger);
     this.textExtractor = new TextExtractor(logger, configService, "./book-artifacts");
+    this.textEnhancer = new TextEnhancer(logger, "./book-artifacts");
     this.fileUtils = new FileUtils(logger);
   }
 
@@ -62,11 +65,11 @@ export class DataLoadingPhase extends AbstractPhase {
       if (progressCallback) {
         progressCallback({
           phase: this.getName(),
-          step: "format-detection",
+          step: "step-1-format-detection",
           current: 0,
           total: 100,
           percentage: 0,
-          message: "Detecting file format...",
+          message: "Step 1: Detecting file format...",
         });
       }
 
@@ -94,32 +97,32 @@ export class DataLoadingPhase extends AbstractPhase {
       if (progressCallback) {
         progressCallback({
           phase: this.getName(),
-          step: "format-detection",
+          step: "step-1-format-detection",
           current: 50,
           total: 100,
           percentage: 50,
-          message: "File format detected successfully",
+          message: "Step 1: File format detected successfully",
         });
       }
 
-      // Step 1.2: Text Extraction Based on Book Structure
+      // Step 2: Text Extraction Based on Book Structure
       pipelineLogger.info(
         {
           pipelineId: state.id,
           format: formatResult.format,
         },
-        "Starting text extraction based on book structure",
+        "Starting Step 2: Text extraction based on book structure",
       );
 
       // Update progress
       if (progressCallback) {
         progressCallback({
           phase: this.getName(),
-          step: "text-extraction",
+          step: "step-2-text-extraction",
           current: 60,
           total: 100,
           percentage: 60,
-          message: "Extracting text based on book structure...",
+          message: "Step 2: Extracting text based on book structure...",
         });
       }
 
@@ -145,13 +148,128 @@ export class DataLoadingPhase extends AbstractPhase {
       if (progressCallback) {
         progressCallback({
           phase: this.getName(),
-          step: "text-extraction",
+          step: "step-2-text-extraction",
+          current: 80,
+          total: 100,
+          percentage: 80,
+          message: "Step 2: Text extraction completed successfully",
+        });
+      }
+
+      // Step 3: Text Quality Enhancement
+      pipelineLogger.info(
+        {
+          pipelineId: state.id,
+        },
+        "Starting Step 3: Text Quality Enhancement",
+      );
+
+      // Update progress
+      if (progressCallback) {
+        progressCallback({
+          phase: this.getName(),
+          step: "step-3-text-quality-enhancement",
+          current: 85,
+          total: 100,
+          percentage: 85,
+          message: "Step 3: Enhancing text quality...",
+        });
+      }
+
+      // Get manifest path for text enhancement
+      const configKey = this.getConfigKey(metadata);
+      const bookArtifactsDir = "./book-artifacts";
+      const bookDir = `${bookArtifactsDir}/${configKey}`;
+      const manifestPath = `${bookDir}/book-manifest.yaml`;
+
+      // Read the extracted text files
+      const phase1Dir = `${bookDir}/phase1`;
+      const step2TxtPath = `${phase1Dir}/step2.txt`;
+      const step2OcrPath = `${phase1Dir}/step2.ocr`;
+
+      let txtContent = "";
+      let ocrContent = "";
+
+      try {
+        txtContent = await fs.readFile(step2TxtPath, "utf-8");
+      } catch (error) {
+        pipelineLogger.warn(
+          { pipelineId: state.id, path: step2TxtPath },
+          "Could not read step2.txt file",
+        );
+      }
+
+      try {
+        ocrContent = await fs.readFile(step2OcrPath, "utf-8");
+      } catch (error) {
+        pipelineLogger.debug(
+          { pipelineId: state.id, path: step2OcrPath },
+          "No step2.ocr file found (this is normal for non-OCR texts)",
+        );
+      }
+
+      // Process text with Text Quality Enhancement
+      let enhancedTextResult: import("./phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Quality_Enhancement/TextEnhancer").TextPreprocessingResult | null = null;
+      let enhancedOcrResult: import("./phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Quality_Enhancement/TextEnhancer").TextPreprocessingResult | null = null;
+
+      if (txtContent) {
+        enhancedTextResult = await this.textEnhancer.preprocessText(
+          txtContent,
+          manifestPath,
+        );
+
+        // Save enhanced text
+        const step3TxtPath = `${phase1Dir}/step3.txt`;
+        await fs.writeFile(step3TxtPath, enhancedTextResult.processedText, "utf-8");
+        pipelineLogger.info(
+          {
+            pipelineId: state.id,
+            path: step3TxtPath,
+            length: enhancedTextResult.processedText.length,
+          },
+          "Saved enhanced text to step3.txt",
+        );
+      }
+
+      if (ocrContent) {
+        enhancedOcrResult = await this.textEnhancer.preprocessText(
+          ocrContent,
+          manifestPath,
+        );
+
+        // Save enhanced OCR
+        const step3OcrPath = `${phase1Dir}/step3.ocr`;
+        await fs.writeFile(step3OcrPath, enhancedOcrResult.processedText, "utf-8");
+        pipelineLogger.info(
+          {
+            pipelineId: state.id,
+            path: step3OcrPath,
+            length: enhancedOcrResult.processedText.length,
+          },
+          "Saved enhanced OCR to step3.ocr",
+        );
+      }
+
+      // Update progress
+      if (progressCallback) {
+        progressCallback({
+          phase: this.getName(),
+          step: "step-3-text-quality-enhancement",
           current: 100,
           total: 100,
           percentage: 100,
-          message: "Text extraction completed successfully",
+          message: "Step 3: Text quality enhancement completed successfully",
         });
       }
+
+      pipelineLogger.info(
+        {
+          pipelineId: state.id,
+          txtEnhanced: enhancedTextResult ? true : false,
+          ocrEnhanced: enhancedOcrResult ? true : false,
+        },
+        "Step 3: Text Quality Enhancement completed successfully",
+      );
 
       // Store processing results in pipeline state
       const result = {
@@ -160,6 +278,10 @@ export class DataLoadingPhase extends AbstractPhase {
         data: {
           formatResult,
           textExtractionResult,
+          textEnhancementResult: {
+            txtEnhanced: enhancedTextResult || null,
+            ocrEnhanced: enhancedOcrResult || null,
+          },
           metadata,
         },
         timestamp: new Date(),
@@ -218,5 +340,17 @@ export class DataLoadingPhase extends AbstractPhase {
       return "epub";
     }
     return "text";
+  }
+
+  /**
+   * Generate configuration key for book-specific directory
+   */
+  private getConfigKey(metadata: {
+    author: string;
+    title: string;
+    bookIndex?: string;
+  }): string {
+    const { author, title, bookIndex } = metadata;
+    return `${author}#${title}${bookIndex ? `#${bookIndex}` : ""}`;
   }
 }

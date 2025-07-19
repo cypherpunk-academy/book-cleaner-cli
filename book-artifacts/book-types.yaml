@@ -1,0 +1,61 @@
+default:
+  header-type:
+    level1:
+      formats: []
+      examples: []
+  text-removal-patterns: []
+
+rudolf-steiner-ga-werk:
+  description: "Rudolf Steiner Gesamtausgabe (GA) Werk"
+  header-type:
+    level1:
+      formats:
+        - "Kapitel {number}"
+        - "Erstes Kapitel"
+        - "Zweites Kapitel"
+        - "Drittes Kapitel"
+      examples:
+        - "Kapitel 1"
+        - "Erstes Kapitel"
+        - "Zweites Kapitel"
+  text-removal-patterns:
+    - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
+    - "/Buch\\s?:\\s{0,3}\\d+\\s*\\d{0,3}\\s+Seite\\s?:\\s?\\d+[ \\t]*\\d{0,4}/"
+    - "/––– \\[GA\\d{1,3}, S\\.\\d{1,4}\\] –––/"
+
+rudolf-steiner-ga-vortrag:
+  description: "Rudolf Steiner Gesamtausgabe (GA) Vortrag"
+  header-type:
+    level1:
+      formats:
+        - "Vortrag {number}"
+        - "Erster Vortrag"
+        - "Zweiter Vortrag"
+        - "Dritter Vortrag"
+      examples:
+        - "Vortrag 1"
+        - "Erster Vortrag"
+        - "Zweiter Vortrag"
+  text-removal-patterns:
+    - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
+    - "/Buch\\s?:\\s{0,3}\\d+\\s*\\d{0,3}\\s+Seite\\s?:\\s?\\d+[ \\t]*\\d{0,4}/"
+    - "/––– \\[GA\\d{1,3}, S\\.\\d{1,4}\\] –––/"
+
+google-play-ebook:
+  description: "Google Play E-Book"
+  header-type:
+    level1:
+      formats:
+        - "Chapter {number}"
+        - "CHAPTER {number}"
+        - "Prologue"
+        - "Epilogue"
+      examples:
+        - "Chapter 1"
+        - "CHAPTER 2"
+        - "Prologue"
+        - "Epilogue"
+  text-removal-patterns:
+    - "/[Cc]opyright/"
+    - "/Google Play/"
+    - "/All rights reserved/"

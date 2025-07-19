@@ -525,3 +525,15 @@ export const BANNER_MESSAGES = {
   ],
   STEP_1_1: "🔍 Step 1.1: File Format Detection & Validation",
 } as const;
+
+// ==================== Text Quality Enhancement Constants ====================
+
+export const PARAGRAPH_END_MARKERS = ["!", "?", ".»", "!»", "?»"] as const;
+export const MIN_PARAGRAPHS_FOR_ANALYSIS = 7;
+
+export const TEXT_QUALITY_ENHANCEMENT = {
+  MIN_PARAGRAPHS_FOR_ANALYSIS,
+  PARAGRAPH_END_MARKERS,
+  HYPHEN_LINE_ENDING: "-",
+  PARAGRAPH_SEPARATOR: "\n\n",
+} as const;

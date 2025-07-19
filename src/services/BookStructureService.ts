@@ -19,7 +19,7 @@ import type { LoggerService } from "./LoggerService";
  * Information about configuration updates needed
  */
 interface ConfigUpdateInfo {
-  type?: { current: string; existing: string | undefined };
+  format?: { current: string; existing: string | undefined };
   size?: { current: number; existing: number | undefined };
   pages?: { current: number; existing: number | undefined };
 }
@@ -32,9 +32,10 @@ interface BookStructureInfo {
   title: string;
   bookIndex?: string;
   original?: Array<{
-    type?: string;
+    format?: string;
     size?: number;
     pages?: number;
+    "book-type"?: string;
   }>;
 }
 
@@ -100,7 +101,7 @@ export class BookStructureService {
         author: bookStructure.author || metadata.author,
         title: bookStructure.title || metadata.title,
         original: (bookStructure.original || []) as Array<{
-          type?: string;
+          format?: string;
           size?: number;
           pages?: number;
         }>,
@@ -166,9 +167,9 @@ export class BookStructureService {
           if (typeof item === "object" && item !== null) {
             const updatedItem: Record<string, unknown> = {};
 
-            // Handle type field
-            if (item.type !== undefined) {
-              updatedItem.type = fileType;
+            // Handle format field
+            if (item.format !== undefined) {
+              updatedItem.format = fileType;
             }
 
             // Handle size field
@@ -180,6 +181,11 @@ export class BookStructureService {
             if (item.pages !== undefined && fileType !== "text") {
               const pageCount = await this.getPageCount(filePath, fileType);
               updatedItem.pages = pageCount;
+            }
+
+            // Handle book-type field - preserve existing value or set default
+            if (item["book-type"] !== undefined) {
+              updatedItem["book-type"] = item["book-type"] as string;
             }
 
             // Only add the item if it has content
@@ -225,9 +231,10 @@ export class BookStructureService {
         author: templateConfig.author || metadata.author,
         title: templateConfig.title || metadata.title,
         original: templateConfig.original as Array<{
-          type?: string;
+          format?: string;
           size?: number;
           pages?: number;
+          "book-type"?: string;
         }>,
       };
 
@@ -281,10 +288,10 @@ export class BookStructureService {
       if (rawConfig.original && Array.isArray(rawConfig.original)) {
         const originalInfo = this.extractOriginalInfo(rawConfig.original);
 
-        // Compare file type
-        if (originalInfo.type !== currentFileType) {
+        // Compare file format
+        if (originalInfo.format !== currentFileType) {
           changes = changes || {};
-          changes.type = { current: currentFileType, existing: originalInfo.type };
+          changes.format = { current: currentFileType, existing: originalInfo.format };
         }
 
         // Compare file size
@@ -359,9 +366,9 @@ export class BookStructureService {
         if (typeof item === "object" && item !== null) {
           const updatedItem: Record<string, unknown> = {};
 
-          // Handle type field
-          if (item.type !== undefined) {
-            updatedItem.type = fileType;
+          // Handle format field
+          if (item.format !== undefined) {
+            updatedItem.format = fileType;
           }
 
           // Handle size field
@@ -373,6 +380,11 @@ export class BookStructureService {
           if (item.pages !== undefined && fileType !== "text") {
             const pageCount = await this.getPageCount(inputFilePath, fileType);
             updatedItem.pages = pageCount;
+          }
+
+          // Handle book-type field - preserve existing value
+          if (item["book-type"] !== undefined) {
+            updatedItem["book-type"] = item["book-type"] as string;
           }
 
           // Only add the item if it has content
@@ -431,17 +443,19 @@ export class BookStructureService {
    * Extract original information from config
    */
   private extractOriginalInfo(originalArray: Record<string, unknown>[]): {
-    type?: string;
+    format?: string;
     size?: number;
     pages?: number;
+    "book-type"?: string;
   } {
-    const info: { type?: string; size?: number; pages?: number } = {};
+    const info: { format?: string; size?: number; pages?: number; "book-type"?: string } = {};
 
     for (const item of originalArray) {
       if (typeof item === "object" && item !== null) {
-        if (item.type !== undefined) info.type = item.type as string;
+        if (item.format !== undefined) info.format = item.format as string;
         if (item.size !== undefined) info.size = item.size as number;
         if (item.pages !== undefined) info.pages = item.pages as number;
+        if (item["book-type"] !== undefined) info["book-type"] = item["book-type"] as string;
       }
     }
 

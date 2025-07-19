@@ -1,0 +1,21 @@
+
+SAMPLE BOOK CONTENT
+
+This is text before the first chapter.
+Some introductory material here.
+
+CHAPTER 1: The Beginning
+
+This is the actual author content that we want to extract.
+It contains the main text of the book.
+Multiple paragraphs of content.
+
+CHAPTER 2: The Middle
+
+More author content here.
+Additional paragraphs.
+
+FINAL NOTES
+
+This is text after the last chapter.
+Appendix material that should be excluded.

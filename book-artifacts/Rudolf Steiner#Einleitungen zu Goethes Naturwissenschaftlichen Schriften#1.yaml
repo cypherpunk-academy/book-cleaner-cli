@@ -2,12 +2,18 @@ author: Rudolf Steiner
 title: Einleitungen zu Goethes Naturwissenschaftlichen Schriften
 book-index: '1'
 original:
-  format: pdf-text-ocr
-  size: 15916374
-  pages: 350
-  book-type: rudolf-steiner-ga-werk
-text-before-first-chapter: "müsse, um ihm erkennend beizukommen."
-text-after-last-chapter: "Daten zur Herausgabe von Goethes"
+  - size: 15916374
+  - pages: 350
+text-before-first-chapter: null
+text-after-last-chapter: null
+text-removal-patterns:
+  - /[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/
+  - /Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/
+  - /––– \[GA\d{1,3}, S\.\d{1,4}\] –––/
+header-type:
+  - level1:
+      - format: null
+      - example: null
 structure:
   - type: chapter
     title: null
@@ -37,4 +43,4 @@ footnotes:
   - five-words-before: null
   - footnote:
       - text first page
-      - text next page 
+      - text next page

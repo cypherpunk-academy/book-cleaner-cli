@@ -1,5 +1,14 @@
-import { ERROR_CODES, LOG_COMPONENTS } from "../../../constants";
+import { readFileSync } from "node:fs";
+import { load as parseYaml } from "js-yaml";
+import {
+  ERROR_CODES,
+  LOG_COMPONENTS,
+  MIN_PARAGRAPHS_FOR_ANALYSIS,
+  PARAGRAPH_END_MARKERS,
+  TEXT_QUALITY_ENHANCEMENT,
+} from "../../../constants";
 import type { LoggerService } from "../../../services/LoggerService";
+import { BookTypesService } from "../../../services/BookTypesService";
 import { AppError } from "../../../utils/AppError";
 import type {
   QualityImprovement,
@@ -36,6 +45,30 @@ export interface TextEnhancementOptions {
   preserveFormatting?: boolean;
   aggressiveMode?: boolean;
   language?: string;
+  manifestPath?: string;
+}
+
+/**
+ * Text preprocessing result for manifest-based cleaning and paragraph normalization
+ */
+export interface TextPreprocessingResult {
+  processedText: string;
+  patternsRemoved: number;
+  paragraphsFound: number;
+  paragraphsNormalized: boolean;
+  processingDetails: {
+    removedPatterns: string[];
+    paragraphAnalysis: {
+      totalParagraphs: number;
+      paragraphsWithEndMarkers: number;
+      needsNormalization: boolean;
+    };
+    normalizationStats: {
+      linesJoined: number;
+      hyphensRemoved: number;
+      paragraphsCreated: number;
+    };
+  };
 }
 
 /**
@@ -49,10 +82,382 @@ export interface TextEnhancementOptions {
  */
 export class TextEnhancer {
   private readonly logger: LoggerService;
+  private readonly bookTypesService: BookTypesService;
 
-  constructor(logger: LoggerService) {
+  constructor(logger: LoggerService, configDir?: string) {
     this.logger = logger;
+    this.bookTypesService = new BookTypesService(logger, configDir);
   }
+
+  /**
+   * Preprocess text with manifest-based pattern removal and paragraph normalization
+   *
+   * @param text - Input text to preprocess
+   * @param manifestPath - Path to book manifest YAML file
+   * @returns Preprocessing result with processed text and statistics
+   */
+  async preprocessText(
+    text: string,
+    manifestPath: string,
+  ): Promise<TextPreprocessingResult> {
+    const preprocessLogger = this.logger.getTextExtractionLogger(
+      LOG_COMPONENTS.PIPELINE_MANAGER,
+    );
+
+    try {
+      preprocessLogger.info(
+        {
+          textLength: text.length,
+          manifestPath,
+        },
+        "Starting text preprocessing with manifest patterns and paragraph normalization",
+      );
+
+      // Step 1: Load and apply text-removal-patterns from manifest
+      const { processedText: patternCleanedText, removedPatterns } =
+        await this.applyManifestPatterns(text, manifestPath);
+
+      // Step 2: Analyze paragraph structure
+      const paragraphAnalysis = this.analyzeParagraphStructure(patternCleanedText);
+
+      // Step 3: Normalize paragraphs if needed
+      const { normalizedText, normalizationStats } =
+        paragraphAnalysis.needsNormalization
+          ? this.normalizeParagraphs(patternCleanedText)
+          : {
+              normalizedText: patternCleanedText,
+              normalizationStats: {
+                linesJoined: 0,
+                hyphensRemoved: 0,
+                paragraphsCreated: 0,
+              },
+            };
+
+      const result: TextPreprocessingResult = {
+        processedText: normalizedText,
+        patternsRemoved: removedPatterns.length,
+        paragraphsFound: paragraphAnalysis.totalParagraphs,
+        paragraphsNormalized: paragraphAnalysis.needsNormalization,
+        processingDetails: {
+          removedPatterns,
+          paragraphAnalysis,
+          normalizationStats,
+        },
+      };
+
+      preprocessLogger.info(
+        {
+          originalLength: text.length,
+          processedLength: normalizedText.length,
+          patternsRemoved: removedPatterns.length,
+          paragraphsNormalized: paragraphAnalysis.needsNormalization,
+        },
+        "Text preprocessing completed",
+      );
+
+      return result;
+    } catch (error) {
+      preprocessLogger.error(
+        { error: error instanceof Error ? error.message : String(error) },
+        "Text preprocessing failed",
+      );
+      throw new AppError(
+        ERROR_CODES.PIPELINE_FAILED,
+        LOG_COMPONENTS.PIPELINE_MANAGER,
+        "TextEnhancer.preprocessText",
+        "Text preprocessing failed",
+        { textLength: text.length, manifestPath },
+        error instanceof Error ? error : new Error(String(error)),
+      );
+    }
+  }
+
+  /**
+   * Load text-removal-patterns from manifest and apply them to text
+   */
+  private async applyManifestPatterns(
+    text: string,
+    manifestPath: string,
+  ): Promise<{ processedText: string; removedPatterns: string[] }> {
+    let processedText = text;
+    const removedPatterns: string[] = [];
+
+    try {
+      // Load manifest file
+      const manifestContent = readFileSync(manifestPath, "utf-8");
+      const manifest = parseYaml(manifestContent) as Record<string, unknown>;
+
+      // Extract patterns from manifest
+      const manifestPatterns = manifest["text-removal-patterns"] as string[] | undefined;
+      let allPatterns: string[] = [];
+
+      if (manifestPatterns && Array.isArray(manifestPatterns)) {
+        allPatterns = [...manifestPatterns];
+      }
+
+      // Extract book-type and load additional patterns from book-types.yaml
+      const originalSection = manifest.original as Record<string, unknown> | undefined;
+      if (originalSection && typeof originalSection === "object") {
+        const bookType = originalSection["book-type"] as string | undefined;
+        if (bookType && typeof bookType === "string") {
+          try {
+            const bookTypePatterns = await this.bookTypesService.getTextRemovalPatterns(bookType);
+            allPatterns = [...allPatterns, ...bookTypePatterns];
+          } catch (error) {
+            this.logger.getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER).warn(
+              {
+                bookType,
+                error: error instanceof Error ? error.message : String(error),
+              },
+              "Failed to load patterns for book type, continuing with manifest patterns only",
+            );
+          }
+        }
+      }
+
+      // Apply all patterns
+      if (allPatterns.length > 0) {
+        this.logger.getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER).info(
+          { totalPatterns: allPatterns.length, patterns: allPatterns },
+          "Applying text-removal-patterns"
+        );
+
+        for (const pattern of allPatterns) {
+          if (typeof pattern === "string") {
+            const beforeLength = processedText.length;
+            let replacementCount = 0;
+
+            // Convert pattern to regex (assuming they are in /pattern/ format)
+            const regexMatch = pattern.match(/^\/(.+)\/([gimuy]*)$/);
+            if (regexMatch && regexMatch[1]) {
+              const regexPattern = regexMatch[1];
+              let flags = regexMatch[2] || "";
+              
+              // Ensure global flag is set for multiple replacements
+              if (!flags.includes('g')) {
+                flags += 'g';
+              }
+              
+              const regex = new RegExp(regexPattern, flags);
+              
+              // Count matches before replacement
+              const matches = processedText.match(regex);
+              replacementCount = matches ? matches.length : 0;
+              
+              processedText = processedText.replace(regex, "");
+
+              if (replacementCount > 0) {
+                removedPatterns.push(pattern);
+              }
+            } else {
+              // Treat as literal string if not in regex format
+              const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+              const regex = new RegExp(escaped, "g");
+              
+              // Count matches before replacement
+              const matches = processedText.match(regex);
+              replacementCount = matches ? matches.length : 0;
+              
+              processedText = processedText.replace(regex, "");
+              
+              if (replacementCount > 0) {
+                removedPatterns.push(pattern);
+              }
+            }
+
+            const afterLength = processedText.length;
+            const charactersRemoved = beforeLength - afterLength;
+
+            // Log each pattern's results
+            this.logger.getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER).info(
+              { 
+                pattern, 
+                replacementCount, 
+                charactersRemoved,
+                beforeLength,
+                afterLength
+              },
+              `Pattern application result: ${replacementCount} replacements, ${charactersRemoved} characters removed`
+            );
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER).warn(
+        {
+          error: error instanceof Error ? error.message : String(error),
+          manifestPath,
+        },
+        "Failed to load or apply manifest patterns, continuing without pattern removal",
+      );
+    }
+
+    return { processedText, removedPatterns };
+  }
+
+  /**
+   * Analyze paragraph structure to determine if normalization is needed
+   */
+  private analyzeParagraphStructure(text: string): {
+    totalParagraphs: number;
+    paragraphsWithEndMarkers: number;
+    needsNormalization: boolean;
+  } {
+    // Split text into paragraphs (double newlines or more)
+    const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
+    const totalParagraphs = paragraphs.length;
+
+    // Check if we have enough paragraphs for analysis
+    if (totalParagraphs < MIN_PARAGRAPHS_FOR_ANALYSIS) {
+      return {
+        totalParagraphs,
+        paragraphsWithEndMarkers: 0,
+        needsNormalization: true, // Always normalize if we have too few paragraphs
+      };
+    }
+
+    // Check first 10 paragraphs for end markers
+    const paragraphsToCheck = Math.min(10, totalParagraphs);
+    let paragraphsWithEndMarkers = 0;
+
+    for (let i = 0; i < paragraphsToCheck; i++) {
+      const paragraph = paragraphs[i];
+      if (paragraph && paragraph.trim().length > 0) {
+        for (const marker of PARAGRAPH_END_MARKERS) {
+          if (paragraph.endsWith(marker)) {
+            paragraphsWithEndMarkers++;
+            break;
+          }
+        }
+      }
+    }
+
+    // If most paragraphs (at least 70%) have end markers, consider them well-structured
+    const threshold = Math.ceil(paragraphsToCheck * 0.7);
+    const needsNormalization = paragraphsWithEndMarkers < threshold;
+
+    return {
+      totalParagraphs,
+      paragraphsWithEndMarkers,
+      needsNormalization,
+    };
+  }
+
+  /**
+   * Normalize paragraphs by joining lines and handling hyphenation
+   */
+  private normalizeParagraphs(text: string): {
+    normalizedText: string;
+    normalizationStats: {
+      linesJoined: number;
+      hyphensRemoved: number;
+      paragraphsCreated: number;
+    };
+  } {
+    const lines = text.split("\n");
+    const normalizedLines: string[] = [];
+    let currentParagraph = "";
+
+    let linesJoined = 0;
+    let hyphensRemoved = 0;
+    let paragraphsCreated = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line) continue;
+      
+      const trimmedLine = line.trim();
+
+      // Skip empty lines
+      if (trimmedLine.length === 0) {
+        // If we have a current paragraph, finish it
+        if (currentParagraph.trim().length > 0) {
+          normalizedLines.push(currentParagraph.trim());
+          currentParagraph = "";
+          paragraphsCreated++;
+        }
+        continue;
+      }
+
+      // Check if line should be joined with the next line
+      const nextLine = i + 1 < lines.length ? lines[i + 1] : undefined;
+      const shouldJoinWithNext = this.shouldJoinLine(trimmedLine, nextLine);
+
+      if (shouldJoinWithNext) {
+        // Handle hyphenation at end of line
+        if (trimmedLine.endsWith(TEXT_QUALITY_ENHANCEMENT.HYPHEN_LINE_ENDING)) {
+          const nextLineContent = nextLine?.trim() || "";
+          const nextFirstChar = nextLineContent.charAt(0);
+
+          if (nextFirstChar && nextFirstChar === nextFirstChar.toLowerCase()) {
+            // Next line starts with lowercase, remove hyphen
+            currentParagraph += trimmedLine.slice(0, -1); // Remove hyphen
+            hyphensRemoved++;
+          } else {
+            // Keep hyphen
+            currentParagraph += trimmedLine;
+          }
+        } else {
+          currentParagraph += trimmedLine + " ";
+        }
+        linesJoined++;
+      } else {
+        // Line ends a sentence/paragraph
+        currentParagraph += trimmedLine;
+        normalizedLines.push(currentParagraph.trim());
+        currentParagraph = "";
+        paragraphsCreated++;
+      }
+    }
+
+    // Add any remaining paragraph
+    if (currentParagraph.trim().length > 0) {
+      normalizedLines.push(currentParagraph.trim());
+      paragraphsCreated++;
+    }
+
+    // Join paragraphs with double newlines
+    const normalizedText = normalizedLines.join(
+      TEXT_QUALITY_ENHANCEMENT.PARAGRAPH_SEPARATOR,
+    );
+
+    return {
+      normalizedText,
+      normalizationStats: {
+        linesJoined,
+        hyphensRemoved,
+        paragraphsCreated,
+      },
+    };
+  }
+
+  /**
+   * Determine if a line should be joined with the next line
+   */
+  private shouldJoinLine(currentLine: string, nextLine?: string): boolean {
+    if (!nextLine || nextLine.trim().length === 0) {
+      return false;
+    }
+
+    const trimmedLine = currentLine.trim();
+
+    // Check if line ends with one of the paragraph end markers
+    for (const marker of PARAGRAPH_END_MARKERS) {
+      if (trimmedLine.endsWith(marker)) {
+        return false; // Don't join if line ends with a sentence/paragraph marker
+      }
+    }
+
+    // Check if line ends with hyphen (should always join)
+    if (trimmedLine.endsWith(TEXT_QUALITY_ENHANCEMENT.HYPHEN_LINE_ENDING)) {
+      return true;
+    }
+
+    // Default: join if line doesn't end with sentence terminators
+    return true;
+  }
+
+
 
   /**
    * Enhance text quality based on analysis results

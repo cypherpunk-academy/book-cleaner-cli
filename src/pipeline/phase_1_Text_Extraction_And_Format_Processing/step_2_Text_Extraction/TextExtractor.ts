@@ -103,7 +103,11 @@ export class TextExtractor {
       const updatedOptions = await this.checkAndPromptBoundaries(metadata, options);
 
       // Extract text based on file type
-      const result = await this.performTextExtraction(fileInfo, updatedOptions);
+      const result = await this.performTextExtraction(
+        fileInfo,
+        updatedOptions,
+        metadata,
+      );
 
       // Save extracted text to book-artifacts directory
       await this.saveResults(fileInfo, metadata, result, updatedOptions);
@@ -186,11 +190,12 @@ export class TextExtractor {
   private async performTextExtraction(
     fileInfo: FileInfo,
     options: TextExtractionOptions,
+    metadata: FilenameMetadata,
   ): Promise<TextExtractionResult> {
     switch (fileInfo.format) {
       case "pdf":
         if (options.fileType === "pdf-text-ocr") {
-          return this.extractFromPdfTextOcr(fileInfo, options);
+          return this.extractFromPdfTextOcr(fileInfo, options, metadata);
         }
         return this.extractFromPdfText(fileInfo, options);
       case "epub":
@@ -280,11 +285,6 @@ export class TextExtractor {
 
     // Find the start text marker in normalized text
     const startMarkerIndex = normalizedText.indexOf(normalizedTextBefore);
-    this.logger.info(LOG_COMPONENTS.PIPELINE_MANAGER, "Start marker index", {
-      startMarkerIndex,
-      textBefore: normalizedTextBefore,
-      normalizedText: normalizedText.substring(0, 8000),
-    });
     if (startMarkerIndex !== -1) {
       // Start AFTER the marker text (exclude the marker itself)
       startIndex = startMarkerIndex + normalizedTextBefore.length;
@@ -343,16 +343,104 @@ export class TextExtractor {
   }
 
   /**
+   * Check if OCR file already exists and load it if found
+   */
+  private async checkForExistingOcrFile(
+    fileInfo: FileInfo,
+    metadata: FilenameMetadata,
+  ): Promise<{ exists: boolean; content?: string; filePath?: string }> {
+    try {
+      const configKey = this.getConfigKey(metadata);
+      const bookDir = path.join(this.configDir, configKey);
+      const phase1Dir = path.join(bookDir, ARTIFACTS_STRUCTURE.PHASE_DIRS.PHASE1);
+      const ocrFile = path.join(phase1Dir, "step2.ocr");
+
+      // Check if OCR file exists
+      const stats = await fs.stat(ocrFile);
+      if (stats.isFile()) {
+        const content = await fs.readFile(ocrFile, "utf-8");
+
+        this.logger.info(
+          LOG_COMPONENTS.PIPELINE_MANAGER,
+          "Found existing OCR file, skipping OCR process",
+          {
+            filename: fileInfo.name,
+            ocrFile,
+            contentLength: content.length,
+          },
+        );
+
+        console.log(`📄 Found existing OCR file: ${ocrFile} (${content.length} chars)`);
+
+        return {
+          exists: true,
+          content: content.trim(),
+          filePath: ocrFile,
+        };
+      }
+    } catch (error) {
+      // File doesn't exist or other error - that's fine, we'll do OCR
+      this.logger.debug(
+        LOG_COMPONENTS.PIPELINE_MANAGER,
+        "No existing OCR file found, will perform OCR",
+        {
+          filename: fileInfo.name,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
+    }
+
+    return { exists: false };
+  }
+
+  /**
    * Extract text from PDF (hybrid text + OCR)
    */
   private async extractFromPdfTextOcr(
     fileInfo: FileInfo,
     options: TextExtractionOptions,
+    metadata: FilenameMetadata,
   ): Promise<TextExtractionResult> {
     // First extract embedded text
     const textResult = await this.extractFromPdfText(fileInfo, options);
 
-    // Then perform OCR with structured text recognition directly
+    // Check for existing OCR file first
+    const existingOcr = await this.checkForExistingOcrFile(fileInfo, metadata);
+
+    let ocrText: string;
+    let ocrMetadata: {
+      confidence: number;
+      processingTime: number;
+      pageCount: number;
+    };
+
+    if (existingOcr.exists && existingOcr.content) {
+      // Use existing OCR file - DON'T apply boundaries as file is already processed
+      ocrText = existingOcr.content;
+
+      // Set metadata for existing file (no real OCR was performed)
+      ocrMetadata = {
+        confidence: 1.0, // Assume existing file is good
+        processingTime: 0, // No time spent on OCR
+        pageCount: ocrText.split(/\f|\[PAGE_BREAK\]/).length,
+      };
+
+      console.log(
+        `📝 Using existing OCR file (${ocrText.length} chars) + PDF text (${textResult.extractedText.length} chars)`,
+      );
+
+      return {
+        extractedText: textResult.extractedText,
+        ocrText,
+        pagesExtracted: textResult.pagesExtracted,
+        textFiles: [],
+        ocrFiles: [existingOcr.filePath!], // Use existing file path
+        boundaries: textResult.boundaries,
+        ocrMetadata,
+      };
+    }
+
+    // Perform OCR if no existing file found
     try {
       const ocrResult = await this.ocrService.performOCR(fileInfo, {
         language: "deu", // Pure German for better umlaut recognition
