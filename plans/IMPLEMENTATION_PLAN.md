@@ -1,698 +1,329 @@
-# Book Cleaner CLI - Implementation Plan
+# Book Cleaner CLI - Implementation Plan (Updated)
 
 ## Overview
 
 This document outlines the implementation plan for the Book Cleaner CLI project, a Node.js/TypeScript application that transforms raw book sources (PDFs, text files, EPUB) into clean, readable Markdown format with comprehensive metadata.
 
-The implementation is divided into logical phases, each building upon the previous one to create a robust, scalable text processing pipeline.
+**Current Status (January 2025):** The project has advanced significantly beyond the original plan. Phase 1 and most core functionality is complete, with OCR processing fully operational. The focus now shifts to OCR caching, AI-powered text normalization, and Phase 2-4 implementations.
 
-## Phase 1: Project Foundation & Base Architecture
+## Current Implementation Status ✅
 
-### 1.1 Project Setup
+### ✅ COMPLETED PHASES
 
-**Duration:** 2-3 days
+#### Phase 1: Project Foundation & Base Architecture - COMPLETE
+- [x] **1.1 Project Setup** - TypeScript, Biome, Jest, CI/CD all configured
+- [x] **1.2 Core Infrastructure** - Pino logging, ConfigService, CLI framework, error handling complete
+- [x] **1.3 Pipeline Framework** - PipelineManager, AbstractPhase, step architecture complete
 
-**Deliverables:**
+#### Phase 2: Text Extraction & Format Processing - COMPLETE
+- [x] **2.1 File Format Detection & Validation** - Complete with security validation
+- [x] **2.2 PDF Text Extraction** - Complete with hybrid text+OCR processing
+- [x] **2.3 EPUB Text Extraction** - Complete with structure preservation
+- [x] **2.4 Plain Text Processing** - Complete with encoding detection
 
--   [ ] Initialize Node.js project with TypeScript
--   [ ] Setup package.json with dependencies
--   [ ] Configure Biomejs for linting and formatting
--   [ ] Setup Jest testing framework
--   [ ] Create initial project structure
--   [ ] Setup GitHub Actions CI/CD pipeline
+#### Phase 3: OCR Integration & Text Comparison - COMPLETE
+- [x] **3.1 OCR Service Integration** - Tesseract.js integrated with structured recognition
+- [x] **3.2 Text Comparison Engine** - Complete quality assessment and comparison
+- [x] **3.3 Smart Text Selection** - Intelligent text selection between sources
 
-**Key Files:**
+#### Phase 4: Basic Pipeline Implementation - COMPLETE
+- [x] **4.1 Phase 1 Pipeline Implementation** - DataLoadingPhase fully functional
+- [x] **4.2 Configuration System Integration** - BookStructureService with YAML configs
+- [x] **4.3 CLI Interface Completion** - CleanBookCommand operational
 
+### 🔄 PLACEHOLDER IMPLEMENTATIONS (Needs Implementation)
+
+#### Phase 2: Text Normalization & AI Cleaning - PLACEHOLDER
+- [ ] **2.1 DeepSeek API Integration** - Text cleaning and normalization
+- [ ] **2.2 Structured Text Processing** - Heading normalization, paragraph cleanup
+- [ ] **2.3 German Text Optimization** - Umlaut handling, philosophical text processing
+
+#### Phase 3: Evaluation & Analysis - PLACEHOLDER
+- [ ] **3.1 Quality Metrics** - Comprehensive quality scoring
+- [ ] **3.2 Analysis Reports** - Processing statistics and recommendations
+
+#### Phase 4: AI Enhancements - PLACEHOLDER
+- [ ] **4.1 Content Enhancement** - AI-powered improvements
+- [ ] **4.2 Metadata Enrichment** - Enhanced book structure analysis
+
+## 🎯 IMMEDIATE PRIORITIES
+
+### Priority 1: OCR Caching Implementation
+
+**Duration:** 1-2 weeks
+**Status:** CRITICAL - Currently OCR reprocesses every time
+
+The book-artifacts structure exists but OCR caching is not implemented. This causes expensive OCR reprocessing on every run.
+
+**Current Book-Artifacts Structure:**
 ```
-book-cleaner-cli/
-├── package.json
-├── tsconfig.json
-├── biome.json
-├── jest.config.js
-├── .github/workflows/ci.yml
-└── src/
-    ├── index.ts
-    ├── types/
-    ├── utils/
-    ├── services/
-    └── cli/
+book-artifacts/
+├── default-book-manifest.yaml
+└── <author>#<title>#<book-index>/
+    ├── book-manifest.yaml (✅ populated)
+    ├── phase1/ (❌ empty - needs OCR cache)
+    ├── phase2/ (empty)
+    └── phase3/ (empty)
 ```
 
-**Dependencies:**
+**Required Implementation:**
 
--   TypeScript, @types/node
--   Commander.js for CLI
--   Pino for logging
--   Jest for testing
--   Biomejs for linting
--   pdf-parse, epub2, mammoth for file processing
-
-### 1.2 Core Infrastructure
-
-**Duration:** 3-4 days
-
+#### 1.1 OCR Cache System
 **Deliverables:**
-
--   [ ] Implement tagged Pino logging system
--   [ ] Create configuration management system
--   [ ] Build CLI framework with Commander.js
--   [ ] Setup error handling and validation
--   [ ] Create base TypeScript interfaces
--   [ ] Implement file system utilities
+- [ ] Implement OCR result caching in `phase1/` directory
+- [ ] Cache structure: `phase1/ocr-cache.json` with metadata
+- [ ] Cache validation based on file hash and processing parameters
+- [ ] Cache expiration and invalidation logic
+- [ ] Integration with existing OCRService.ts
 
 **Key Components:**
-
--   `src/services/LoggerService.ts` - Tagged logging implementation
--   `src/services/ConfigService.ts` - Configuration loading and management
--   `src/cli/commands/` - CLI command structure
--   `src/types/` - Core TypeScript interfaces
--   `src/utils/FileUtils.ts` - File system operations
-
-**Testing:**
-
--   Unit tests for all core services
--   CLI command testing framework
--   Configuration loading tests
-
-### 1.3 Pipeline Framework
-
-**Duration:** 2-3 days
-
-**Deliverables:**
-
--   [ ] Create abstract pipeline architecture
--   [ ] Implement phase management system
--   [ ] Build progress tracking and reporting
--   [ ] Create pipeline state management
--   [ ] Setup inter-phase data flow
-
-**Key Components:**
-
--   `src/pipeline/PipelineManager.ts` - Main pipeline orchestrator
--   `src/pipeline/phases/` - Abstract phase classes
--   `src/pipeline/state/` - Pipeline state management
--   `src/services/ProgressService.ts` - Progress tracking
-
-## Phase 2: Text Extraction & Format Processing
-
-### 2.1 File Format Detection & Validation
-
-**Duration:** 3-4 days
-
-**Overview:**
-Implement comprehensive file format detection that goes beyond simple extension checking to validate actual file content, structure, and processing capabilities. This prevents security issues and processing failures while optimizing the pipeline for different file types.
-
-**Supported Formats:**
-
--   **PDF**: Text-based, image-based, or hybrid content (max 10MB)
--   **EPUB**: Standard EPUB 2.0/3.0 (DRM-protected files rejected)
--   **TXT**: Plain text files with encoding detection
-
-**Deliverables:**
-
-**Core Detection System:**
-
--   [ ] Implement magic number detection for format identification
--   [ ] Create file header analysis (first 16 bytes minimum)
--   [ ] Build extension vs. content validation with mismatch warnings
--   [ ] Implement file size validation (10MB limit for PDFs)
--   [ ] Create confidence scoring system for format detection
-
-**Format-Specific Validation:**
-
-**PDF Validation:**
-
--   [ ] Detect PDF magic number (`%PDF-1.x`) and version
--   [ ] Validate PDF structure integrity using pdf-parse
--   [ ] Classify PDF content type:
-    -   Text-based: Contains extractable embedded text
-    -   Image-based: Requires OCR processing
-    -   Hybrid: Mixed content requiring both approaches
--   [ ] Extract basic metadata (page count, creation date, title/author)
--   [ ] Assess text extraction quality and coverage
-
-**EPUB Validation:**
-
--   [ ] Validate ZIP file structure (magic number `PK\x03\x04`)
--   [ ] Verify EPUB-specific files (META-INF/container.xml, \*.opf)
--   [ ] Detect EPUB version (2.0 vs 3.0) for appropriate parsing
--   [ ] **DRM Detection & Rejection:**
-    -   Check for DRM indicators in rights metadata
-    -   Scan for encrypted content files
-    -   Validate accessibility of text content
-    -   Generate clear error messages for DRM-protected files
--   [ ] Validate table of contents and chapter structure
--   [ ] Extract embedded metadata (title, author, publisher, language)
-
-**Text File Validation:**
-
--   [ ] Implement encoding detection (UTF-8, UTF-16, Latin1)
--   [ ] Validate text content vs. binary data (printable character ratio)
--   [ ] Check for Byte Order Mark (BOM) handling
--   [ ] Detect and handle different line ending formats
--   [ ] Validate minimum content length (>100 characters)
--   [ ] Check for common encoding issues (replacement characters)
-
-**Security & Error Handling:**
-
--   [ ] Implement file size limits and validation
--   [ ] Prevent path traversal attacks in filename parsing
--   [ ] Validate file permissions and accessibility
--   [ ] Create comprehensive error messages with actionable guidance
--   [ ] Handle corrupted or malformed files gracefully
--   [ ] Implement timeout mechanisms for large file processing
-
-**Metadata Extraction:**
-
--   [ ] Parse filename patterns: `<author>#<title>[#<book-index>].<extension>`
--   [ ] Extract and validate author, title, and book index
--   [ ] Handle special characters and encoding in filenames
--   [ ] Generate default metadata for files without embedded info
--   [ ] Validate metadata consistency across filename and content
-
-**Key Components:**
-
 ```typescript
-src/services/
-├── FileFormatDetector.ts       // Main detection service
-├── FilenameParser.ts           // Metadata extraction from filenames
-├── SecurityValidator.ts        // File security and size validation
-└── FormatValidators/
-    ├── PDFValidator.ts         // PDF-specific validation
-    ├── EPUBValidator.ts        // EPUB validation and DRM detection
-    └── TextValidator.ts        // Text file encoding and content validation
-
-src/types/
-├── FileFormat.ts               // Format detection result types
-├── ValidationResult.ts         // Validation outcome types
-└── SecurityTypes.ts           // Security validation types
-
-src/constants/
-└── FormatConstants.ts          // Magic numbers, size limits, patterns
+// New files needed:
+src/services/CacheService.ts              // Generic caching service
+src/services/OCRCacheService.ts           // OCR-specific caching
+src/types/CacheTypes.ts                   // Cache interfaces
 ```
 
-**Implementation Details:**
+**Cache Structure in book-artifacts:**
+```
+<author>#<title>#<book-index>/phase1/
+├── ocr-cache.json                 // OCR results and metadata
+├── ocr-processing-info.json       // Processing parameters used
+├── file-hash.txt                 // Original file hash for validation
+└── pages/                        // Optional: individual page results
+    ├── page-001.json
+    ├── page-002.json
+    └── ...
+```
 
-**Magic Number Detection:**
+#### 1.2 Integration Points
+- [ ] Update `OCRService.performOCR()` to check cache first
+- [ ] Update `TextExtractor` to use cached results when available
+- [ ] Add cache invalidation when file changes detected
+- [ ] Add CLI option to force cache refresh: `--no-cache`
 
+#### 1.3 Cache Benefits
+- **Performance:** Avoid expensive OCR reprocessing (300+ page books take 10+ minutes)
+- **Consistency:** Same OCR results across runs
+- **Development:** Faster iteration during development
+- **Cost Efficiency:** Reduce computational costs
+
+### Priority 2: Complete Phase 2 (Text Normalization)
+
+**Duration:** 2-3 weeks
+**Status:** HIGH PRIORITY
+
+#### 2.1 DeepSeek API Integration
+**Deliverables:**
+- [ ] Implement DeepSeek API client with error handling
+- [ ] Text cleaning prompts optimized for German philosophical texts
+- [ ] Batch processing for large documents
+- [ ] Rate limiting and retry logic
+- [ ] **Exit on failure policy** (no fallbacks per user rules)
+
+**Key Components:**
 ```typescript
-const MAGIC_NUMBERS = {
-    PDF: [0x25, 0x50, 0x44, 0x46], // %PDF
-    EPUB: [0x50, 0x4b, 0x03, 0x04], // ZIP signature
-    UTF8_BOM: [0xef, 0xbb, 0xbf], // UTF-8 BOM
-    UTF16_LE: [0xff, 0xfe], // UTF-16 LE BOM
-};
+src/services/DeepSeekService.ts           // API client
+src/services/TextNormalizationService.ts  // Text processing orchestrator
+src/templates/DeepSeekPrompts.ts          // Optimized prompts
 ```
 
-**File Size Validation:**
+#### 2.2 Structured Text Processing
+**Deliverables:**
+- [ ] Heading level normalization (H1, H2, H3)
+- [ ] Paragraph structure optimization
+- [ ] Footnote processing and formatting
+- [ ] German umlaut and special character handling
 
--   PDF files: Maximum 10MB (configurable)
--   EPUB files: Maximum 5MB (typical size)
--   Text files: Maximum 1MB (reasonable limit)
+#### 2.3 Integration with Existing Pipeline
+- [ ] Replace TextNormalizationPhase placeholder
+- [ ] Update PipelineManager to include real Phase 2
+- [ ] Results saved to `results/` directory with intermediate outputs
+- [ ] Integration with book-artifacts for caching normalized results
 
-**Error Message Examples:**
+### Priority 3: Testing & Quality Assurance
 
-```
-- "File format mismatch: Extension suggests PDF but content is ZIP"
-- "EPUB file is DRM-protected and cannot be processed"
-- "PDF file exceeds maximum size limit of 10MB"
-- "Text file contains binary content and cannot be processed"
-- "File appears to be corrupted or malformed"
-```
+**Duration:** 1-2 weeks
+**Status:** MEDIUM PRIORITY
 
-**Testing:**
-
-**Format Detection Tests:**
-
--   [ ] Magic number detection accuracy (100% for supported formats)
--   [ ] Extension vs. content mismatch detection
--   [ ] Corrupted file handling
--   [ ] Security validation (oversized files, malicious content)
--   [ ] Performance testing with large files (up to 10MB)
-
-**Format-Specific Tests:**
-
--   [ ] PDF content type classification (text/image/hybrid)
--   [ ] EPUB DRM detection accuracy
--   [ ] Text encoding detection (UTF-8, Latin1, Windows-1252)
--   [ ] Filename parsing with various patterns and edge cases
--   [ ] Metadata extraction accuracy and consistency
-
-**Edge Cases:**
-
--   [ ] Empty files and minimum size validation
--   [ ] Files with multiple extensions (e.g., .txt.pdf)
--   [ ] Unicode characters in filenames
--   [ ] Files with missing or invalid metadata
--   [ ] Network-mounted files and permission issues
-
-**Success Criteria:**
-
--   100% accuracy for supported format detection
--   Zero false positives for DRM-protected EPUB detection
--   Sub-second validation for files up to 10MB
--   Clear, actionable error messages for all failure cases
--   Graceful handling of all file corruption scenarios
-
-### 2.2 PDF Text Extraction
-
-**Duration:** 4-5 days
+#### 3.1 Comprehensive Test Suite
+**Current Status:** Basic test framework exists, needs comprehensive tests
 
 **Deliverables:**
-
--   [ ] Implement PDF text extraction using pdf-parse
--   [ ] Build embedded text quality assessment
--   [ ] Create page-by-page text extraction
--   [ ] Implement text structure preservation
--   [ ] Handle PDF metadata extraction
-
-**Key Components:**
-
--   `src/handlers/PDFHandler.ts`
--   `src/services/PDFTextExtractor.ts`
--   `src/services/TextQualityAssessor.ts`
--   `src/utils/PDFUtils.ts`
-
-**Features:**
-
--   Extract embedded text with position data
--   Assess text quality and completeness
--   Handle multi-column layouts
--   Extract PDF metadata (title, author, creation date)
--   Preserve paragraph and section structure
-
-### 2.3 EPUB Text Extraction
-
-**Duration:** 3-4 days
-
-**Deliverables:**
-
--   [ ] Implement EPUB parsing and text extraction
--   [ ] Handle EPUB structure and navigation
--   [ ] Extract embedded images and media
--   [ ] Process EPUB metadata
--   [ ] Handle different EPUB versions
-
-**Key Components:**
-
--   `src/handlers/EPUBHandler.ts`
--   `src/services/EPUBProcessor.ts`
--   `src/utils/EPUBUtils.ts`
-
-**Features:**
-
--   Parse EPUB structure (OPF, NCX, XHTML)
--   Extract text content preserving structure
--   Handle embedded CSS and formatting
--   Extract table of contents
--   Process EPUB metadata
-
-### 2.4 Plain Text Processing
-
-**Duration:** 2-3 days
-
-**Deliverables:**
-
--   [ ] Implement plain text file processing
--   [ ] Create encoding detection and handling
--   [ ] Build text structure analysis
--   [ ] Handle different text formats
--   [ ] Implement text cleanup utilities
-
-**Key Components:**
-
--   `src/handlers/TextHandler.ts`
--   `src/services/TextProcessor.ts`
--   `src/utils/EncodingDetector.ts`
-
-**Features:**
-
--   Auto-detect text encoding
--   Handle various line endings
--   Basic structure detection
--   Text normalization
--   Character encoding conversion
-
-## Phase 3: OCR Integration & Text Comparison
-
-### 3.1 OCR Service Integration
-
-**Duration:** 4-5 days
-
-**Deliverables:**
-
--   [ ] Integrate Tesseract OCR engine
--   [ ] Implement PDF to image conversion
--   [ ] Create OCR quality assessment
--   [ ] Build OCR result processing
--   [ ] Handle multilingual OCR
-
-**Key Components:**
-
--   `src/services/OCRService.ts`
--   `src/services/ImageProcessor.ts`
--   `src/utils/OCRUtils.ts`
--   `src/types/OCRTypes.ts`
-
-**Features:**
-
--   Convert PDF pages to images
--   OCR processing with Tesseract
--   Language detection and optimization
--   OCR confidence scoring
--   Result formatting and cleanup
-
-### 3.2 Text Comparison Engine
-
-**Duration:** 3-4 days
-
-**Deliverables:**
-
--   [ ] Implement text similarity comparison
--   [ ] Create diff generation system
--   [ ] Build quality scoring algorithms
--   [ ] Handle text alignment and matching
--   [ ] Generate comparison reports
-
-**Key Components:**
-
--   `src/services/TextComparator.ts`
--   `src/services/DiffGenerator.ts`
--   `src/algorithms/TextSimilarity.ts`
--   `src/types/ComparisonTypes.ts`
-
-**Features:**
-
--   Compare embedded text vs OCR text
--   Generate detailed diff reports
--   Quality scoring based on comparison
--   Identify problematic sections
--   Suggest best text source
-
-### 3.3 Smart Text Selection
-
-**Duration:** 2-3 days
-
-**Deliverables:**
-
--   [ ] Implement intelligent text selection
--   [ ] Create hybrid text combination
--   [ ] Build confidence-based selection
--   [ ] Handle section-by-section selection
--   [ ] Generate selection reports
-
-**Key Components:**
-
--   `src/services/TextSelector.ts`
--   `src/algorithms/ConfidenceScoring.ts`
--   `src/services/HybridTextBuilder.ts`
-
-**Features:**
-
--   Select best text source per section
--   Combine OCR and embedded text
--   Confidence-based decision making
--   Manual override capabilities
--   Selection audit trail
-
-## Phase 4: Basic Pipeline Implementation
-
-### 4.1 Phase 1 Pipeline Implementation
-
-**Duration:** 5-6 days
-
-**Deliverables:**
-
--   [ ] Implement complete Phase 1 pipeline
--   [ ] Integrate all text extraction services
--   [ ] Create metadata generation system
--   [ ] Build chapter recognition
--   [ ] Implement footnote extraction
-
-**Key Components:**
-
--   `src/pipeline/phases/Phase1DataLoading.ts`
--   `src/services/MetadataGenerator.ts`
--   `src/services/ChapterRecognizer.ts`
--   `src/services/FootnoteExtractor.ts`
-
-**Features:**
-
--   Complete text loading pipeline
--   Comprehensive metadata generation
--   Chapter and section detection
--   Footnote extraction and processing
--   Quality assessment and reporting
-
-### 4.2 Configuration System Integration
-
-**Duration:** 3-4 days
-
-**Deliverables:**
-
--   [ ] Implement auto-loading configuration system
--   [ ] Create author-specific configurations
--   [ ] Build configuration validation
--   [ ] Handle configuration inheritance
--   [ ] Create configuration templates
-
-**Key Components:**
-
--   `src/services/ConfigService.ts` (enhanced)
--   `src/validators/ConfigValidator.ts`
--   `src/templates/ConfigTemplate.ts`
--   `configs/` - Configuration files
-
-**Features:**
-
--   Auto-load configs based on filename
--   Author-specific settings
--   Default configuration fallback
--   Configuration validation and error handling
--   Template-based config generation
-
-### 4.3 CLI Interface Completion
-
-**Duration:** 2-3 days
-
-**Deliverables:**
-
--   [ ] Complete CLI command implementation
--   [ ] Add progress reporting and logging
--   [ ] Implement verbose and debug modes
--   [ ] Create output formatting options
--   [ ] Add help and documentation
-
-**Key Components:**
-
--   `src/cli/commands/CleanBookCommand.ts`
--   `src/cli/formatters/` - Output formatters
--   `src/cli/helpers/` - CLI utilities
-
-**Features:**
-
--   Complete clean-book command
--   Progress bars and status updates
--   Verbose logging modes
--   Multiple output formats
--   Comprehensive help system
-
-## Phase 5: Testing & Quality Assurance
-
-### 5.1 Comprehensive Testing Suite
-
-**Duration:** 4-5 days
-
-**Deliverables:**
-
--   [ ] Unit tests for all components (90% coverage)
--   [ ] Integration tests for file processing
--   [ ] End-to-end CLI workflow tests
--   [ ] Performance benchmarking tests
--   [ ] Error handling and edge case tests
+- [ ] Unit tests for OCR caching system
+- [ ] Integration tests for complete pipeline
+- [ ] Test fixtures for various book formats
+- [ ] Performance benchmarking tests
+- [ ] Error handling tests
 
 **Testing Structure:**
-
 ```
 tests/
 ├── unit/
-│   ├── services/
-│   ├── handlers/
-│   └── utils/
+│   ├── services/CacheService.test.ts
+│   ├── services/OCRCacheService.test.ts
+│   └── pipeline/DataLoadingPhase.test.ts
 ├── integration/
-│   ├── pipeline/
-│   └── formats/
-├── e2e/
-│   └── cli/
+│   ├── pipeline/complete-pipeline.test.ts
+│   └── caching/ocr-cache-integration.test.ts
 ├── performance/
+│   └── ocr-performance.test.ts
 └── fixtures/
-    ├── pdfs/
-    ├── epubs/
-    └── configs/
+    ├── pdfs/sample-books/
+    └── expected-outputs/
 ```
 
-### 5.2 Performance Optimization
+### Priority 4: Documentation Updates
 
-**Duration:** 3-4 days
-
-**Deliverables:**
-
--   [ ] Memory usage optimization
--   [ ] Processing speed improvements
--   [ ] Resource management enhancements
--   [ ] Caching mechanisms
--   [ ] Performance monitoring
-
-**Key Areas:**
-
--   Large file processing optimization
--   Memory-efficient text handling
--   OCR processing optimization
--   Parallel processing implementation
--   Resource cleanup and management
-
-### 5.3 Documentation & Examples
-
-**Duration:** 2-3 days
+**Duration:** 1 week
+**Status:** LOW PRIORITY
 
 **Deliverables:**
+- [ ] Update README.md with current functionality
+- [ ] API documentation for new services
+- [ ] Usage examples for OCR caching
+- [ ] Developer setup guide updates
 
--   [ ] API documentation
--   [ ] Usage examples and tutorials
--   [ ] Configuration guide
--   [ ] Troubleshooting guide
--   [ ] Developer documentation
+## 📋 UPDATED PROJECT STRUCTURE
 
-**Documentation:**
+**Current Structure (Reflects Reality):**
+```
+src/
+├── cli/
+│   └── CleanBookCommand.ts              # ✅ Complete CLI interface
+├── constants.ts                         # ✅ All constants centralized
+├── handlers/                           # ✅ Error and utility handlers
+├── index.ts                            # ✅ Main entry point
+├── pipeline/
+│   ├── AbstractPhase.ts                # ✅ Base phase class
+│   ├── PipelineManager.ts              # ✅ Complete orchestrator
+│   ├── DataLoadingPhase.ts             # ✅ Phase 1 implementation
+│   ├── TextNormalizationPhase.ts       # 🔄 Placeholder
+│   ├── EvaluationPhase.ts              # 🔄 Placeholder  
+│   ├── AIEnhancementsPhase.ts          # 🔄 Placeholder
+│   └── phase_1_Text_Extraction_And_Format_Processing/
+│       ├── step_1_File_Format_Detection_And_Validation/
+│       │   ├── FileFormatDetector.ts   # ✅ Complete
+│       │   └── ExecutionSummary.ts     # ✅ Complete
+│       ├── step_2_Text_Extraction/
+│       │   ├── TextExtractor.ts        # ✅ Complete with OCR
+│       │   ├── OCRService.ts           # ✅ Complete Tesseract integration
+│       │   └── ExecutionSummary.ts     # ✅ Complete
+│       ├── step_3_Text_Quality_Enhancement/
+│       │   ├── TextComparator.ts       # ✅ Complete
+│       │   ├── QualityValidator.ts     # ✅ Complete
+│       │   └── TextEnhancer.ts         # ✅ Complete
+│       └── step_4_Structure_Recognition/
+│           ├── ChapterRecognizer.ts    # 🔄 Partial
+│           └── ExecutionSummary.ts     # 🔄 Basic
+├── services/
+│   ├── LoggerService.ts                # ✅ Complete with tagged logging
+│   ├── ConfigService.ts                # ✅ Complete YAML config loading
+│   ├── BookStructureService.ts         # ✅ Complete book structure management
+│   ├── StructureAnalyzer.ts            # ✅ Complete analysis service
+│   ├── CacheService.ts                 # ❌ NEEDS IMPLEMENTATION
+│   └── OCRCacheService.ts              # ❌ NEEDS IMPLEMENTATION
+├── types/
+│   ├── index.ts                        # ✅ Complete type definitions
+│   └── CacheTypes.ts                   # ❌ NEEDS IMPLEMENTATION
+└── utils/
+    ├── FileUtils.ts                    # ✅ Complete file operations
+    ├── AppError.ts                     # ✅ Complete error handling
+    └── ChalkUtils.ts                   # ✅ Complete CLI formatting
+```
 
--   README.md with quick start guide
--   API reference documentation
--   Configuration examples
--   Common use cases and examples
--   Developer contribution guide
+**Book-Artifacts Structure (Current + Planned):**
+```
+book-artifacts/
+├── default-book-manifest.yaml         # ✅ Template
+└── <author>#<title>#<book-index>/
+    ├── book-manifest.yaml              # ✅ Populated with metadata
+    ├── phase1/                         # ❌ NEEDS OCR CACHE IMPLEMENTATION
+    │   ├── ocr-cache.json             # 📋 Planned: OCR results cache
+    │   ├── ocr-processing-info.json   # 📋 Planned: Processing parameters
+    │   └── file-hash.txt              # 📋 Planned: File validation
+    ├── phase2/                         # 📋 Future: Normalized text cache
+    └── phase3/                         # 📋 Future: Enhanced text cache
+```
 
-## Phase 6: Advanced Features & Phase 2 Preparation
+## 🚀 IMPLEMENTATION ROADMAP
 
-### 6.1 Error Recovery & Resilience
+### Sprint 1: OCR Caching (Weeks 1-2)
+- [ ] Design and implement OCR caching system
+- [ ] Integration with existing OCRService
+- [ ] Testing and validation
+- [ ] CLI cache management options
 
-**Duration:** 3-4 days
+### Sprint 2: DeepSeek Integration (Weeks 3-4)  
+- [ ] DeepSeek API client implementation
+- [ ] Text normalization service
+- [ ] German text optimization
+- [ ] Phase 2 pipeline integration
 
-**Deliverables:**
+### Sprint 3: Testing & Documentation (Weeks 5-6)
+- [ ] Comprehensive test suite
+- [ ] Performance benchmarking
+- [ ] Documentation updates
+- [ ] User acceptance testing
 
--   [ ] Implement robust error handling
--   [ ] Create recovery mechanisms
--   [ ] Build retry logic for external services
--   [ ] Handle partial processing failures
--   [ ] Create error reporting system
+### Sprint 4: Phase 3-4 Implementation (Weeks 7-10)
+- [ ] Evaluation phase implementation
+- [ ] AI enhancements phase
+- [ ] Final integration testing
+- [ ] Production readiness
 
-### 6.2 Performance Monitoring & Metrics
+## 📊 SUCCESS METRICS
 
-**Duration:** 2-3 days
+### Immediate (OCR Caching):
+- [ ] OCR processing time reduced from 10+ minutes to <30 seconds on cache hit
+- [ ] Cache hit rate >90% for repeated processing
+- [ ] Zero false cache hits (perfect invalidation)
 
-**Deliverables:**
+### Short-term (Phase 2):
+- [ ] DeepSeek integration working reliably
+- [ ] Text normalization improving readability scores by >20%
+- [ ] German text processing accuracy >95%
 
--   [ ] Processing time tracking
--   [ ] Memory usage monitoring
--   [ ] Quality metrics collection
--   [ ] Performance reporting
--   [ ] Bottleneck identification
+### Long-term (Complete Pipeline):
+- [ ] End-to-end processing time <5 minutes for cached books
+- [ ] Quality scores >85% for processed texts
+- [ ] 100% pipeline success rate for supported formats
 
-### 6.3 Phase 2 Foundation
+## 🔧 DEVELOPMENT GUIDELINES
 
-**Duration:** 3-4 days
+### OCR Caching Requirements:
+- **Cache Invalidation:** File hash + processing parameters change
+- **Cache Structure:** JSON format with metadata for easy inspection
+- **Error Handling:** Graceful fallback to fresh OCR on cache corruption
+- **CLI Integration:** `--no-cache` flag for forced reprocessing
 
-**Deliverables:**
+### DeepSeek Integration Requirements:
+- **Failure Policy:** Exit application on API failure (no fallbacks)
+- **Rate Limiting:** Respect API limits with backoff
+- **Prompt Optimization:** German philosophical text specific prompts
+- **Batch Processing:** Handle large documents efficiently
 
--   [ ] Basic text normalization framework
--   [ ] DeepSeek API integration foundation
--   [ ] Safe text replacement system
--   [ ] Heading normalization utilities
--   [ ] Spell checking preparation
+### Code Quality Standards:
+- **No `any` types:** Maintain strict TypeScript typing [[memory:3633241]]
+- **Constants centralization:** All string constants in `constants.ts` [[memory:3633241]]
+- **Intermediate results:** Always save to `results/` directory [[memory:3652284]]
+- **Pipeline caching:** Use `book-artifacts/` for expensive operations
 
-## Implementation Timeline
+## 🎯 NEXT ACTIONS
 
-### Total Duration: 12-14 weeks
+1. **Start OCR Caching Implementation** (This week)
+   - Design cache data structures
+   - Implement CacheService and OCRCacheService
+   - Update OCRService to check cache first
+   
+2. **Plan DeepSeek Integration** (Next sprint)
+   - Research optimal prompts for German philosophical texts
+   - Design API client with proper error handling
+   - Plan text normalization algorithms
 
-**Phase 1 (Weeks 1-2):** Foundation & Architecture
-**Phase 2 (Weeks 3-5):** Text Extraction & Format Processing
-**Phase 3 (Weeks 6-8):** OCR Integration & Text Comparison
-**Phase 4 (Weeks 9-10):** Basic Pipeline Implementation
-**Phase 5 (Weeks 11-12):** Testing & Quality Assurance
-**Phase 6 (Weeks 13-14):** Advanced Features & Phase 2 Preparation
+3. **Testing Strategy** (Ongoing)
+   - Set up test fixtures with real book samples
+   - Implement performance benchmarking
+   - Create integration test suite
 
-## Success Criteria
-
-### Phase 1 Success Metrics:
-
--   [ ] All core services operational
--   [ ] CLI framework functional
--   [ ] Configuration system working
--   [ ] Basic pipeline structure complete
-
-### Phase 2 Success Metrics:
-
--   [ ] PDF text extraction working reliably
--   [ ] EPUB processing functional
--   [ ] Text format handling complete
--   [ ] File validation system operational
-
-### Phase 3 Success Metrics:
-
--   [ ] OCR integration working
--   [ ] Text comparison producing accurate results
--   [ ] Smart text selection functional
--   [ ] Quality assessment reliable
-
-### Phase 4 Success Metrics:
-
--   [ ] Complete Phase 1 pipeline operational
--   [ ] Configuration system fully integrated
--   [ ] CLI interface complete and user-friendly
--   [ ] Metadata generation working
-
-### Phase 5 Success Metrics:
-
--   [ ] 90%+ test coverage achieved
--   [ ] Performance benchmarks met
--   [ ] Error handling robust
--   [ ] Documentation complete
-
-### Phase 6 Success Metrics:
-
--   [ ] Error recovery mechanisms working
--   [ ] Performance monitoring operational
--   [ ] Foundation for Phase 2 ready
--   [ ] System ready for production use
-
-## Risk Mitigation
-
-### Technical Risks:
-
--   **OCR Accuracy:** Implement multiple OCR engines as fallbacks
--   **Large File Processing:** Implement streaming and chunking
--   **Memory Usage:** Implement proper resource management
--   **PDF Complexity:** Handle various PDF formats and structures
-
-### Dependencies:
-
--   **External Libraries:** Keep dependencies minimal and well-maintained
--   **OCR Engine:** Ensure Tesseract is properly configured
--   **Node.js Version:** Target stable LTS versions
--   **System Resources:** Monitor and optimize resource usage
-
-### Quality Assurance:
-
--   **Testing:** Comprehensive test suite from early phases
--   **Code Review:** Regular code reviews and pair programming
--   **Documentation:** Keep documentation updated throughout
--   **User Feedback:** Early user testing and feedback integration
-
-## Next Steps
-
-1. **Phase 1.1 Start:** Initialize project structure and setup
-2. **Milestone Reviews:** Weekly progress reviews and adjustments
-3. **User Testing:** Early user feedback collection
-4. **Performance Monitoring:** Continuous performance tracking
-5. **Documentation:** Maintain documentation throughout development
-
-This implementation plan provides a structured approach to building the Book Cleaner CLI, ensuring each phase builds upon the previous one while maintaining high quality and comprehensive testing throughout the development process.
+This updated plan reflects the actual current state of the project and provides a clear roadmap for implementing the crucial OCR caching system and completing the remaining phases.

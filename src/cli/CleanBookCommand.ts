@@ -1,7 +1,6 @@
 import path from "node:path";
 import {
   APP_DESCRIPTION,
-  APP_NAME,
   APP_VERSION,
   CLI_ALIASES,
   CLI_OPTIONS,
@@ -10,7 +9,6 @@ import {
   ERROR_CODES,
   LOG_COMPONENTS,
   LOG_LEVELS,
-  MESSAGE_TEMPLATES,
   PIPELINE_PHASES,
 } from "@/constants";
 import { AIEnhancementsPhase } from "@/pipeline/AIEnhancementsPhase";
@@ -23,18 +21,16 @@ import {
   type LoggerService,
   createDefaultLoggerService,
 } from "@/services/LoggerService";
-import { formatLogMessage } from "@/services/LoggerService";
-import {
-  type CLIOptions,
-  type FilenameMetadata,
-  type LogLevel,
-  PipelineConfig,
-  type PipelineState,
-  type ProgressInfo,
+import type {
+  CLIOptions,
+  FilenameMetadata,
+  LogLevel,
+  PipelineState,
+  ProgressInfo,
 } from "@/types";
 import { AppError, isAppError } from "@/utils/AppError";
+import { ChalkUtils } from "@/utils/ChalkUtils";
 import { FileUtils } from "@/utils/FileUtils";
-import chalk from "chalk";
 import { Command } from "commander";
 // import ora, { type Ora } from "ora"; // Removed to fix interactive prompt issues
 
@@ -74,7 +70,7 @@ export class CleanBookCommand {
    * Register all pipeline phases
    */
   private registerPipelinePhases(): void {
-    const dataLoadingPhase = new DataLoadingPhase(this.logger);
+    const dataLoadingPhase = new DataLoadingPhase(this.logger, this.configService);
     const textNormalizationPhase = new TextNormalizationPhase(this.logger);
     const evaluationPhase = new EvaluationPhase(this.logger);
     const aiEnhancementsPhase = new AIEnhancementsPhase(this.logger);
@@ -190,16 +186,14 @@ export class CleanBookCommand {
       const result = await this.pipelineManager.execute(pipelineConfig, metadata);
 
       // Report success
-      console.log(chalk.green("✓ Book cleaning completed successfully!"));
-      console.log(chalk.blue(`Output directory: ${pipelineConfig.outputDir}`));
-      console.log(
-        chalk.blue(
-          `Processing time: ${this.formatDuration(result.startTime, result.endTime)}`,
-        ),
+      await ChalkUtils.success("✓ Book cleaning completed successfully!");
+      await ChalkUtils.info(`Output directory: ${pipelineConfig.outputDir}`);
+      await ChalkUtils.info(
+        `Processing time: ${this.formatDuration(result.startTime, result.endTime)}`,
       );
 
       if (cliOptions.verbose) {
-        this.printProcessingStatistics(result);
+        await this.printProcessingStatistics(result);
       }
     } catch (error) {
       await this.handleError(error);
@@ -363,10 +357,11 @@ export class CleanBookCommand {
     const cliLogger = this.logger.getCLILogger(LOG_COMPONENTS.CLI_COMMAND);
 
     if (isAppError(error)) {
+      const chalk = await ChalkUtils.getChalk();
       console.error(chalk.red("✗ Error:"), error.message);
 
       if (error.context) {
-        console.error(chalk.gray("Context:"), JSON.stringify(error.context, null, 2));
+        await ChalkUtils.gray(`Context: ${JSON.stringify(error.context, null, 2)}`);
       }
 
       cliLogger.error(
@@ -377,10 +372,11 @@ export class CleanBookCommand {
       );
 
       if (error.cause) {
-        console.error(chalk.gray("Caused by:"), error.cause.message);
+        await ChalkUtils.gray(`Caused by: ${error.cause.message}`);
       }
     } else {
       const errorMessage = error instanceof Error ? error.message : String(error);
+      const chalk = await ChalkUtils.getChalk();
       console.error(chalk.red("✗ Unexpected error:"), errorMessage);
 
       cliLogger.error(
@@ -392,7 +388,7 @@ export class CleanBookCommand {
       );
     }
 
-    console.error(chalk.yellow("\nTip: Run with --verbose for more details"));
+    await ChalkUtils.warn("\nTip: Run with --verbose for more details");
   }
 
   /**
@@ -416,19 +412,17 @@ export class CleanBookCommand {
   /**
    * Print processing statistics
    */
-  private printProcessingStatistics(result: PipelineState): void {
-    console.log(chalk.cyan("\n📊 Processing Statistics:"));
-    console.log(chalk.blue(`Phases completed: ${result.results.length}`));
-    console.log(
-      chalk.blue(
-        `Total processing time: ${this.formatDuration(result.startTime, result.endTime)}`,
-      ),
+  private async printProcessingStatistics(result: PipelineState): Promise<void> {
+    await ChalkUtils.cyan("\n📊 Processing Statistics:");
+    await ChalkUtils.info(`Phases completed: ${result.results.length}`);
+    await ChalkUtils.info(
+      `Total processing time: ${this.formatDuration(result.startTime, result.endTime)}`,
     );
 
     for (const phaseResult of result.results) {
       const duration = phaseResult.duration ? `${phaseResult.duration}ms` : "N/A";
       const status = phaseResult.status === "completed" ? "✓" : "✗";
-      console.log(chalk.blue(`  ${status} ${phaseResult.name}: ${duration}`));
+      await ChalkUtils.info(`  ${status} ${phaseResult.name}: ${duration}`);
     }
   }
 

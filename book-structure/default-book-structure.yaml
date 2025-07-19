@@ -7,12 +7,11 @@ original:
   - pages:
 text-before-first-chapter:
 text-after-last-chapter:
-first-author-content-page:
-last-author-content-page:
 
 header-type:
   - level1:
-    - format:
+    - format: [ERSTER|ZWEITER ... FÜNFZIGSTER] VORTRAG [Berlin], dd. MMMM yyyy
+    - example: "Berlin, 18. Juli 1921"
 
 structure:
   - type: chapter

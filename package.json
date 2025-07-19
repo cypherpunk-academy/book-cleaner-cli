@@ -20,6 +20,7 @@
     "analyze-structure": "node -r @swc-node/register scripts/analyze-book-structure.ts",
     "test-format-detection": "node -r @swc-node/register scripts/test-format-detection.ts",
     "test:step1-2": "node -r @swc-node/register scripts/test-step1-2.ts",
+    "test:pipeline-results": "node -r @swc-node/register scripts/test-pipeline-results.ts",
     "fix-ts": "node scripts/fix-ts-resolution.js",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
@@ -46,10 +47,11 @@
     "mime-types": "^2.1.35",
     "ora": "^8.0.1",
     "pdf-parse": "^1.1.1",
+    "pdf2pic": "^3.2.0",
     "pino": "^8.17.2",
     "pino-pretty": "^10.3.1",
     "sharp": "^0.33.1",
-    "tesseract.js": "^5.0.4",
+    "tesseract.js": "^5.1.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

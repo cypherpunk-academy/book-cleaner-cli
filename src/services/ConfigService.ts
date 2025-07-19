@@ -4,8 +4,8 @@ import {
   AI_PROVIDERS,
   CONFIG_FILE_EXTENSION,
   DEFAULT_AI_CONFIG,
+  DEFAULT_ARTIFACTS_DIR,
   DEFAULT_CHAPTER_MARKERS,
-  DEFAULT_CONFIG_DIR,
   DEFAULT_CONFIG_FILE,
   DEFAULT_FILENAME_PATTERN,
   DEFAULT_FOOTNOTE_MARKERS,
@@ -38,7 +38,7 @@ export class ConfigService {
   private readonly configCache: Map<string, BookConfig> = new Map();
   private readonly bookStructureService: BookStructureService;
 
-  constructor(logger: LoggerService, configDir: string = DEFAULT_CONFIG_DIR) {
+  constructor(logger: LoggerService, configDir: string = DEFAULT_ARTIFACTS_DIR) {
     this.logger = logger;
     this.configDir = configDir;
     this.bookStructureService = new BookStructureService(logger, configDir);

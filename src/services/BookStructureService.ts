@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import {
   CONFIG_FILE_EXTENSION,
-  DEFAULT_CONFIG_DIR,
+  DEFAULT_ARTIFACTS_DIR,
   DEFAULT_CONFIG_FILE,
   ERROR_CODES,
   ERROR_MESSAGES,
@@ -57,7 +57,7 @@ export class BookStructureService {
   private readonly configDir: string;
   private lastFormatResult?: FileFormatResult;
 
-  constructor(logger: LoggerService, configDir: string = DEFAULT_CONFIG_DIR) {
+  constructor(logger: LoggerService, configDir: string = DEFAULT_ARTIFACTS_DIR) {
     this.logger = logger;
     this.configDir = configDir;
   }

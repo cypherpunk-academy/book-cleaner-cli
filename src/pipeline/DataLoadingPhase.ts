@@ -1,14 +1,14 @@
-import { ERROR_CODES, LOG_COMPONENTS } from "@/constants";
-import type { LoggerService } from "@/services/LoggerService";
+import { ERROR_CODES, LOG_COMPONENTS } from "../constants";
+import type { ConfigService } from "../services/ConfigService";
+import type { LoggerService } from "../services/LoggerService";
 import type {
   FileFormatResult,
   FileInfo,
-  FilenameMetadata,
   PipelineState,
   ProgressCallback,
-} from "@/types";
-import { AppError } from "@/utils/AppError";
-import { FileUtils } from "@/utils/FileUtils";
+} from "../types";
+import { AppError } from "../utils/AppError";
+import { FileUtils } from "../utils/FileUtils";
 import { AbstractPhase } from "./AbstractPhase";
 import { FileFormatDetector } from "./phase_1_Text_Extraction_And_Format_Processing/step_1_File_Format_Detection_And_Validation/FileFormatDetector";
 import { TextExtractor } from "./phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/TextExtractor";
@@ -26,10 +26,10 @@ export class DataLoadingPhase extends AbstractPhase {
   private textExtractor: TextExtractor;
   private fileUtils: FileUtils;
 
-  constructor(logger: LoggerService) {
+  constructor(logger: LoggerService, configService: ConfigService) {
     super(logger);
     this.formatDetector = new FileFormatDetector(logger);
-    this.textExtractor = new TextExtractor(logger, "./book-structure");
+    this.textExtractor = new TextExtractor(logger, configService, "./book-artifacts");
     this.fileUtils = new FileUtils(logger);
   }
 
@@ -126,20 +126,19 @@ export class DataLoadingPhase extends AbstractPhase {
       // Parse filename metadata
       const metadata = this.fileUtils.parseFilename(state.inputFile);
 
-      // Determine file type and boundaries
+      // Determine file type
       const fileType = this.determineFileType(formatResult);
-      const hasPages = this.hasPages(formatResult);
 
       // Extract text using TextExtractor
       const textExtractionResult = await this.textExtractor.extractText(
         fileInfo,
-        metadata,
         {
-          hasPages,
+          hasTextBoundaries: true,
           boundaries: {}, // Will be populated by TextExtractor from book structure
           fileType,
-          outputDir: state.outputDir,
+          // No outputDir - TextExtractor always uses book-artifacts directory for intermediate results
         },
+        metadata,
       );
 
       // Update progress
@@ -154,7 +153,7 @@ export class DataLoadingPhase extends AbstractPhase {
         });
       }
 
-      // Store results in pipeline state
+      // Store processing results in pipeline state
       const result = {
         phase: "data_loading",
         success: true,
@@ -219,12 +218,5 @@ export class DataLoadingPhase extends AbstractPhase {
       return "epub";
     }
     return "text";
-  }
-
-  /**
-   * Determine if file has pages
-   */
-  private hasPages(formatResult: FileFormatResult): boolean {
-    return formatResult.format === "pdf" || (formatResult.metadata?.pageCount ?? 0) > 0;
   }
 }

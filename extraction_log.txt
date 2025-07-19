@@ -1,0 +1,203 @@
+(node:39790) ExperimentalWarning: CommonJS module /opt/homebrew/lib/node_modules/npm/node_modules/debug/src/node.js is loading ES Module /opt/homebrew/lib/node_modules/npm/node_modules/supports-color/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+> book-cleaner-cli@0.1.0 dev
+> node -r @swc-node/register src/index.ts clean-book tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf
+
+(node:39806) ExperimentalWarning: CommonJS module /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/src/cli/CleanBookCommand.ts is loading ES Module /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/node_modules/chalk/source/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Initializing...
+Data Loading & Format Detection: Starting phase (25%)
+Data Loading & Format Detection: Detecting file format... (25%)
+[2025-07-18 13:09:50] [32mINFO[39m: [36mFile format detection completed[39m
+    component: "FileHandler"
+    tag: "text_extraction"
+    filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+    detectedFormat: "pdf"
+    confidence: 0.95
+    isValid: true
+    issues: [
+      "PDF has mixed content (text and 350 images)"
+    ]
+    contentType: "hybrid"
+[2025-07-18 13:09:50] [32mINFO[39m: [36mConfiguration loaded successfully[39m
+    component: "ConfigService"
+    tag: "config"
+    author: "Rudolf Steiner"
+    title: "Einleitungen zu Goethes Naturwissenschaftlichen Schriften"
+    configKey: "Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1"
+[2025-07-18 13:09:50] [32mINFO[39m: [36mStarting book cleaning process[39m
+    component: "CLICommand"
+    tag: "cli"
+    inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+    outputDir: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output"
+    author: "Rudolf Steiner"
+    title: "Einleitungen zu Goethes Naturwissenschaftlichen Schriften"
+[2025-07-18 13:09:50] [32mINFO[39m: [36mStarting processing of /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+    phases: [
+      "data_loading",
+      "text_normalization",
+      "evaluation",
+      "ai_enhancements"
+    ]
+[2025-07-18 13:09:50] [32mINFO[39m: [36mStarting phase 1: Data Loading & Format Detection[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 1
+    phaseName: "Data Loading & Format Detection"
+[2025-07-18 13:09:50] [32mINFO[39m: [36mStarting data loading phase[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+Data Loading & Format Detection: File format detected successfully (13%)
+Data Loading & Format Detection: Extracting text based on book structure... (15%)
+[2025-07-18 13:09:51] [32mINFO[39m: [36mFile format detection completed[39m
+    component: "FileHandler"
+    tag: "text_extraction"
+    filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+    detectedFormat: "pdf"
+    confidence: 0.95
+    isValid: true
+    issues: [
+      "PDF has mixed content (text and 350 images)"
+    ]
+    contentType: "hybrid"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting text extraction based on book structure[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    format: "pdf"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting text extraction based on book structure[39m
+    component: "PipelineManager"
+    tag: "text_extraction"
+    filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+    format: "pdf"
+    hasTextBoundaries: true
+    boundaries: {}
+Data Loading & Format Detection: Text extraction completed successfully (25%)
+Text Normalization & AI Cleaning: Starting phase (50%)
+Text Normalization & AI Cleaning: Normalizing text... (50%)
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStep 1.2 results saved to results directory[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+    textFile: "results/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1_phase1_step2.txt"
+    ocrFile: null
+    extractedLength: 578357
+    resultsDir: "results"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mData loading phase completed successfully[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    format: "pdf"
+    confidence: 0.95
+    extractedTextLength: 578357
+    textFiles: [
+      "results/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1_phase1_step2.txt"
+    ]
+[2025-07-18 13:09:51] [32mINFO[39m: [36mPhase 1 completed in 715ms[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 1
+    phaseName: "Data Loading & Format Detection"
+    duration: 715
+    metrics: {}
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting phase 2: Text Normalization & AI Cleaning[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 2
+    phaseName: "Text Normalization & AI Cleaning"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting text normalization phase (placeholder implementation)[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+Text Normalization & AI Cleaning: Text normalization completed (50%)
+Evaluation & Analysis: Starting phase (75%)
+Evaluation & Analysis: Evaluating processing quality... (75%)
+[2025-07-18 13:09:51] [32mINFO[39m: [36mText normalization phase completed (placeholder)[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mPhase 2 completed in 101ms[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 2
+    phaseName: "Text Normalization & AI Cleaning"
+    duration: 101
+    metrics: {}
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting phase 3: Evaluation & Analysis[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 3
+    phaseName: "Evaluation & Analysis"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting evaluation phase (placeholder implementation)[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+Evaluation & Analysis: Evaluation completed (75%)
+AI Enhancements: Starting phase (100%)
+AI Enhancements: Applying AI enhancements... (100%)
+[2025-07-18 13:09:51] [32mINFO[39m: [36mEvaluation phase completed (placeholder)[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mPhase 3 completed in 101ms[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 3
+    phaseName: "Evaluation & Analysis"
+    duration: 101
+    metrics: {}
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting phase 4: AI Enhancements[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 4
+    phaseName: "AI Enhancements"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mStarting AI enhancements phase (placeholder implementation)[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
+AI Enhancements: AI enhancements completed (100%)
+✓ Book cleaning completed successfully!
+Output directory: /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output
+Processing time: 1s
+[2025-07-18 13:09:51] [32mINFO[39m: [36mAI enhancements phase completed (placeholder)[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+[2025-07-18 13:09:51] [32mINFO[39m: [36mPhase 4 completed in 102ms[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    phase: 4
+    phaseName: "AI Enhancements"
+    duration: 102
+    metrics: {}
+[2025-07-18 13:09:51] [32mINFO[39m: [36mProcessing completed successfully in 1020ms[39m
+    component: "PipelineManager"
+    tag: "pipeline"
+    pipelineId: "956d1320-60dc-41ec-9628-6cbd7bdeb6d6"
+    duration: 1020
+    phases: 4
+npm notice
+npm notice New major version of npm available! 10.9.0 -> 11.4.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.2
+npm notice To update run: npm install -g npm@11.4.2
+npm notice

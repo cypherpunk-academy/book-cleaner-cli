@@ -4,6 +4,7 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { LOG_COMPONENTS, LOG_LEVELS } from "../src/constants";
 import { TextExtractor } from "../src/pipeline/phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/TextExtractor";
+import { ConfigService } from "../src/services/ConfigService";
 import { LoggerService } from "../src/services/LoggerService";
 import type { FileInfo, FilenameMetadata, LoggerConfig } from "../src/types";
 
@@ -27,8 +28,9 @@ async function testStep1_2() {
   // Initialize logger
   const logger = new LoggerService(loggerConfig);
 
-  // Initialize text extractor
-  const textExtractor = new TextExtractor(logger, "./book-structure");
+  // Initialize config service and text extractor
+  const configService = new ConfigService(logger, "./book-artifacts");
+  const textExtractor = new TextExtractor(logger, configService, "./book-artifacts");
 
   // Test with a sample file
   const testFile = "Novalis#Heinrich_von_Ofterdingen.pdf";
@@ -90,15 +92,19 @@ Appendix material that should be excluded.
     console.log("\n🔧 Testing text extraction with sample file...");
 
     try {
-      const result = await textExtractor.extractText(fileInfo, metadata, {
-        hasPages: false,
-        boundaries: {
-          textBefore: "This is text before the first chapter.",
-          textAfter: "This is text after the last chapter.",
+      const result = await textExtractor.extractText(
+        fileInfo,
+        {
+          hasTextBoundaries: true,
+          boundaries: {
+            textBefore: "This is text before the first chapter.",
+            textAfter: "This is text after the last chapter.",
+          },
+          fileType: "text",
+          outputDir: "./output",
         },
-        fileType: "text",
-        outputDir: "./results",
-      });
+        metadata,
+      );
 
       console.log("\n📊 Extraction Results:");
       console.log(

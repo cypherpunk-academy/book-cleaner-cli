@@ -32,11 +32,19 @@ export interface Step1_2ExecutionSummary {
       startFound: boolean;
       endFound: boolean;
     };
+    ocrMetadata?: {
+      confidence: number;
+      processingTime: number;
+      method: "embedded" | "ocr" | "hybrid";
+      language?: string;
+    };
   };
   metrics?: {
     extractionTimeMs: number;
     charactersProcessed: number;
     compressionRatio: number;
+    ocrProcessingTimeMs?: number;
+    ocrConfidence?: number;
   };
   error?: string;
 }
@@ -99,6 +107,14 @@ export function updateStep1_2ExecutionSummary(
   if (result.ocrFiles !== undefined) {
     output.ocrFiles = result.ocrFiles;
   }
+  if (result.ocrMetadata !== undefined) {
+    output.ocrMetadata = {
+      confidence: result.ocrMetadata.confidence,
+      processingTime: result.ocrMetadata.processingTime,
+      method: result.ocrMetadata.method,
+      language: result.ocrMetadata.language,
+    };
+  }
 
   return {
     ...summary,
@@ -110,6 +126,8 @@ export function updateStep1_2ExecutionSummary(
       extractionTimeMs,
       charactersProcessed: result.extractedText.length,
       compressionRatio: result.extractedText.length / summary.input.fileSize,
+      ocrProcessingTimeMs: result.ocrMetadata?.processingTime,
+      ocrConfidence: result.ocrMetadata?.confidence,
     },
   };
 }

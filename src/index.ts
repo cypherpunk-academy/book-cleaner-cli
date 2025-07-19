@@ -5,7 +5,7 @@ import { APP_NAME, APP_VERSION, ENV_VARS, LOG_LEVELS } from "@/constants";
 import { createDefaultLoggerService } from "@/services/LoggerService";
 import type { LogLevel } from "@/types";
 import { isAppError } from "@/utils/AppError";
-import chalk from "chalk";
+import { ChalkUtils } from "@/utils/ChalkUtils";
 import { program } from "commander";
 
 /**
@@ -20,7 +20,8 @@ async function main(): Promise<void> {
 
   try {
     // Setup global error handlers
-    process.on("uncaughtException", (error) => {
+    process.on("uncaughtException", async (error) => {
+      const chalk = await ChalkUtils.getChalk();
       console.error(chalk.red("Uncaught Exception:"), error.message);
       logger.error("MAIN", "Uncaught exception", {
         error: error.message,
@@ -29,7 +30,8 @@ async function main(): Promise<void> {
       process.exit(1);
     });
 
-    process.on("unhandledRejection", (reason, promise) => {
+    process.on("unhandledRejection", async (reason, promise) => {
+      const chalk = await ChalkUtils.getChalk();
       console.error(chalk.red("Unhandled Rejection at:"), promise, "reason:", reason);
       logger.error("MAIN", "Unhandled rejection", {
         reason: String(reason),
@@ -40,7 +42,7 @@ async function main(): Promise<void> {
 
     // Setup graceful shutdown
     process.on("SIGINT", async () => {
-      console.log(chalk.yellow("\n⚠️  Received SIGINT. Shutting down gracefully..."));
+      await ChalkUtils.warn("\n⚠️  Received SIGINT. Shutting down gracefully...");
       logger.info("MAIN", "Received SIGINT, shutting down gracefully");
 
       // Flush logs before exit
@@ -49,7 +51,7 @@ async function main(): Promise<void> {
     });
 
     process.on("SIGTERM", async () => {
-      console.log(chalk.yellow("\n⚠️  Received SIGTERM. Shutting down gracefully..."));
+      await ChalkUtils.warn("\n⚠️  Received SIGTERM. Shutting down gracefully...");
       logger.info("MAIN", "Received SIGTERM, shutting down gracefully");
 
       // Flush logs before exit
@@ -91,14 +93,15 @@ async function main(): Promise<void> {
   } catch (error) {
     // Handle application errors
     if (isAppError(error)) {
+      const chalk = await ChalkUtils.getChalk();
       console.error(chalk.red("✗ Application Error:"), error.message);
 
       if (error.context) {
-        console.error(chalk.gray("Context:"), JSON.stringify(error.context, null, 2));
+        await ChalkUtils.gray(`Context: ${JSON.stringify(error.context, null, 2)}`);
       }
 
       if (error.cause) {
-        console.error(chalk.gray("Caused by:"), error.cause.message);
+        await ChalkUtils.gray(`Caused by: ${error.cause.message}`);
       }
 
       logger.error("MAIN", "Application error", {
@@ -107,6 +110,7 @@ async function main(): Promise<void> {
     } else {
       // Handle unexpected errors
       const errorMessage = error instanceof Error ? error.message : String(error);
+      const chalk = await ChalkUtils.getChalk();
       console.error(chalk.red("✗ Unexpected Error:"), errorMessage);
 
       logger.error("MAIN", "Unexpected error", {
@@ -123,7 +127,8 @@ async function main(): Promise<void> {
 
 // Run the main function
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(async (error) => {
+    const chalk = await ChalkUtils.getChalk();
     console.error(chalk.red("Fatal Error:"), error);
     process.exit(1);
   });

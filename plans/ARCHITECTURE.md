@@ -20,66 +20,140 @@ The Book Cleaner CLI is a Node.js/TypeScript application that provides a compreh
 ```
 book-cleaner-cli/
 ├── src/
-│   ├── commands/
-│   │   └── clean-book.ts           # Main CLI command
-│   ├── phases/
-│   │   ├── phase1/                 # Text loading & metadata generation
-│   │   │   ├── loaders/
-│   │   │   │   ├── pdf-loader.ts
-│   │   │   │   ├── text-loader.ts
-│   │   │   │   └── epub-loader.ts
-│   │   │   ├── extractors/
-│   │   │   │   ├── text-extractor.ts
-│   │   │   │   ├── ocr-processor.ts
-│   │   │   │   └── metadata-extractor.ts
-│   │   │   ├── processors/
-│   │   │   │   ├── patch-processor.ts
-│   │   │   │   ├── author-text-extractor.ts
-│   │   │   │   ├── line-merger.ts
-│   │   │   │   ├── page-break-handler.ts
-│   │   │   │   ├── chapter-recognizer.ts
-│   │   │   │   ├── paragraph-reconstructor.ts
-│   │   │   │   └── footnote-extractor.ts
-│   │   │   └── index.ts
-│   │   ├── phase2/                 # Text normalization & AI cleaning
-│   │   │   ├── normalizers/
-│   │   │   │   ├── heading-normalizer.ts
-│   │   │   │   ├── footnote-converter.ts
-│   │   │   │   └── paragraph-corrector.ts
-│   │   │   ├── replacers/
-│   │   │   │   ├── safe-replacements.ts
-│   │   │   │   └── patch-applier.ts
-│   │   │   ├── ai-cleaners/
-│   │   │   │   ├── debris-cleaner.ts
-│   │   │   │   └── spell-checker.ts
-│   │   │   └── index.ts
-│   │   ├── phase3/                 # Evaluation & analysis
-│   │   │   ├── analyzers/
-│   │   │   │   ├── change-analyzer.ts
-│   │   │   │   └── quality-assessor.ts
-│   │   │   └── index.ts
-│   │   └── phase4/                 # Future: AI enhancements
-│   │       ├── generators/
-│   │       │   ├── person-directory.ts
-│   │       │   ├── bibliography.ts
-│   │       │   └── glossary.ts
-│   │       └── index.ts
-│   ├── services/
-│   │   ├── deepseek-service.ts     # DeepSeek API integration
-│   │   ├── file-service.ts         # File I/O operations
-│   │   ├── config-service.ts       # Configuration loading and management
-│   │   └── metadata-service.ts     # Metadata management
-│   ├── utils/
-│   │   ├── logger.ts               # Tagged pino logger
-│   │   ├── config.ts              # Configuration management
-│   │   ├── constants.ts           # Application constants
-│   │   ├── validators.ts          # Input validation
-│   │   └── filename-parser.ts     # Filename metadata extraction
-│   ├── types/
-│   │   ├── book.ts                # Book-related types
-│   │   ├── metadata.ts            # Metadata types
-│   │   └── pipeline.ts            # Pipeline types
-│   └── index.ts                   # Main entry point
+│   ├── cli/
+│   │   └── commands/
+│   │       └── clean-book.ts       # Main CLI command
+│   ├── pipeline/
+│   │   ├── phase_1_Text_Extraction_And_Format_Processing/
+│   │   │   ├── step_1_File_Format_Detection_And_Validation/
+│   │   │   │   ├── FileFormatDetector.ts    # Format detection logic
+│   │   │   │   ├── FilenameParser.ts        # Filename metadata extraction
+│   │   │   │   ├── SecurityValidator.ts     # File security validation
+│   │   │   │   ├── FormatValidators/
+│   │   │   │   │   ├── PDFValidator.ts      # PDF-specific validation
+│   │   │   │   │   ├── EPUBValidator.ts     # EPUB validation & DRM detection
+│   │   │   │   │   └── TextValidator.ts     # Text file validation
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_2_Text_Extraction/
+│   │   │   │   ├── TextExtractor.ts        # Main text extraction logic
+│   │   │   │   ├── PDFProcessor.ts         # PDF text extraction
+│   │   │   │   ├── EPUBProcessor.ts        # EPUB text extraction
+│   │   │   │   ├── TextProcessor.ts        # Plain text processing
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_3_OCR_Integration/
+│   │   │   │   ├── OCRService.ts           # OCR processing
+│   │   │   │   ├── TextComparator.ts       # Text comparison engine
+│   │   │   │   ├── SmartTextSelector.ts    # Intelligent text selection
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_4_Structure_Recognition/
+│   │   │   │   ├── ChapterRecognizer.ts    # Chapter structure detection
+│   │   │   │   ├── FootnoteExtractor.ts    # Footnote extraction
+│   │   │   │   ├── ParagraphReconstructor.ts # Paragraph reconstruction
+│   │   │   │   ├── MetadataExtractor.ts    # Document metadata extraction
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── DataLoadingPhase.ts         # Phase orchestrator
+│   │   │   ├── PhaseExecutionSummary.ts    # Phase execution tracking
+│   │   │   ├── index.ts                    # Phase entry point
+│   │   │   └── README.md                   # Phase documentation
+│   │   ├── phase_2_Text_Normalization_And_AI_Cleaning/
+│   │   │   ├── step_1_Heading_Normalization/
+│   │   │   │   ├── HeadingNormalizer.ts    # Heading processing
+│   │   │   │   ├── MarkdownConverter.ts    # Markdown conversion
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_2_Footnote_Processing/
+│   │   │   │   ├── FootnoteConverter.ts    # Footnote normalization
+│   │   │   │   ├── ReferenceProcessor.ts   # Reference handling
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_3_Safe_Text_Replacements/
+│   │   │   │   ├── SafeReplacements.ts     # Safe text replacements
+│   │   │   │   ├── PatchApplier.ts         # Patch application
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_4_AI_Text_Cleaning/
+│   │   │   │   ├── DebrisCleaner.ts        # AI debris removal
+│   │   │   │   ├── SpellChecker.ts         # AI spell checking
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── TextNormalizationPhase.ts   # Phase orchestrator
+│   │   │   ├── PhaseExecutionSummary.ts    # Phase execution tracking
+│   │   │   ├── index.ts                    # Phase entry point
+│   │   │   └── README.md                   # Phase documentation
+│   │   ├── phase_3_Evaluation_And_Analysis/
+│   │   │   ├── step_1_Change_Analysis/
+│   │   │   │   ├── ChangeAnalyzer.ts       # Change detection
+│   │   │   │   ├── DiffGenerator.ts        # Diff generation
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_2_Quality_Assessment/
+│   │   │   │   ├── QualityAssessor.ts      # Quality evaluation
+│   │   │   │   ├── ReportGenerator.ts      # Report generation
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── EvaluationPhase.ts          # Phase orchestrator
+│   │   │   ├── PhaseExecutionSummary.ts    # Phase execution tracking
+│   │   │   ├── index.ts                    # Phase entry point
+│   │   │   └── README.md                   # Phase documentation
+│   │   ├── phase_4_AI_Enhancements/
+│   │   │   ├── step_1_Person_Directory/
+│   │   │   │   ├── PersonExtractor.ts      # Person mention extraction
+│   │   │   │   ├── BiographyGenerator.ts   # Biography generation
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_2_Bibliography_Generation/
+│   │   │   │   ├── BibliographyExtractor.ts # Bibliography extraction
+│   │   │   │   ├── CitationProcessor.ts    # Citation processing
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── step_3_Glossary_Creation/
+│   │   │   │   ├── GlossaryGenerator.ts    # Glossary generation
+│   │   │   │   ├── TermExtractor.ts        # Term extraction
+│   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
+│   │   │   │   ├── index.ts                # Step entry point
+│   │   │   │   └── README.md               # Step documentation
+│   │   │   ├── AIEnhancementsPhase.ts      # Phase orchestrator
+│   │   │   ├── PhaseExecutionSummary.ts    # Phase execution tracking
+│   │   │   ├── index.ts                    # Phase entry point
+│   │   │   └── README.md                   # Phase documentation
+│   │   ├── PipelineManager.ts              # Main pipeline orchestrator
+│   │   ├── AbstractPhase.ts                # Abstract phase base class
+│   │   └── AbstractStep.ts                 # Abstract step base class
+│   ├── services/                           # Cross-phase services
+│   │   ├── DeepSeekService.ts              # DeepSeek API integration
+│   │   ├── FileService.ts                  # File I/O operations
+│   │   ├── ConfigService.ts                # Configuration management
+│   │   ├── LoggerService.ts                # Tagged logging service
+│   │   └── MetadataService.ts              # Metadata management
+│   ├── utils/                              # Cross-phase utilities
+│   │   ├── FileUtils.ts                    # File system utilities
+│   │   ├── ValidationUtils.ts              # Input validation
+│   │   ├── StringUtils.ts                  # String processing utilities
+│   │   └── DateUtils.ts                    # Date/time utilities
+│   ├── types/                              # Cross-phase types
+│   │   ├── BookTypes.ts                    # Book-related types
+│   │   ├── MetadataTypes.ts                # Metadata types
+│   │   ├── PipelineTypes.ts                # Pipeline types
+│   │   ├── ConfigTypes.ts                  # Configuration types
+│   │   └── ServiceTypes.ts                 # Service interface types
+│   ├── constants.ts                        # Application constants
+│   └── index.ts                            # Main entry point
 ├── config/
 │   ├── patches/                   # Patch files
 │   │   ├── after-data-loading.patch
@@ -107,6 +181,54 @@ book-cleaner-cli/
 ├── biome.json
 └── README.md
 ```
+
+### Pipeline File Organization Principles
+
+The pipeline architecture follows a strict hierarchical organization pattern to ensure code maintainability, modularity, and clear separation of concerns:
+
+#### 1. **Step-Level Organization**
+- **Rule**: All source files that are **only used within a single step** must reside in the `step_X_...` directory
+- **Purpose**: Ensures step-specific logic is encapsulated and prevents unnecessary dependencies
+- **Examples**:
+  - `TextExtractor.ts` only used in `step_2_Text_Extraction`
+  - `FileFormatDetector.ts` only used in `step_1_File_Format_Detection_And_Validation`
+  - `ExecutionSummary.ts` for step-specific execution tracking
+
+#### 2. **Phase-Level Organization**
+- **Rule**: All source files that are **only used within a single phase** must reside in the `phase_X_...` directory
+- **Purpose**: Manages phase-specific orchestration and coordination between steps
+- **Examples**:
+  - `DataLoadingPhase.ts` orchestrates all steps within Phase 1
+  - `PhaseExecutionSummary.ts` tracks execution across all steps in the phase
+  - Phase-specific utilities or coordinators
+
+#### 3. **Cross-Phase Organization**
+- **Rule**: Only files that are **used across multiple phases** reside outside the pipeline structure
+- **Purpose**: Prevents circular dependencies and provides shared functionality
+- **Examples**:
+  - `services/` - Services used by multiple phases (DeepSeekService, FileService, etc.)
+  - `utils/` - Utilities used across phases (FileUtils, ValidationUtils, etc.)
+  - `types/` - Type definitions shared across phases
+  - `constants.ts` - Application-wide constants
+
+#### 4. **Naming Convention**
+- **Phases**: `phase_X_Descriptive_Name/` (e.g., `phase_1_Text_Extraction_And_Format_Processing/`)
+- **Steps**: `step_X_Descriptive_Name/` (e.g., `step_1_File_Format_Detection_And_Validation/`)
+- **Files**: PascalCase for classes, camelCase for utilities
+- **Directories**: snake_case with descriptive names
+
+#### 5. **Standard Files in Each Step/Phase**
+- **`ExecutionSummary.ts`**: Tracks execution state and results for the step/phase
+- **`index.ts`**: Entry point exporting the main functionality
+- **`README.md`**: Documentation explaining the step/phase purpose and usage
+
+#### 6. **Benefits of This Organization**
+- **Clear Boundaries**: Easy to understand what belongs where
+- **Modular Testing**: Each step/phase can be tested independently
+- **Maintainability**: Changes to one step don't affect others
+- **Reusability**: Cross-phase services can be reused safely
+- **Scalability**: Easy to add new phases/steps without affecting existing code
+- **Dependency Management**: Clear dependency hierarchy prevents circular imports
 
 ## Command Line Interface
 

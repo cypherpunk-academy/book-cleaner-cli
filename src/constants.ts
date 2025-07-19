@@ -64,13 +64,33 @@ export const PIPELINE_STATUS = {
 
 // ==================== Configuration Constants ====================
 
-export const DEFAULT_CONFIG_DIR = "book-structure";
-export const DEFAULT_CONFIG_FILE = "default-book-structure.yaml";
+export const DEFAULT_ARTIFACTS_DIR = "book-artifacts";
+export const DEFAULT_CONFIG_FILE = "default-book-manifest.yaml";
+export const BOOK_MANIFEST_FILE = "book-manifest.yaml";
 export const CONFIG_FILE_EXTENSION = ".yaml";
 
 export const DEFAULT_OUTPUT_DIR = "output";
 export const DEFAULT_LOG_LEVEL = "info";
 export const DEFAULT_FILENAME_PATTERN = "{author}#{title}[#{bookIndex}]-{timestamp}";
+
+// ==================== Book Artifacts Structure Constants ====================
+
+export const ARTIFACTS_STRUCTURE = {
+  BASE_DIR: DEFAULT_ARTIFACTS_DIR,
+  DEFAULT_MANIFEST: DEFAULT_CONFIG_FILE,
+  BOOK_MANIFEST: BOOK_MANIFEST_FILE,
+  PHASE_DIRS: {
+    PHASE1: "phase1",
+    PHASE2: "phase2",
+    PHASE3: "phase3",
+  },
+  CACHE_FILES: {
+    OCR_CACHE: "ocr-cache.txt",
+    TEXT_CACHE: "text-cache.txt",
+    FINAL_RESULT: "final-result.md",
+    PROCESSING_METADATA: "processing-metadata.json",
+  },
+} as const;
 
 // ==================== Logging Constants ====================
 
