@@ -2,7 +2,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { TextEnhancer } from "../src/pipeline/phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Quality_Enhancement/TextEnhancer";
+import { TextEnhancer } from "../src/pipeline/phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Auto_Correction/TextEnhancer";
 import { LoggerService } from "../src/services/LoggerService";
 
 /**
@@ -56,7 +56,7 @@ async function testStep3Enhancement() {
     console.log(`   - Patterns removed: ${txtResult.patternsRemoved}`);
     console.log(`   - Paragraphs found: ${txtResult.paragraphsFound}`);
     console.log(`   - Paragraphs normalized: ${txtResult.paragraphsNormalized}`);
-    console.log(`   - Details:`);
+    console.log("   - Details:");
     console.log(
       `     * Removed patterns: ${txtResult.processingDetails.removedPatterns.join(", ")}`,
     );
@@ -88,7 +88,7 @@ async function testStep3Enhancement() {
     console.log(`   - Patterns removed: ${ocrResult.patternsRemoved}`);
     console.log(`   - Paragraphs found: ${ocrResult.paragraphsFound}`);
     console.log(`   - Paragraphs normalized: ${ocrResult.paragraphsNormalized}`);
-    console.log(`   - Details:`);
+    console.log("   - Details:");
     console.log(
       `     * Removed patterns: ${ocrResult.processingDetails.removedPatterns.join(", ")}`,
     );

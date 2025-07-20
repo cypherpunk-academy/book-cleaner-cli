@@ -41,7 +41,7 @@ structure:
 footnotes:
   - index:
     original-index:
-    five-words-before:
+    marker:
     footnote:
       - text first page
       - text next page

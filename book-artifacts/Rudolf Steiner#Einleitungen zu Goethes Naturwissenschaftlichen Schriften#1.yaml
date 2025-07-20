@@ -2,45 +2,43 @@ author: Rudolf Steiner
 title: Einleitungen zu Goethes Naturwissenschaftlichen Schriften
 book-index: '1'
 original:
-  - size: 15916374
-  - pages: 350
+  format: "pdf-text | pdf-ocr | pdf-text-ocr | text |\_epub"
+  size: null
+  pages: null
+  book-type: default | rudolf-steiner-ga-werk | rudolf-steiner-ga-vortrag | google-play-ebook
 text-before-first-chapter: null
 text-after-last-chapter: null
 text-removal-patterns:
   - /[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/
   - /Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/
   - /––– \[GA\d{1,3}, S\.\d{1,4}\] –––/
-header-type:
-  - level1:
-      - format: null
-      - example: null
 structure:
-  - type: chapter
-    title: null
-    number: null
-    content:
-      - type: paragraph
-        first-five-words: null
-      - type: sub-chapter
-        title: null
-        number: null
-        content:
-          - type: paragraph
-            first-five-words: null
-          - type: paragraph
-            first-five-words: null
-      - type: sub-chapter
-        title: null
-        number: null
-        content:
-          - type: paragraph
-            first-five-words: null
-          - type: paragraph
-            first-five-words: null
+  type: chapter
+  title: null
+  number: null
+  content:
+    - type: paragraph
+      first-five-words: null
+    - type: sub-chapter
+      title: null
+      number: null
+      content:
+        - type: paragraph
+          first-five-words: null
+        - type: paragraph
+          first-five-words: null
+    - type: sub-chapter
+      title: null
+      number: null
+      content:
+        - type: paragraph
+          first-five-words: null
+        - type: paragraph
+          first-five-words: null
 footnotes:
   - index: null
-  - original-index: null
-  - five-words-before: null
-  - footnote:
+    original-index: null
+    marker: null
+    footnote:
       - text first page
       - text next page

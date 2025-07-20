@@ -75,7 +75,7 @@
     }
   },
   "formatter": {
-    "enabled": true,
+    "enabled": false,
     "formatWithErrors": false,
     "indentStyle": "space",
     "indentWidth": 2,
@@ -126,6 +126,18 @@
   ],
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules", "dist", "coverage", "*.d.ts"]
+    "ignore": [
+      "node_modules", 
+      "dist", 
+      "coverage", 
+      "*.d.ts",
+      "*.md",
+      "*.yaml",
+      "*.yml",
+      "*.json",
+      ".vscode/**",
+      "debug-*.ts",
+      "scripts/**"
+    ]
   }
 }

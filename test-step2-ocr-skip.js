@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const BOOK_NAME =
   "Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1";

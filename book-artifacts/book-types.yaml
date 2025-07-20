@@ -1,45 +1,40 @@
 default:
   header-type:
     level1:
-      formats: []
-      examples: []
-  text-removal-patterns: []
+      formats:
+      examples:
+  text-removal-patterns:
 
 rudolf-steiner-ga-werk:
   description: "Rudolf Steiner Gesamtausgabe (GA) Werk"
-  header-type:
+  header-types:
     level1:
       formats:
-        - "Kapitel {number}"
-        - "Erstes Kapitel"
-        - "Zweites Kapitel"
-        - "Drittes Kapitel"
-      examples:
-        - "Kapitel 1"
-        - "Erstes Kapitel"
-        - "Zweites Kapitel"
+        - pattern: "{roman-number} {title-in-capital-letters}"
+          alignment: "center"
+          example: "II DIE ENTSTEHUNG DER METAMORPHOSENLEHRE"
+    level2:
+      formats:
+        - pattern: "{decimal-number}. {title}"
+          alignment: "center"
+          example: "5. Ethische und historische Wissenschaften"
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
     - "/Buch\\s?:\\s{0,3}\\d+\\s*\\d{0,3}\\s+Seite\\s?:\\s?\\d+[ \\t]*\\d{0,4}/"
-    - "/––– \\[GA\\d{1,3}, S\\.\\d{1,4}\\] –––/"
+    - "/\\d{0,3}\\s?\\[[\\s\\S]+?\\]/"
 
 rudolf-steiner-ga-vortrag:
   description: "Rudolf Steiner Gesamtausgabe (GA) Vortrag"
   header-type:
     level1:
       formats:
-        - "Vortrag {number}"
-        - "Erster Vortrag"
-        - "Zweiter Vortrag"
-        - "Dritter Vortrag"
-      examples:
-        - "Vortrag 1"
-        - "Erster Vortrag"
-        - "Zweiter Vortrag"
+        - pattern: "{german-ordinal} VORTRAG {place}, {long-date}"
+          alignment: "center"
+          example: "ERSTER VORTRAG Dornach, 12. Semptember 1921"
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
     - "/Buch\\s?:\\s{0,3}\\d+\\s*\\d{0,3}\\s+Seite\\s?:\\s?\\d+[ \\t]*\\d{0,4}/"
-    - "/––– \\[GA\\d{1,3}, S\\.\\d{1,4}\\] –––/"
+    - "/\\d{0,3}\\s?\\[[\\s\\S]+?\\]/"
 
 google-play-ebook:
   description: "Google Play E-Book"

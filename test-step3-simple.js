@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const yaml = require("js-yaml");
 
 // Constants from constants.ts
@@ -177,7 +177,7 @@ function normalizeParagraphs(text) {
           currentParagraph += line;
         }
       } else {
-        currentParagraph += line + " ";
+        currentParagraph += `${line} `;
       }
       linesJoined++;
     } else {
@@ -278,7 +278,7 @@ async function main() {
     console.log(`   - Patterns removed: ${txtResult.patternsRemoved}`);
     console.log(`   - Paragraphs found: ${txtResult.paragraphsFound}`);
     console.log(`   - Paragraphs normalized: ${txtResult.paragraphsNormalized}`);
-    console.log(`   - Details:`);
+    console.log("   - Details:");
     console.log(
       `     * Removed patterns: ${txtResult.processingDetails.removedPatterns.join(", ")}`,
     );
@@ -310,7 +310,7 @@ async function main() {
     console.log(`   - Patterns removed: ${ocrResult.patternsRemoved}`);
     console.log(`   - Paragraphs found: ${ocrResult.paragraphsFound}`);
     console.log(`   - Paragraphs normalized: ${ocrResult.paragraphsNormalized}`);
-    console.log(`   - Details:`);
+    console.log("   - Details:");
     console.log(
       `     * Removed patterns: ${ocrResult.processingDetails.removedPatterns.join(", ")}`,
     );

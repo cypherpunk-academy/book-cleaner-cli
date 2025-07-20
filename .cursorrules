@@ -50,7 +50,75 @@ src/
 └── constants.ts   # All application constants
 ```
 
-### 2. Import/Export Conventions
+### 2. Common Linter Error Prevention
+
+**CRITICAL**: Prevent these common Biome linting errors:
+
+-   **Template Literals**: Use regular strings if no interpolation is needed
+    ```typescript
+    // ❌ Wrong
+    console.log(`Processing complete!`);
+    
+    // ✅ Correct  
+    console.log("Processing complete!");
+    ```
+
+-   **Useless Ternary**: Convert boolean ternaries to proper boolean expressions
+    ```typescript
+    // ❌ Wrong
+    isValid: result ? true : false
+    
+    // ✅ Correct
+    isValid: !!result
+    ```
+
+-   **Unused Variables**: Prefix unused catch variables with underscore
+    ```typescript
+    // ❌ Wrong
+    } catch (error) {
+    
+    // ✅ Correct
+    } catch (_error) {
+    ```
+
+-   **Node.js Imports**: Always use `node:` protocol for built-in modules
+    ```typescript
+    // ❌ Wrong
+    import fs from "fs";
+    
+    // ✅ Correct
+    import fs from "node:fs";
+    ```
+
+-   **forEach vs for...of**: Prefer for...of loops for better performance
+    ```typescript
+    // ❌ Wrong
+    items.forEach((item) => { ... });
+    
+    // ✅ Correct
+    for (const item of items) { ... }
+    ```
+
+-   **Implicit Any**: Always declare explicit types for variables
+    ```typescript
+    // ❌ Wrong
+    let match;
+    
+    // ✅ Correct
+    let match: RegExpExecArray | null = null;
+    ```
+
+-   **Assignment in Expressions**: Separate assignment from conditionals
+    ```typescript
+    // ❌ Wrong
+    while ((match = pattern.exec(text)) !== null) {
+    
+    // ✅ Correct
+    match = pattern.exec(text);
+    while (match !== null) {
+    ```
+
+### 3. Import/Export Conventions
 
 -   Use path mapping with `@/` aliases (configured in tsconfig.json and .swcrc)
 -   Always use `import type` for type-only imports
@@ -98,11 +166,44 @@ import { LoggerService } from '@/services/LoggerService';
     -   Not in test code
     -   Not in development code
     -   Use proper type definitions, unions, or unknown instead
--   **FORBIDDEN**: Never use non-null assertions (`!`)
+-   **FORBIDDEN**: Never use non-null assertions (`!`) in any context
+    -   This includes array access, property access, and function calls
     -   Use proper type guards instead
     -   Use optional chaining (`?.`) when appropriate
     -   Use nullish coalescing (`??`) when appropriate
     -   Implement proper null/undefined checks
+    
+    Examples of forbidden patterns:
+    ```typescript
+    // ❌ FORBIDDEN - Non-null assertion in array access
+    const filePath = existingOcr.filePaths![0];
+    
+    // ❌ FORBIDDEN - Non-null assertion on properties
+    const result = response.data!.result;
+    
+    // ❌ FORBIDDEN - Non-null assertion on function calls
+    const value = getValue()!.toString();
+    
+    // ✅ CORRECT - Use type guards
+    if (existingOcr.filePaths && existingOcr.filePaths.length > 0) {
+        const filePath = existingOcr.filePaths[0];
+    }
+    
+    // ✅ CORRECT - Use optional chaining
+    const result = response.data?.result;
+    
+    // ✅ CORRECT - Use nullish coalescing
+    const value = getValue()?.toString() ?? 'default';
+    
+    // ✅ CORRECT - Proper null checking
+    const getValue = () => {
+        const result = computeResult();
+        if (!result) {
+            throw new AppError(ERROR_CODES.INVALID_STATE, 'Result is null');
+        }
+        return result;
+    };
+    ```
 
 ### 6. Pipeline Architecture
 
