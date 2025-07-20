@@ -68,7 +68,7 @@ export interface OCRResult {
     pageCount: number;
     language: string;
     errors: string[];
-    detectedStructure: {
+    detectedStructure?: {
         headings: HeadingInfo[];
         paragraphs: ParagraphInfo[];
         footnotes: FootnoteInfo[];
@@ -289,9 +289,6 @@ export class OCRService {
                         processingTime,
                         confidence: result.confidence,
                         textLength: result.extractedText.length,
-                        headingsDetected: result.detectedStructure.headings.length,
-                        paragraphsDetected: result.detectedStructure.paragraphs.length,
-                        footnotesDetected: result.detectedStructure.footnotes.length,
                     },
                     'Structured OCR processing completed successfully',
                 );
@@ -474,8 +471,6 @@ export class OCRService {
             console.log(`✅ PDF conversion complete! Found ${results.length} pages`);
             console.log('🔍 Starting OCR processing...');
 
-            let allText = '';
-            let allStructuredText = '';
             let totalConfidence = 0;
             const scanResults: {
                 textWithHeaders: string;
@@ -492,9 +487,6 @@ export class OCRService {
             };
 
             const errors: string[] = [];
-            const allHeadings: HeadingInfo[] = [];
-            const allParagraphs: ParagraphInfo[] = [];
-            const allFootnotes: FootnoteInfo[] = [];
 
             // Initialize text processor for structured text extraction
             const textProcessor = new GetTextAndStructureFromOcr(this.logger, this.configService);
@@ -561,22 +553,12 @@ export class OCRService {
 
                     // Process OCR data with structured text extraction
                     const processingResult = await textProcessor.processOCRData(
-                        data as unknown as OCRData,
+                        data,
                         bookType,
                         scanResults,
                     );
 
-                    // Use Tesseract's original text for fallback
-                    const pageText = data.text?.trim() || '';
-
-                    // Accumulate raw text for comparison and German umlaut fixing
-                    if (pageText.length > 0) {
-                        allText += `${pageText}\n\n`;
-                    }
-
                     // scanResults.textWithHeaders is automatically updated by textProcessor
-                    // Use it for structured text accumulation
-                    allStructuredText = scanResults.textWithHeaders;
                     totalConfidence += data.confidence || 0;
 
                     // Log processing results
@@ -631,7 +613,6 @@ export class OCRService {
             console.log(`   • Successfully processed: ${successfulPages}`);
             console.log(`   • Failed pages: ${errors.length}`);
             console.log(`   • Average confidence: ${Math.round(averageConfidence)}%`);
-            console.log(`   • Total text length: ${allText.length.toLocaleString()} characters`);
             console.log(
                 `   • Detected headers: ${scanResults.level1HeadingsIndex + scanResults.level2HeadingsIndex + scanResults.level3HeadingsIndex}`,
             );
@@ -646,10 +627,10 @@ export class OCRService {
                 console.log(`⚠️  ${errors.length} pages had errors - check logs for details`);
             }
 
-            // Apply German umlaut corrections to improve accuracy
+            // Apply German umlaut corrections to structured text
             console.log('🔤 Applying German umlaut corrections...');
-            const correctedText = this.fixGermanUmlautErrors(allText.trim());
-            const correctedStructuredText = this.fixGermanUmlautErrors(allStructuredText.trim());
+            const fullStructuredText = scanResults.textWithHeaders + scanResults.footnoteText;
+            const correctedStructuredText = this.fixGermanUmlautErrors(fullStructuredText);
 
             ocrLogger.info(
                 {
@@ -657,31 +638,24 @@ export class OCRService {
                     successfulPages,
                     failedPages: errors.length,
                     averageConfidence,
-                    totalTextLength: correctedText.length,
                     totalHeaders:
                         scanResults.level1HeadingsIndex +
                         scanResults.level2HeadingsIndex +
                         scanResults.level3HeadingsIndex,
                     structuredTextLength: correctedStructuredText.length,
                     footnoteTextLength: scanResults.footnoteText.length,
-                    umlautCorrections: correctedText.length !== allText.trim().length,
                 },
                 'OCR processing completed with structured text extraction and German optimizations',
             );
 
             return {
-                extractedText: correctedText,
+                extractedText: correctedStructuredText,
                 structuredText: correctedStructuredText,
                 confidence: averageConfidence,
                 processingTime: 0, // Will be set by caller
                 pageCount: results.length,
                 language: options.language || this.defaultLanguage,
                 errors,
-                detectedStructure: {
-                    headings: [], // Using structured text instead of individual heading tracking
-                    paragraphs: [], // Using structured text instead of individual paragraph tracking
-                    footnotes: [], // Using structured text instead of individual footnote tracking
-                },
             };
         } catch (error) {
             const errorMsg = `PDF OCR processing failed: ${
@@ -803,9 +777,7 @@ export class OCRService {
                     ? 'fair'
                     : 'poor';
 
-        const structureDetected =
-            result.detectedStructure.headings.length > 0 ||
-            result.detectedStructure.footnotes.length > 0;
+        const structureDetected = result.structuredText.includes('#');
 
         const processingEfficiency =
             result.extractedText.length / Math.max(result.processingTime, 1);

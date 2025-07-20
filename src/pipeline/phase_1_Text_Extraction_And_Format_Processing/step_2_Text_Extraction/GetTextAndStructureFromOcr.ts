@@ -6,6 +6,7 @@ import {
     OCR_PAGE_WIDTH,
     ROMAN_NUMERALS,
     GERMAN_ORDINALS,
+    PARAGRAPH_END_MARKERS,
 } from '@/constants';
 import { AppError } from '@/utils/AppError';
 import pino from 'pino';
@@ -305,6 +306,8 @@ export class GetTextAndStructureFromOcr {
             if (!bookTypesConfig || typeof bookTypesConfig !== 'object') {
                 throw new AppError(
                     ERROR_CODES.CONFIG_INVALID,
+                    LOG_COMPONENTS.PIPELINE_MANAGER,
+                    'loadBookTypeConfig',
                     'Book types configuration is invalid or missing',
                     { bookType },
                 );
@@ -385,6 +388,9 @@ export class GetTextAndStructureFromOcr {
         // Normalize text for pattern matching (all whitespace and newlines become single spaces)
         const normalizedText = paragraph.text.replace(/[\s\n\r\t]+/g, ' ').trim();
 
+        // For level 1 and 2 headers, ensure they start at the beginning of the text
+        const startsAtBeginning = this.checkHeaderStartsAtBeginning(paragraph.text, normalizedText);
+
         this.logger.info(
             {
                 originalText: paragraph.text,
@@ -406,20 +412,40 @@ export class GetTextAndStructureFromOcr {
                 continue;
             }
 
+            // For level 1 and 2 headers, require they start at the beginning
+            if ((level === 1 || level === 2) && !startsAtBeginning) {
+                this.logger.debug(
+                    {
+                        level,
+                        normalizedText,
+                        startsAtBeginning,
+                    },
+                    'Skipping level 1/2 header check - does not start at beginning of text',
+                );
+                continue;
+            }
+
             for (const format of config.formats) {
-                const patternMatch = this.matchHeaderPattern(normalizedText, format.pattern);
+                // For level 1 and 2 headers, anchor pattern to start of string
+                const isStartAnchored = level === 1 || level === 2;
+                const patternMatch = this.matchHeaderPattern(
+                    normalizedText,
+                    format.pattern,
+                    isStartAnchored,
+                );
 
                 this.logger.info(
                     {
                         normalizedText,
                         pattern: format.pattern,
                         patternMatch,
+                        isStartAnchored,
                     },
                     'Pattern match result',
                 );
 
                 if (patternMatch && patternMatch.matched) {
-                    this.logger.debug(
+                    this.logger.info(
                         {
                             level,
                             pattern: format.pattern,
@@ -434,9 +460,9 @@ export class GetTextAndStructureFromOcr {
                     if (ordinalValue !== null) {
                         // Validate header sequence
                         if (this.validateHeaderSequence(level, ordinalValue, scanResults)) {
-                            // Add header to results
+                            // Add header to results with double newlines before and after
                             const markdownLevel = '#'.repeat(level);
-                            const headerText = `${markdownLevel} ${normalizedText}\n\n`;
+                            const headerText = `\n\n${markdownLevel} ${normalizedText}\n\n`;
                             scanResults.textWithHeaders += headerText;
 
                             this.logger.info(
@@ -484,11 +510,34 @@ export class GetTextAndStructureFromOcr {
     }
 
     /**
+     * Check if header text starts at the beginning of the paragraph
+     * Level 1 and 2 headers must start at the very beginning
+     */
+    private checkHeaderStartsAtBeginning(originalText: string, normalizedText: string): boolean {
+        // Remove leading whitespace from original text
+        const trimmedOriginal = originalText.trimStart();
+
+        // Check if the normalized text matches the beginning of the trimmed original
+        // This ensures the header content appears at the start of the paragraph
+        return (
+            trimmedOriginal.startsWith(normalizedText) ||
+            trimmedOriginal
+                .replace(/[\s\n\r\t]+/g, ' ')
+                .trimStart()
+                .startsWith(normalizedText)
+        );
+    }
+
+    /**
      * Match text against header pattern with placeholder replacement
      */
-    private matchHeaderPattern(text: string, pattern: string): PatternMatch {
+    private matchHeaderPattern(
+        text: string,
+        pattern: string,
+        isStartAnchored: boolean = false,
+    ): PatternMatch {
         try {
-            const regex = this.buildPlaceholderRegex(pattern);
+            const regex = this.buildPlaceholderRegex(pattern, isStartAnchored);
             const match = text.match(new RegExp(regex, 'i'));
 
             this.logger.info(
@@ -508,7 +557,11 @@ export class GetTextAndStructureFromOcr {
                 // Map match groups to placeholder names
                 const placeholders = this.extractPlaceholderNames(pattern);
                 for (let i = 1; i < match.length && i <= placeholders.length; i++) {
-                    extractedValues[placeholders[i - 1]] = match[i];
+                    const placeholderName = placeholders[i - 1];
+                    const matchValue = match[i];
+                    if (placeholderName && matchValue !== undefined) {
+                        extractedValues[placeholderName] = matchValue;
+                    }
                 }
 
                 return {
@@ -538,20 +591,22 @@ export class GetTextAndStructureFromOcr {
     private getPlaceholderRegex(placeholderType: string): string {
         switch (placeholderType) {
             case 'roman-number':
-                // Match Roman numerals from constants
-                return `(${Object.keys(ROMAN_NUMERALS).join('|')})`;
+                // Match Roman numerals from constants as full words at word boundaries
+                return `\\b(${Object.keys(ROMAN_NUMERALS).join('|')})\\b`;
 
             case 'title-in-capital-letters':
-                // Match multiple words in all capital letters (including German umlauts)
-                return '([A-ZÄÖÜ][A-ZÄÖÜ ]+)';
+                // Match title in capital letters: must be at least 3 chars, start with letter, may contain spaces
+                // Ensures meaningful title text, not single letters
+                return '([A-ZÄÖÜ][A-ZÄÖÜ ]{2,}?)';
 
             case 'decimal-number':
                 // Match one or more digits
                 return '(\\d+)';
 
             case 'title':
-                // Match any characters for a title (non-greedy, stops before punctuation)
-                return '([^.]+?)';
+                // Match title text: must start with capital letter, be at least 3 characters long
+                // Non-greedy, stops at common punctuation or end patterns
+                return '([A-ZÄÖÜ][^.]{2,}?)';
 
             case 'german-ordinal':
                 // Match German ordinals from constants
@@ -564,6 +619,15 @@ export class GetTextAndStructureFromOcr {
             case 'long-date':
                 // Match German date format: "12. September 1921"
                 return '(\\d{1,2}\\.\\s+(?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\\s+\\d{4})';
+
+            case 'no-paragraph-end-marker':
+                // Match any characters for a title (non-greedy, stops before punctuation)
+                // This placeholder should not match any of the defined PARAGRAPH_END_MARKERS.
+                const escapedMarkers = PARAGRAPH_END_MARKERS.map((marker) =>
+                    marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+                );
+                // Negative lookahead for all paragraph end markers at the end of the string
+                return `((?:(?!(${escapedMarkers.join('|')})$)[\\s\\S])+?)`;
 
             default:
                 throw new AppError(
@@ -579,7 +643,7 @@ export class GetTextAndStructureFromOcr {
     /**
      * Build regex pattern from placeholder pattern
      */
-    private buildPlaceholderRegex(pattern: string): string {
+    private buildPlaceholderRegex(pattern: string, isStartAnchored: boolean = false): string {
         let regex = pattern;
 
         // First, escape any literal regex characters in the original pattern
@@ -595,6 +659,7 @@ export class GetTextAndStructureFromOcr {
             'german-ordinal',
             'place',
             'long-date',
+            'no-paragraph-end-marker',
         ];
 
         for (const placeholderType of placeholderTypes) {
@@ -603,6 +668,11 @@ export class GetTextAndStructureFromOcr {
                 const regexPattern = this.getPlaceholderRegex(placeholderType);
                 regex = regex.replace(placeholderPattern, regexPattern);
             }
+        }
+
+        // Anchor to start of string for level 1 and 2 headers
+        if (isStartAnchored) {
+            regex = `^${regex}`;
         }
 
         return regex;
@@ -617,7 +687,9 @@ export class GetTextAndStructureFromOcr {
         let match: RegExpExecArray | null;
 
         while ((match = placeholderRegex.exec(pattern)) !== null) {
-            placeholders.push(match[1]);
+            if (match[1] !== undefined) {
+                placeholders.push(match[1]);
+            }
         }
 
         return placeholders;
@@ -683,6 +755,8 @@ export class GetTextAndStructureFromOcr {
             default:
                 throw new AppError(
                     ERROR_CODES.VALIDATION_ERROR,
+                    LOG_COMPONENTS.PIPELINE_MANAGER,
+                    'processHeader',
                     `Invalid header level: ${headerLevel}`,
                     { headerLevel },
                 );
@@ -704,12 +778,18 @@ export class GetTextAndStructureFromOcr {
             );
 
             // Exit process as requested for sequence violations
-            throw new AppError(ERROR_CODES.VALIDATION_ERROR, errorMsg, {
-                headerLevel,
-                extractedNumber,
-                expectedNumber,
-                scanResults,
-            });
+            throw new AppError(
+                ERROR_CODES.VALIDATION_ERROR,
+                LOG_COMPONENTS.PIPELINE_MANAGER,
+                'validateHeaderSequence',
+                errorMsg,
+                {
+                    headerLevel,
+                    extractedNumber,
+                    expectedNumber,
+                    scanResults,
+                },
+            );
         }
 
         // Update the appropriate counter

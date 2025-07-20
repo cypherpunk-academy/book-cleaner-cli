@@ -10,12 +10,12 @@ rudolf-steiner-ga-werk:
   header-types:
     level1:
       formats:
-        - pattern: "{roman-number} {title-in-capital-letters}"
+        - pattern: "{roman-number} {title-in-capital-letters}{no-paragraph-end-marker}"
           alignment: "center"
           example: "II DIE ENTSTEHUNG DER METAMORPHOSENLEHRE"
     level2:
       formats:
-        - pattern: "{decimal-number}. {title}"
+        - pattern: "{decimal-number}. {title}{no-paragraph-end-marker}"
           alignment: "center"
           example: "5. Ethische und historische Wissenschaften"
   text-removal-patterns:
