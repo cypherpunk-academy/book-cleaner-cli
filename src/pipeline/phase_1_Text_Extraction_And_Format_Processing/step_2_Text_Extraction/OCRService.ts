@@ -1,8 +1,10 @@
 import type { RecognizeOptions, Worker } from 'tesseract.js';
 import { ERROR_CODES, LOG_COMPONENTS, OCR_PAGE_HEIGHT, OCR_PAGE_WIDTH } from '../../../constants';
 import type { LoggerService } from '../../../services/LoggerService';
+import type { ConfigService } from '../../../services/ConfigService';
 import type { FileInfo } from '../../../types';
 import { AppError } from '../../../utils/AppError';
+import { GetTextAndStructureFromOcr } from './GetTextAndStructureFromOcr';
 
 /**
  * OCR Block structure for visual layout analysis
@@ -131,10 +133,12 @@ export interface OCROptions {
  */
 export class OCRService {
     private readonly logger: LoggerService;
+    private readonly configService: ConfigService;
     private readonly defaultLanguage = 'deu'; // Pure German for better umlaut recognition
 
-    constructor(logger: LoggerService) {
+    constructor(logger: LoggerService, configService: ConfigService) {
         this.logger = logger;
+        this.configService = configService;
     }
 
     /**
@@ -492,6 +496,12 @@ export class OCRService {
             const allParagraphs: ParagraphInfo[] = [];
             const allFootnotes: FootnoteInfo[] = [];
 
+            // Initialize text processor for structured text extraction
+            const textProcessor = new GetTextAndStructureFromOcr(this.logger, this.configService);
+
+            // Determine book type from file path (placeholder - could be passed as parameter)
+            const bookType = 'rudolf-steiner-ga-werk'; // Default for now
+
             ocrLogger.info({ pageCount: results.length }, 'Processing pages with OCR');
 
             // Process each page
@@ -549,30 +559,32 @@ export class OCRService {
                         );
                     }
 
-                    // Analyze structure from OCR data
-                    const detectedStructure = this.analyzeDocumentStructure(
+                    // Process OCR data with structured text extraction
+                    const processingResult = await textProcessor.processOCRData(
                         data as unknown as OCRData,
-                        options,
+                        bookType,
+                        scanResults,
                     );
 
-                    // Use Tesseract's original text output (it's actually correct!)
-                    // The previous reconstructTextFromStructure was incorrectly "fixing" already correct text
+                    // Use Tesseract's original text for fallback
                     const pageText = data.text?.trim() || '';
 
-                    // Accumulate results
+                    // Accumulate raw text for comparison and German umlaut fixing
                     if (pageText.length > 0) {
                         allText += `${pageText}\n\n`;
                     }
-                    allStructuredText += `${this.applyStructuredMarkers(
-                        pageText,
-                        detectedStructure,
-                    )}\n\n`;
+
+                    // scanResults.textWithHeaders is automatically updated by textProcessor
+                    // Use it for structured text accumulation
+                    allStructuredText = scanResults.textWithHeaders;
                     totalConfidence += data.confidence || 0;
 
-                    // Accumulate structural elements
-                    allHeadings.push(...detectedStructure.headings);
-                    allParagraphs.push(...detectedStructure.paragraphs);
-                    allFootnotes.push(...detectedStructure.footnotes);
+                    // Log processing results
+                    if (processingResult.detectedHeaders > 0) {
+                        console.log(
+                            `📝 Page ${pageNumber}: Found ${processingResult.detectedHeaders} headers, processed ${processingResult.processedParagraphs} paragraphs`,
+                        );
+                    }
 
                     // Log successful page completion
                     console.log(
@@ -585,9 +597,10 @@ export class OCRService {
                             pageNumber,
                             confidence: data.confidence,
                             textLength: data.text?.length || 0,
-                            headings: detectedStructure.headings.length,
-                            paragraphs: detectedStructure.paragraphs.length,
-                            footnotes: detectedStructure.footnotes.length,
+                            processedParagraphs: processingResult.processedParagraphs,
+                            detectedHeaders: processingResult.detectedHeaders,
+                            removedPatterns: processingResult.removedPatterns,
+                            processingSuccess: processingResult.success,
                         },
                         'Page OCR completed successfully',
                     );
@@ -619,9 +632,15 @@ export class OCRService {
             console.log(`   • Failed pages: ${errors.length}`);
             console.log(`   • Average confidence: ${Math.round(averageConfidence)}%`);
             console.log(`   • Total text length: ${allText.length.toLocaleString()} characters`);
-            console.log(`   • Detected headings: ${allHeadings.length}`);
-            console.log(`   • Detected paragraphs: ${allParagraphs.length}`);
-            console.log(`   • Detected footnotes: ${allFootnotes.length}`);
+            console.log(
+                `   • Detected headers: ${scanResults.level1HeadingsIndex + scanResults.level2HeadingsIndex + scanResults.level3HeadingsIndex}`,
+            );
+            console.log(
+                `   • Structured text length: ${scanResults.textWithHeaders.length.toLocaleString()} characters`,
+            );
+            console.log(
+                `   • Footnote text length: ${scanResults.footnoteText.length.toLocaleString()} characters`,
+            );
 
             if (errors.length > 0) {
                 console.log(`⚠️  ${errors.length} pages had errors - check logs for details`);
@@ -639,12 +658,15 @@ export class OCRService {
                     failedPages: errors.length,
                     averageConfidence,
                     totalTextLength: correctedText.length,
-                    totalHeadings: 0, // allHeadings is not defined
-                    totalParagraphs: 0, // allParagraphs is not defined
-                    totalFootnotes: 0, // allFootnotes is not defined
+                    totalHeaders:
+                        scanResults.level1HeadingsIndex +
+                        scanResults.level2HeadingsIndex +
+                        scanResults.level3HeadingsIndex,
+                    structuredTextLength: correctedStructuredText.length,
+                    footnoteTextLength: scanResults.footnoteText.length,
                     umlautCorrections: correctedText.length !== allText.trim().length,
                 },
-                'OCR processing completed with German optimizations',
+                'OCR processing completed with structured text extraction and German optimizations',
             );
 
             return {
@@ -656,9 +678,9 @@ export class OCRService {
                 language: options.language || this.defaultLanguage,
                 errors,
                 detectedStructure: {
-                    headings: [], // allHeadings is not defined
-                    paragraphs: [], // allParagraphs is not defined
-                    footnotes: [], // allFootnotes is not defined
+                    headings: [], // Using structured text instead of individual heading tracking
+                    paragraphs: [], // Using structured text instead of individual paragraph tracking
+                    footnotes: [], // Using structured text instead of individual footnote tracking
                 },
             };
         } catch (error) {

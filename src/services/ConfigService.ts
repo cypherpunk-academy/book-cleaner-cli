@@ -495,4 +495,48 @@ export class ConfigService {
             );
         }
     }
+
+    /**
+     * Load book types configuration from book-types.yaml
+     */
+    public async loadBookTypesConfig(): Promise<Record<string, unknown> | null> {
+        const configLogger = this.logger.getConfigLogger(LOG_COMPONENTS.CONFIG_SERVICE);
+
+        try {
+            const bookTypesPath = path.join(this.configDir, 'book-types.yaml');
+
+            // Check if book-types.yaml exists
+            const fileUtils = new FileUtils(this.logger);
+            const exists = await fileUtils.fileExists(bookTypesPath);
+            if (!exists) {
+                configLogger.warn({ bookTypesPath }, 'Book types configuration file not found');
+                return null;
+            }
+
+            // Read and parse the YAML file
+            const yamlContent = await fs.readFile(bookTypesPath, 'utf-8');
+            const config = yaml.load(yamlContent) as Record<string, unknown>;
+
+            configLogger.info(
+                {
+                    bookTypesPath,
+                    availableTypes: config ? Object.keys(config) : [],
+                },
+                'Book types configuration loaded successfully',
+            );
+
+            return config;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            configLogger.error({ error: errorMessage }, 'Failed to load book types configuration');
+
+            throw new AppError(
+                ERROR_CODES.CONFIG_INVALID,
+                LOG_COMPONENTS.CONFIG_SERVICE,
+                'loadBookTypesConfig',
+                `Failed to load book types configuration: ${errorMessage}`,
+                { configDir: this.configDir },
+            );
+        }
+    }
 }

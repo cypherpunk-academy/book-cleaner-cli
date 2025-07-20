@@ -65,9 +65,9 @@ export class TextExtractor {
 
     constructor(logger: LoggerService, configService: ConfigService, configDir: string) {
         this.logger = logger;
-        this.ocrService = new OCRService(logger);
         this.configService = configService;
         this.configDir = configDir;
+        this.ocrService = new OCRService(logger, configService);
     }
 
     /**
