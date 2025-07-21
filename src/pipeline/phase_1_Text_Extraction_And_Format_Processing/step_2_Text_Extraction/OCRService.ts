@@ -719,7 +719,7 @@ export class OCRService {
             }
         }
 
-        return structuredText.trim();
+        return structuredText.replace(/^\s+/, '').replace(/\s+$/, '');
     }
 
     /**

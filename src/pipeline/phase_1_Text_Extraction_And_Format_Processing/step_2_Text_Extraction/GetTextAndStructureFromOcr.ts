@@ -8,7 +8,6 @@ import {
     ROMAN_NUMERALS,
     GERMAN_ORDINALS,
     PARAGRAPH_END_MARKERS,
-    HEADER_MAX_WIDTH_RATIO,
     PAGE_METRICS_TYPES,
 } from '@/constants';
 import { AppError } from '@/utils/AppError';
@@ -358,10 +357,7 @@ export class GetTextAndStructureFromOcr {
     /**
      * Classify page groups (legacy method for backward compatibility)
      */
-    private classifyPageGroups(
-        groups: Array<{ center: number; values: number[] }>,
-        pageMetrics: PageMetricsConfig,
-    ): Array<{
+    private classifyPageGroups(groups: Array<{ center: number; values: number[] }>): Array<{
         type: string;
         averageX0: number;
         values: number[];
@@ -421,7 +417,7 @@ export class GetTextAndStructureFromOcr {
         }
 
         // Analyze groups and classify text types
-        const classifiedGroups = this.classifyPageGroups(groups, pageMetrics);
+        const classifiedGroups = this.classifyPageGroups(groups);
 
         // Print results in green using logger
         const results = {
@@ -494,6 +490,219 @@ export class GetTextAndStructureFromOcr {
      */
 
     /**
+     * Process paragraph text based on page metrics and line positioning
+     */
+    private processParagraphText(
+        paragraph: OCRParagraph,
+        bookConfig: BookTypeConfig,
+        scanResultsThisPage: ScanResults,
+        pageMetrics: Record<string, { min: number; max: number }>,
+        isFirstParagraph: boolean,
+    ): { paragraphText: string; footnoteText: string } {
+        let paragraphText = '';
+        let footnoteText = '';
+
+        if (!paragraph.lines || paragraph.lines.length === 0) {
+            return { paragraphText, footnoteText };
+        }
+
+        for (let lineIndex = 0; lineIndex < paragraph.lines.length; lineIndex++) {
+            const line = paragraph.lines[lineIndex];
+            if (!line || !line.bbox) {
+                continue;
+            }
+
+            const lineX0 = line.bbox.x0;
+            const lineText = line.text.trim();
+
+            if (lineText.length === 0) {
+                continue;
+            }
+
+            // Determine line type based on page metrics
+            const lineType = this.determineLineType(lineX0, pageMetrics);
+
+            // Handle first paragraph on page
+            if (isFirstParagraph && lineIndex === 0) {
+                if (lineType === PAGE_METRICS_TYPES.PARAGRAPH_TEXT) {
+                    paragraphText += lineText;
+                } else {
+                    paragraphText += `\n\n${lineText}`;
+                }
+                continue;
+            }
+
+            // Handle subsequent lines and paragraphs
+            switch (lineType) {
+                case PAGE_METRICS_TYPES.PARAGRAPH_START:
+                    paragraphText += `\n\n${lineText}`;
+                    break;
+
+                case PAGE_METRICS_TYPES.FOOTNOTE_START:
+                    const footnoteResult = this.processFootnoteStart(
+                        lineText,
+                        paragraphText,
+                        footnoteText,
+                    );
+                    paragraphText = footnoteResult.paragraphText;
+                    footnoteText = footnoteResult.footnoteText;
+                    break;
+
+                case PAGE_METRICS_TYPES.PARAGRAPH_TEXT:
+                    paragraphText = this.processParagraphTextLine(lineText, paragraphText);
+                    break;
+
+                case PAGE_METRICS_TYPES.FOOTNOTE_TEXT:
+                    footnoteText = this.processFootnoteTextLine(lineText, footnoteText);
+                    break;
+
+                default:
+                    // Unknown type - treat as paragraph text
+                    paragraphText = this.processParagraphTextLine(lineText, paragraphText);
+                    break;
+            }
+        }
+
+        return { paragraphText, footnoteText };
+    }
+
+    /**
+     * Determine line type based on x0 position and page metrics
+     */
+    private determineLineType(
+        lineX0: number,
+        pageMetrics: Record<string, { min: number; max: number }>,
+    ): string {
+        for (const [type, range] of Object.entries(pageMetrics)) {
+            if (lineX0 >= range.min && lineX0 <= range.max) {
+                return type;
+            }
+        }
+        return PAGE_METRICS_TYPES.PARAGRAPH_TEXT; // Default fallback
+    }
+
+    /**
+     * Process footnote start line - find and replace reference in text
+     */
+    private processFootnoteStart(
+        lineText: string,
+        paragraphText: string,
+        footnoteText: string,
+    ): { paragraphText: string; footnoteText: string } {
+        // Extract footnote number or asterisks from line start
+        const footnoteMatch = lineText.match(/^(\d+|[*]+)\s*(.+)$/);
+        if (!footnoteMatch) {
+            // If no match, treat as regular text
+            return {
+                paragraphText: this.processParagraphTextLine(lineText, paragraphText),
+                footnoteText,
+            };
+        }
+
+        const footnoteRef = footnoteMatch[1] || '';
+        const footnoteContent = footnoteMatch[2] || '';
+        const footnoteMarker = `[${footnoteRef}]`;
+
+        // Search for footnote reference in paragraph text from back to front
+        const updatedParagraphText = this.replaceFootnoteReference(
+            paragraphText,
+            footnoteRef,
+            footnoteMarker,
+        );
+
+        // Add footnote content to footnote text
+        const updatedFootnoteText = footnoteText + `\n\n${footnoteMarker} ${footnoteContent}`;
+
+        return {
+            paragraphText: updatedParagraphText,
+            footnoteText: updatedFootnoteText,
+        };
+    }
+
+    /**
+     * Replace footnote reference in text from back to front
+     */
+    private replaceFootnoteReference(
+        text: string,
+        footnoteRef: string,
+        footnoteMarker: string,
+    ): string {
+        // Create regex pattern for the footnote reference
+        let pattern: RegExp;
+        if (footnoteRef === '*') {
+            pattern = /\*/g;
+        } else if (footnoteRef === '**') {
+            pattern = /\*\*/g;
+        } else if (footnoteRef === '***') {
+            pattern = /\*\*\*/g;
+        } else {
+            // Numeric reference
+            pattern = new RegExp(`\\b${footnoteRef}\\b`, 'g');
+        }
+
+        // Find all matches
+        const matches: RegExpExecArray[] = [];
+        let match: RegExpExecArray | null;
+        while ((match = pattern.exec(text)) !== null) {
+            matches.push(match);
+        }
+
+        // Replace the last occurrence (from back to front)
+        if (matches.length > 0) {
+            const lastMatch = matches[matches.length - 1];
+            if (lastMatch && lastMatch.index !== undefined && lastMatch[0]) {
+                const beforeMatch = text.substring(0, lastMatch.index);
+                const afterMatch = text.substring(lastMatch.index + lastMatch[0].length);
+                return beforeMatch + footnoteMarker + afterMatch;
+            }
+        }
+
+        return text;
+    }
+
+    /**
+     * Process paragraph text line with hyphenation handling
+     */
+    private processParagraphTextLine(lineText: string, paragraphText: string): string {
+        if (paragraphText.length === 0) {
+            return lineText;
+        }
+
+        // Check for hyphenation at end of current paragraph text
+        const endsWithHyphen = paragraphText.endsWith('-');
+        const firstCharIsCapital = lineText.length > 0 && /^[A-ZÄÖÜ]/.test(lineText);
+
+        if (endsWithHyphen && !firstCharIsCapital) {
+            // Connect hyphenated word
+            return paragraphText.slice(0, -1) + lineText;
+        } else {
+            // Add space and new line text
+            return paragraphText + ' ' + lineText;
+        }
+    }
+
+    /**
+     * Process footnote text line with hyphenation handling
+     */
+    private processFootnoteTextLine(lineText: string, footnoteText: string): string {
+        if (footnoteText.length === 0) {
+            return lineText;
+        }
+
+        // Check for hyphenation at end of current footnote text
+        const endsWithHyphen = footnoteText.endsWith('-');
+        const firstCharIsCapital = lineText.length > 0 && /^[A-ZÄÖÜ]/.test(lineText);
+
+        if (endsWithHyphen && !firstCharIsCapital) {
+            // Connect hyphenated word
+            return footnoteText.slice(0, -1) + lineText;
+        } else {
+            // Add space and new line text
+            return footnoteText + ' ' + lineText;
+        }
+    }
+
+    /**
      * Main method to process OCR data for a single page
      */
     async processOCRData(
@@ -523,7 +732,6 @@ export class GetTextAndStructureFromOcr {
             let processedParagraphs = 0;
             let detectedHeaders = 0;
             let removedPatterns = 0;
-            let lastParagraphWasHeader = false;
             const errors: string[] = [];
 
             // Process each paragraph
@@ -569,26 +777,44 @@ export class GetTextAndStructureFromOcr {
                                 'Header detected and processed',
                             );
 
-                            lastParagraphWasHeader = true;
-
                             continue; // Headers are supposed to be alone in a paragraph
                         }
 
-                        // add function this.processParagraphText(paragraph, bookConfig, scanResults)
+                        // Process paragraph text based on page metrics
+                        const isFirstParagraph = processedParagraphs === 1;
+                        const processedText = this.processParagraphText(
+                            paragraph,
+                            bookConfig,
+                            scanResultsThisPage,
+                            pageMetrics,
+                            isFirstParagraph,
+                        );
 
-                        // Process as regular paragraph
-                        const cleanedText = this.applyTextRemovalPatterns(
-                            paragraph.text,
+                        this.logger.info(
+                            {
+                                processedText,
+                            },
+                            'Processed paragraph text',
+                        );
+
+                        // Apply text removal patterns to paragraph text
+                        const cleanedParagraphText = this.applyTextRemovalPatterns(
+                            processedText.paragraphText,
                             bookConfig.textRemovalPatterns,
                         );
 
-                        if (cleanedText.length !== paragraph.text.length) {
+                        if (cleanedParagraphText.length !== processedText.paragraphText.length) {
                             removedPatterns++;
                         }
 
-                        // Add paragraph to results if not empty after cleaning
-                        if (cleanedText.trim().length > 0) {
-                            scanResultsThisPage.textWithHeaders += `${cleanedText.trim()}\n\n`;
+                        // Add processed paragraph text to results if not empty after cleaning
+                        if (cleanedParagraphText.trim().length > 0) {
+                            scanResultsThisPage.textWithHeaders += cleanedParagraphText;
+                        }
+
+                        // Add footnote text to scan results
+                        if (processedText.footnoteText.trim().length > 0) {
+                            scanResultsThisPage.footnoteText += processedText.footnoteText;
                         }
                     } catch (paragraphError) {
                         const errorMsg = `Failed to process paragraph: ${
