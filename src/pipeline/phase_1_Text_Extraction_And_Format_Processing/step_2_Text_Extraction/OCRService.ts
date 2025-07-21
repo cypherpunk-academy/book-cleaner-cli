@@ -230,9 +230,14 @@ export class OCRService {
      *
      * @param fileInfo - File information
      * @param options - OCR processing options
+     * @param bookType - Book type for structured text processing
      * @returns OCR result with structured text and metadata
      */
-    async performOCR(fileInfo: FileInfo, options: OCROptions = {}): Promise<OCRResult> {
+    async performOCR(
+        fileInfo: FileInfo,
+        options: OCROptions = {},
+        bookType: string,
+    ): Promise<OCRResult> {
         const startTime = Date.now();
         const ocrLogger = this.logger.getTaggedLogger(
             LOG_COMPONENTS.PIPELINE_MANAGER,
@@ -278,6 +283,7 @@ export class OCRService {
                     fileInfo,
                     options,
                     ocrLogger,
+                    bookType,
                 );
 
                 const processingTime = Date.now() - startTime;
@@ -346,6 +352,7 @@ export class OCRService {
         fileInfo: FileInfo,
         options: OCROptions,
         _logger: unknown,
+        bookType: string,
     ): Promise<OCRResult> {
         // For files with paths, perform actual OCR
         const filePath = fileInfo.path;
@@ -353,7 +360,12 @@ export class OCRService {
             // Handle PDF files by converting to images first
             if (fileInfo.format === 'pdf') {
                 const processingTime = Date.now();
-                const pdfResults = await this.processPDFWithOCR(filePath, worker, options);
+                const pdfResults = await this.processPDFWithOCR(
+                    filePath,
+                    worker,
+                    options,
+                    bookType,
+                );
                 pdfResults.processingTime = Date.now() - processingTime;
                 return pdfResults;
             }
@@ -438,6 +450,7 @@ export class OCRService {
         filePath: string,
         worker: Worker,
         options: OCROptions,
+        bookType: string,
     ): Promise<OCRResult> {
         const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.PIPELINE_MANAGER, 'pdf_ocr');
 
@@ -491,8 +504,7 @@ export class OCRService {
             // Initialize text processor for structured text extraction
             const textProcessor = new GetTextAndStructureFromOcr(this.logger, this.configService);
 
-            // Determine book type from file path (placeholder - could be passed as parameter)
-            const bookType = 'rudolf-steiner-ga-werk'; // Default for now
+            // Use the book type passed from CLI
 
             ocrLogger.info({ pageCount: results.length }, 'Processing pages with OCR');
 
@@ -534,15 +546,6 @@ export class OCRService {
                             paragraphsJsonPath,
                             JSON.stringify(paragraphs ?? [], null, 2),
                             'utf-8',
-                        );
-
-                        ocrLogger.info(
-                            {
-                                pageNumber,
-                                paragraphsCount: paragraphs?.length ?? 0,
-                                paragraphsJsonPath,
-                            },
-                            'Wrote paragraphs to JSON file',
                         );
                     } catch (writeErr) {
                         ocrLogger.error(

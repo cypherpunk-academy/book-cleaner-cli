@@ -156,6 +156,7 @@ export class ConfigService {
         options: {
             inputFile: string;
             outputDir?: string;
+            bookType: string;
             verbose?: boolean;
             debug?: boolean;
             logLevel?: LogLevel;
@@ -165,6 +166,7 @@ export class ConfigService {
         return {
             inputFile: options.inputFile,
             outputDir: options.outputDir || DEFAULT_OUTPUT_DIR,
+            bookType: options.bookType,
             author: bookConfig.author,
             title: bookConfig.title,
             verbose: options.verbose || false,

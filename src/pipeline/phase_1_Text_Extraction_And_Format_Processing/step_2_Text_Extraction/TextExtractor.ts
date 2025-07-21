@@ -77,6 +77,7 @@ export class TextExtractor {
         fileInfo: FileInfo,
         options: TextExtractionOptions,
         metadata: FilenameMetadata,
+        bookType: string,
     ): Promise<TextExtractionResult> {
         const extractionLogger = this.logger.getTaggedLogger(
             LOG_COMPONENTS.PIPELINE_MANAGER,
@@ -98,7 +99,12 @@ export class TextExtractor {
             const updatedOptions = await this.checkAndPromptBoundaries(metadata, options);
 
             // Extract text based on file type
-            const result = await this.performTextExtraction(fileInfo, updatedOptions, metadata);
+            const result = await this.performTextExtraction(
+                fileInfo,
+                updatedOptions,
+                metadata,
+                bookType,
+            );
 
             // Save extracted text to book-artifacts directory
             await this.saveResults(fileInfo, metadata, result, updatedOptions);
@@ -182,11 +188,12 @@ export class TextExtractor {
         fileInfo: FileInfo,
         options: TextExtractionOptions,
         metadata: FilenameMetadata,
+        bookType: string,
     ): Promise<TextExtractionResult> {
         switch (fileInfo.format) {
             case 'pdf':
                 if (options.fileType === 'pdf-text-ocr') {
-                    return this.extractFromPdfTextOcr(fileInfo, options, metadata);
+                    return this.extractFromPdfTextOcr(fileInfo, options, metadata, bookType);
                 }
                 return this.extractFromPdfText(fileInfo, options);
             case 'epub':
@@ -404,6 +411,7 @@ export class TextExtractor {
         fileInfo: FileInfo,
         options: TextExtractionOptions,
         metadata: FilenameMetadata,
+        bookType: string,
     ): Promise<TextExtractionResult> {
         // First extract embedded text
         const textResult = await this.extractFromPdfText(fileInfo, options);
@@ -446,12 +454,16 @@ export class TextExtractor {
 
         // Perform OCR if no existing file found
         try {
-            const ocrResult = await this.ocrService.performOCR(fileInfo, {
-                language: 'deu', // Pure German for better umlaut recognition
-                detectStructure: true,
-                enhanceImage: true,
-                timeout: 300000,
-            });
+            const ocrResult = await this.ocrService.performOCR(
+                fileInfo,
+                {
+                    language: 'deu', // Pure German for better umlaut recognition
+                    detectStructure: true,
+                    enhanceImage: true,
+                    timeout: 300000,
+                },
+                bookType,
+            );
 
             // Use the structured text with markup for OCR output
             // Prefer structured text if available, otherwise use extracted text
@@ -521,6 +533,7 @@ export class TextExtractor {
     private async extractFromPdfOcr(
         fileInfo: FileInfo,
         options: TextExtractionOptions,
+        bookType: string,
     ): Promise<TextExtractionResult> {
         this.logger.info(
             LOG_COMPONENTS.PIPELINE_MANAGER,
@@ -540,12 +553,16 @@ export class TextExtractor {
 
         try {
             // Perform OCR with structured text recognition
-            const ocrResult = await this.ocrService.performOCR(fileInfo, {
-                language: 'deu', // Pure German for better umlaut recognition
-                detectStructure: true,
-                enhanceImage: true,
-                timeout: 300000,
-            });
+            const ocrResult = await this.ocrService.performOCR(
+                fileInfo,
+                {
+                    language: 'deu', // Pure German for better umlaut recognition
+                    detectStructure: true,
+                    enhanceImage: true,
+                    timeout: 300000,
+                },
+                bookType,
+            );
 
             // Apply text boundaries if specified
             let extractedText = ocrResult.extractedText;
@@ -579,9 +596,9 @@ export class TextExtractor {
                 {
                     filename: fileInfo.name,
                     confidence: ocrResult.confidence,
-                    headingsDetected: ocrResult.detectedStructure.headings.length,
-                    paragraphsDetected: ocrResult.detectedStructure.paragraphs.length,
-                    footnotesDetected: ocrResult.detectedStructure.footnotes.length,
+                    headingsDetected: ocrResult.detectedStructure?.headings.length ?? 0,
+                    paragraphsDetected: ocrResult.detectedStructure?.paragraphs.length ?? 0,
+                    footnotesDetected: ocrResult.detectedStructure?.footnotes.length ?? 0,
                     processingTime: ocrResult.processingTime,
                 },
             );

@@ -7,6 +7,9 @@ import {
     ROMAN_NUMERALS,
     GERMAN_ORDINALS,
     PARAGRAPH_END_MARKERS,
+    HEADER_MAX_WIDTH_RATIO,
+    PAGE_METRICS_TYPES,
+    DEFAULT_PAGE_METRICS,
 } from '@/constants';
 import { AppError } from '@/utils/AppError';
 import pino from 'pino';
@@ -73,6 +76,7 @@ interface BookTypeConfig {
         level3?: HeaderTypeDefinition;
     };
     textRemovalPatterns: string[];
+    metrics?: typeof DEFAULT_PAGE_METRICS;
 }
 
 /**
@@ -143,7 +147,351 @@ export class GetTextAndStructureFromOcr {
     }
 
     /**
-     * Returns a tagged logger for header detection within the pipeline manager.
+     * Analyze page metrics and return structured metrics object
+     */
+    private analyzePageMetrics(
+        pageOcrData: OCRData,
+        bookConfig: BookTypeConfig,
+    ): Record<string, { min: number; max: number }> {
+        if (!pageOcrData.paragraphs || pageOcrData.paragraphs.length === 0) {
+            this.logger.warn('No paragraphs available for page metrics analysis');
+            return {};
+        }
+
+        // Collect all x0 values from lines within all paragraphs
+        const x0Values: number[] = [];
+        let totalLines = 0;
+        let linesWithBbox = 0;
+
+        for (const paragraph of pageOcrData.paragraphs) {
+            if (paragraph.lines && paragraph.lines.length > 0) {
+                for (const line of paragraph.lines) {
+                    totalLines++;
+                    if (line.bbox && typeof line.bbox.x0 === 'number') {
+                        linesWithBbox++;
+                        x0Values.push(line.bbox.x0);
+                    }
+                }
+            }
+        }
+
+        if (x0Values.length === 0) {
+            this.logger.warn('No valid line bbox.x0 values found for metrics analysis');
+            return {};
+        }
+
+        // Sort x0 values for grouping
+        x0Values.sort((a, b) => a - b);
+
+        // Group x0 values using clustering algorithm with ±7 tolerance
+        const groups = this.groupX0ValuesWithTolerance(x0Values, 7);
+
+        // Load page metrics from book-types.yaml for the specific book-type
+        const bookTypeMetrics = bookConfig.metrics;
+
+        if (!bookTypeMetrics) {
+            this.logger.error(
+                {
+                    bookConfig,
+                },
+                'Book type does not have required metrics configuration',
+            );
+            process.exit(1);
+        }
+
+        // Build the result metrics object
+        const result = this.buildPageMetricsResult(groups, bookTypeMetrics);
+
+        return result;
+    }
+
+    /**
+     * Group x0 values with tolerance-based clustering algorithm
+     */
+    private groupX0ValuesWithTolerance(
+        sortedX0Values: number[],
+        tolerance: number,
+    ): Array<{ average: number; values: number[]; min: number; max: number }> {
+        const groups: Array<{ average: number; values: number[]; min: number; max: number }> = [];
+
+        for (const x0 of sortedX0Values) {
+            let foundGroup = false;
+
+            // Try to find an existing group that fits within tolerance
+            for (const group of groups) {
+                if (Math.abs(x0 - group.average) <= tolerance) {
+                    group.values.push(x0);
+                    group.min = Math.min(group.min, x0);
+                    group.max = Math.max(group.max, x0);
+                    // Recalculate average
+                    group.average =
+                        group.values.reduce((sum, val) => sum + val, 0) / group.values.length;
+                    foundGroup = true;
+                    break;
+                }
+            }
+
+            // If no group fits, start a new group
+            if (!foundGroup) {
+                groups.push({
+                    average: x0,
+                    values: [x0],
+                    min: x0,
+                    max: x0,
+                });
+            }
+        }
+
+        // Sort groups by average x0 position
+        groups.sort((a, b) => a.average - b.average);
+
+        return groups;
+    }
+
+    /**
+     * Build the structured page metrics result object
+     */
+    private buildPageMetricsResult(
+        groups: Array<{ average: number; values: number[]; min: number; max: number }>,
+        bookTypeMetrics: typeof DEFAULT_PAGE_METRICS,
+    ): Record<string, { min: number; max: number }> {
+        const result: Record<string, { min: number; max: number }> = {};
+
+        if (groups.length === 0) {
+            return result;
+        }
+
+        // Find the largest group (by number of values) - this is paragraph-text
+        let largestGroupIndex = 0;
+        let maxValueCount = groups[0]?.values.length ?? 0;
+
+        for (let i = 1; i < groups.length; i++) {
+            const currentGroup = groups[i];
+            if (currentGroup && currentGroup.values.length > maxValueCount) {
+                maxValueCount = currentGroup.values.length;
+                largestGroupIndex = i;
+            }
+        }
+
+        const largestGroup = groups[largestGroupIndex];
+        if (!largestGroup) {
+            return result;
+        }
+
+        // Mark the largest group as paragraph-text
+        result[PAGE_METRICS_TYPES.PARAGRAPH_TEXT] = {
+            min: largestGroup.min,
+            max: largestGroup.max,
+        };
+
+        // Get the paragraph-text baseline for calculating relative positions
+        const paragraphTextBaseline = largestGroup.average;
+
+        // Process other groups to match with expected metrics (using relative offsets)
+        const usedGroups = new Set([largestGroupIndex]);
+        const availableTypes = [
+            PAGE_METRICS_TYPES.PARAGRAPH_START,
+            PAGE_METRICS_TYPES.FOOTNOTE_TEXT,
+            PAGE_METRICS_TYPES.FOOTNOTE_START,
+            PAGE_METRICS_TYPES.QUOTE_TEXT,
+        ];
+
+        for (const type of availableTypes) {
+            // Handle simple YAML structure where metrics are just numbers
+            const relativeOffset =
+                typeof bookTypeMetrics[type] === 'number'
+                    ? (bookTypeMetrics[type] as number)
+                    : (bookTypeMetrics[type] as any)?.expectedX0;
+            const tolerance = (bookTypeMetrics[type] as any)?.tolerance || 15;
+
+            if (relativeOffset !== undefined) {
+                // Calculate expected absolute position: baseline + relative offset
+                const expectedX0 = paragraphTextBaseline + relativeOffset;
+                // Find the best matching group for this type
+                let bestMatchIndex = -1;
+                let bestDistance = Number.POSITIVE_INFINITY;
+
+                for (let i = 0; i < groups.length; i++) {
+                    if (usedGroups.has(i)) continue;
+
+                    const group = groups[i];
+                    if (!group) continue;
+
+                    const distance = Math.abs(group.average - expectedX0);
+
+                    if (distance <= tolerance && distance < bestDistance) {
+                        bestMatchIndex = i;
+                        bestDistance = distance;
+                    }
+                }
+
+                if (bestMatchIndex >= 0) {
+                    const bestGroup = groups[bestMatchIndex];
+                    if (bestGroup) {
+                        result[type] = {
+                            min: bestGroup.min,
+                            max: bestGroup.max,
+                        };
+                        usedGroups.add(bestMatchIndex);
+                    }
+                }
+            }
+        }
+
+        // Add remaining groups as unknown
+        let unknownCounter = 1;
+        for (let i = 0; i < groups.length; i++) {
+            if (!usedGroups.has(i)) {
+                const group = groups[i];
+                if (group) {
+                    result[`unknown-${unknownCounter}`] = {
+                        min: group.min,
+                        max: group.max,
+                    };
+                    unknownCounter++;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Classify page groups (legacy method for backward compatibility)
+     */
+    private classifyPageGroups(
+        groups: Array<{ center: number; values: number[] }>,
+        pageMetrics: typeof DEFAULT_PAGE_METRICS,
+    ): Array<{
+        type: string;
+        averageX0: number;
+        values: number[];
+        confidence: number;
+    }> {
+        return groups.map((group, index) => ({
+            type: `group-${index}`,
+            averageX0: group.center,
+            values: group.values,
+            confidence: 0.8,
+        }));
+    }
+
+    /**
+     * Legacy analyze page metrics method for logging (kept for backward compatibility)
+     */
+    private logPageMetrics(pageOcrData: OCRData, bookConfig: BookTypeConfig): void {
+        if (!pageOcrData.paragraphs || pageOcrData.paragraphs.length === 0) {
+            this.logger.warn('No paragraphs available for page metrics analysis');
+            return;
+        }
+
+        // Collect all x0 values from lines within all paragraphs
+        const x0Values: number[] = [];
+        for (const paragraph of pageOcrData.paragraphs) {
+            if (paragraph.lines && paragraph.lines.length > 0) {
+                for (const line of paragraph.lines) {
+                    if (line.bbox && typeof line.bbox.x0 === 'number') {
+                        x0Values.push(line.bbox.x0);
+                    }
+                }
+            }
+        }
+
+        if (x0Values.length === 0) {
+            this.logger.warn('No valid line bbox.x0 values found for metrics analysis');
+            return;
+        }
+
+        // Sort x0 values for grouping
+        x0Values.sort((a, b) => a - b);
+
+        // Group x0 values using clustering algorithm (tolerance-based grouping)
+        const groups = this.groupX0Values(x0Values);
+
+        // Load page metrics from configuration (no fallback - error if missing)
+        const pageMetrics = bookConfig.metrics;
+
+        if (!pageMetrics) {
+            this.logger.error(
+                {
+                    bookConfig,
+                },
+                'Book type does not have required metrics configuration',
+            );
+            process.exit(1);
+        }
+
+        // Analyze groups and classify text types
+        const classifiedGroups = this.classifyPageGroups(groups, pageMetrics);
+
+        // Print results in green using logger
+        const results = {
+            totalParagraphs: pageOcrData.paragraphs.length,
+            totalLinesAnalyzed: x0Values.length,
+            identifiedGroups: classifiedGroups.length,
+            groups: classifiedGroups,
+            rawX0Values: x0Values,
+        };
+
+        // Log with special formatting for green output
+        this.logger.info(
+            {
+                ...results,
+                _colorTag: 'GREEN_SUCCESS', // Special tag for green formatting
+            },
+            '🟢 PAGE METRICS ANALYSIS COMPLETED',
+        );
+
+        // Also log each group separately in green
+        for (const group of classifiedGroups) {
+            this.logger.info(
+                {
+                    groupType: group.type,
+                    averageX0: group.averageX0,
+                    valueCount: group.values.length,
+                    confidence: group.confidence,
+                    values: group.values,
+                    _colorTag: 'GREEN_SUCCESS',
+                },
+                `🟢 TEXT TYPE: ${group.type.toUpperCase()}`,
+            );
+        }
+    }
+
+    /**
+     * Group x0 values based on proximity (clustering)
+     */
+    private groupX0Values(
+        sortedX0Values: number[],
+        tolerance: number = 15,
+    ): Array<{ center: number; values: number[] }> {
+        const groups: Array<{ center: number; values: number[] }> = [];
+
+        for (const x0 of sortedX0Values) {
+            // Find existing group within tolerance
+            let foundGroup = false;
+            for (const group of groups) {
+                if (Math.abs(x0 - group.center) <= tolerance) {
+                    group.values.push(x0);
+                    // Recalculate center as average
+                    group.center =
+                        group.values.reduce((sum, val) => sum + val, 0) / group.values.length;
+                    foundGroup = true;
+                    break;
+                }
+            }
+
+            // Create new group if no suitable group found
+            if (!foundGroup) {
+                groups.push({ center: x0, values: [x0] });
+            }
+        }
+
+        return groups;
+    }
+
+    /**
+     * Classify grouped x0 values into text types based on page metrics
      */
 
     /**
@@ -154,20 +502,15 @@ export class GetTextAndStructureFromOcr {
         bookType: string,
         scanResults: ScanResults,
     ): Promise<ProcessedTextResult> {
-        this.logger.info(
-            {
-                bookType,
-                paragraphs: ocrData.paragraphs?.length ?? 0,
-                currentLevel1Index: scanResults.level1HeadingsIndex,
-                currentLevel2Index: scanResults.level2HeadingsIndex,
-                currentLevel3Index: scanResults.level3HeadingsIndex,
-            },
-            'Processing OCR data for structured text extraction',
-        );
-
         try {
             // Load book type configuration
             const bookConfig = await this.loadBookTypeConfig(bookType);
+
+            // Analyze page metrics based on bbox.x0 values and classify text types
+            const pageMetrics = this.analyzePageMetrics(ocrData, bookConfig);
+
+            // Debug: Log the page metrics result
+            this.logger.info({ pageMetrics }, 'Page Metrics Result');
 
             let processedParagraphs = 0;
             let detectedHeaders = 0;
@@ -179,15 +522,6 @@ export class GetTextAndStructureFromOcr {
                 for (const paragraph of ocrData.paragraphs) {
                     try {
                         processedParagraphs++;
-
-                        this.logger.info(
-                            {
-                                paragraphText: paragraph.text,
-                                paragraphConfidence: paragraph.confidence,
-                                paragraphBbox: paragraph.bbox,
-                            },
-                            'Processing paragraph',
-                        );
 
                         // Skip empty paragraphs
                         if (!paragraph.text || paragraph.text.trim().length === 0) {
@@ -201,13 +535,6 @@ export class GetTextAndStructureFromOcr {
                             scanResults,
                         );
 
-                        this.logger.info(
-                            {
-                                headerResult,
-                            },
-                            'Header result',
-                        );
-
                         if (headerResult) {
                             // Successfully processed as header
                             detectedHeaders++;
@@ -219,6 +546,8 @@ export class GetTextAndStructureFromOcr {
                                 },
                                 'Header detected and processed',
                             );
+
+                            continue; // Headers are supposed to be alone in a paragraph
                         } else {
                             // Process as regular paragraph
                             const cleanedText = this.applyTextRemovalPatterns(
@@ -252,20 +581,6 @@ export class GetTextAndStructureFromOcr {
                     }
                 }
             }
-
-            this.logger.info(
-                {
-                    bookType,
-                    processedParagraphs,
-                    detectedHeaders,
-                    removedPatterns,
-                    errorCount: errors.length,
-                    finalLevel1Index: scanResults.level1HeadingsIndex,
-                    finalLevel2Index: scanResults.level2HeadingsIndex,
-                    finalLevel3Index: scanResults.level3HeadingsIndex,
-                },
-                'OCR data processing completed',
-            );
 
             return {
                 success: errors.length === 0,
@@ -339,6 +654,7 @@ export class GetTextAndStructureFromOcr {
                     (config.textRemovalPatterns as string[]) ||
                     (config['text-removal-patterns'] as string[]) ||
                     [],
+                metrics: (config.metrics as typeof DEFAULT_PAGE_METRICS) || undefined,
             };
 
             // Cache the configuration
@@ -391,15 +707,6 @@ export class GetTextAndStructureFromOcr {
         // For level 1 and 2 headers, ensure they start at the beginning of the text
         const startsAtBeginning = this.checkHeaderStartsAtBeginning(paragraph.text, normalizedText);
 
-        this.logger.info(
-            {
-                originalText: paragraph.text,
-                normalizedText,
-                isCentered: true,
-            },
-            'Processing centered paragraph for header detection',
-        );
-
         // Try to match against header patterns (level1 → level2 → level3)
         const headerLevels = [
             { level: 1, config: bookConfig.headerTypes?.level1 },
@@ -434,26 +741,7 @@ export class GetTextAndStructureFromOcr {
                     isStartAnchored,
                 );
 
-                this.logger.info(
-                    {
-                        normalizedText,
-                        pattern: format.pattern,
-                        patternMatch,
-                        isStartAnchored,
-                    },
-                    'Pattern match result',
-                );
-
                 if (patternMatch && patternMatch.matched) {
-                    this.logger.info(
-                        {
-                            level,
-                            pattern: format.pattern,
-                            extractedValues: patternMatch.extractedValues,
-                        },
-                        'Header pattern matched',
-                    );
-
                     // Extract ordinal value for sequence validation
                     const ordinalValue = this.extractOrdinalValue(patternMatch.extractedValues);
 
@@ -539,16 +827,6 @@ export class GetTextAndStructureFromOcr {
         try {
             const regex = this.buildPlaceholderRegex(pattern, isStartAnchored);
             const match = text.match(new RegExp(regex, 'i'));
-
-            this.logger.info(
-                {
-                    text,
-                    pattern,
-                    generatedRegex: regex,
-                    match,
-                },
-                'Match result with generated regex',
-            );
 
             if (match) {
                 // Extract named groups and values

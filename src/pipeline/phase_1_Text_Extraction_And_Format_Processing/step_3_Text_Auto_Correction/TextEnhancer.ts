@@ -8,6 +8,7 @@ import {
     TEXT_QUALITY_ENHANCEMENT,
 } from '../../../constants';
 import { BookTypesService } from '../../../services/BookTypesService';
+import { ConfigService } from '../../../services/ConfigService';
 import type { LoggerService } from '../../../services/LoggerService';
 import { AppError } from '../../../utils/AppError';
 import type { QualityImprovement, QualityIssue, TextQualityAnalysisResult } from './TextComparator';
@@ -80,9 +81,9 @@ export class TextEnhancer {
     private readonly logger: LoggerService;
     private readonly bookTypesService: BookTypesService;
 
-    constructor(logger: LoggerService, configDir?: string) {
+    constructor(logger: LoggerService, configService: ConfigService) {
         this.logger = logger;
-        this.bookTypesService = new BookTypesService(logger, configDir);
+        this.bookTypesService = new BookTypesService(logger, configService);
     }
 
     /**

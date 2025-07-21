@@ -27,7 +27,7 @@ export class DataLoadingPhase extends AbstractPhase {
         super(logger);
         this.formatDetector = new FileFormatDetector(logger);
         this.textExtractor = new TextExtractor(logger, configService, './book-artifacts');
-        this.textEnhancer = new TextEnhancer(logger, './book-artifacts');
+        this.textEnhancer = new TextEnhancer(logger, configService);
         this.fileUtils = new FileUtils(logger);
     }
 
@@ -132,6 +132,7 @@ export class DataLoadingPhase extends AbstractPhase {
                     // No outputDir - TextExtractor always uses book-artifacts directory for intermediate results
                 },
                 metadata,
+                state.bookType,
             );
 
             // Update progress

@@ -2,6 +2,7 @@ import path from 'node:path';
 import {
     APP_DESCRIPTION,
     APP_VERSION,
+    BOOK_TYPES,
     CLI_ALIASES,
     CLI_OPTIONS,
     DEFAULT_LOG_LEVEL,
@@ -10,6 +11,7 @@ import {
     LOG_COMPONENTS,
     LOG_LEVELS,
     PIPELINE_PHASES,
+    VALID_BOOK_TYPES,
 } from '@/constants';
 import { AIEnhancementsPhase } from '@/pipeline/AIEnhancementsPhase';
 import { DataLoadingPhase } from '@/pipeline/DataLoadingPhase';
@@ -36,13 +38,10 @@ import { Command } from 'commander';
 // Commander.js option types (following .cursorrules #5 - no any keyword)
 interface CommanderOptions {
     outputDir: string;
-    author?: string;
-    title?: string;
-    bookIndex?: string;
+    bookType: string;
     verbose: boolean;
     debug: boolean;
     logLevel: string;
-    phases: string;
 }
 
 /**
@@ -98,16 +97,8 @@ export class CleanBookCommand {
                 DEFAULT_OUTPUT_DIR,
             )
             .option(
-                `-${CLI_ALIASES[CLI_OPTIONS.AUTHOR]}, --${CLI_OPTIONS.AUTHOR} <author>`,
-                'Override author from filename',
-            )
-            .option(
-                `-${CLI_ALIASES[CLI_OPTIONS.TITLE]}, --${CLI_OPTIONS.TITLE} <title>`,
-                'Override title from filename',
-            )
-            .option(
-                `-${CLI_ALIASES[CLI_OPTIONS.BOOK_INDEX]}, --${CLI_OPTIONS.BOOK_INDEX} <index>`,
-                'Override book index from filename',
+                `-${CLI_ALIASES[CLI_OPTIONS.BOOK_TYPE]}, --${CLI_OPTIONS.BOOK_TYPE} <type>`,
+                `Book type (required): ${VALID_BOOK_TYPES.join(', ')}`,
             )
             .option(
                 `-${CLI_ALIASES[CLI_OPTIONS.VERBOSE]}, --${CLI_OPTIONS.VERBOSE}`,
@@ -123,11 +114,6 @@ export class CleanBookCommand {
                 `-${CLI_ALIASES[CLI_OPTIONS.LOG_LEVEL]}, --${CLI_OPTIONS.LOG_LEVEL} <level>`,
                 'Set log level (debug, info, warn, error, fatal)',
                 DEFAULT_LOG_LEVEL,
-            )
-            .option(
-                `-${CLI_ALIASES[CLI_OPTIONS.PHASES]}, --${CLI_OPTIONS.PHASES} <phases>`,
-                'Comma-separated list of phases to run',
-                'data_loading,text_normalization,evaluation,ai_enhancements',
             )
             .action(async (inputFile: string, options: CommanderOptions) => {
                 await this.execute(inputFile, options);
@@ -199,33 +185,40 @@ export class CleanBookCommand {
      * Parse and validate CLI options
      */
     private parseOptions(inputFile: string, options: CommanderOptions): CLIOptions {
-        const phases = options.phases
-            ? options.phases.split(',').map((p: string) => p.trim())
-            : undefined;
+        // Validate required book type
+        if (!options.bookType) {
+            console.error('\n❌ Error: Book type is required\n');
+            console.error('Available book types:');
+            for (const type of VALID_BOOK_TYPES) {
+                console.error(`  - ${type}`);
+            }
+            console.error('\nUsage: clean-book -b <book-type> <input-file>');
+            console.error('Example: clean-book -b rudolf-steiner-ga-werk input.pdf\n');
+            process.exit(1);
+        }
+
+        // Validate book type is valid
+        if (!VALID_BOOK_TYPES.includes(options.bookType)) {
+            console.error(`\n❌ Error: Invalid book type "${options.bookType}"\n`);
+            console.error('Available book types:');
+            for (const type of VALID_BOOK_TYPES) {
+                console.error(`  - ${type}`);
+            }
+            console.error('\nUsage: clean-book -b <book-type> <input-file>');
+            console.error('Example: clean-book -b rudolf-steiner-ga-werk input.pdf\n');
+            process.exit(1);
+        }
 
         const cliOptions: CLIOptions = {
             inputFile: path.resolve(inputFile),
             outputDir: options.outputDir
                 ? path.resolve(options.outputDir)
                 : path.resolve(DEFAULT_OUTPUT_DIR),
+            bookType: options.bookType,
             verbose: options.verbose || options.debug,
             debug: options.debug,
             logLevel: options.logLevel as LogLevel,
         };
-
-        // Only assign optional properties if they are defined
-        if (options.author !== undefined) {
-            cliOptions.author = options.author;
-        }
-        if (options.title !== undefined) {
-            cliOptions.title = options.title;
-        }
-        if (options.bookIndex !== undefined) {
-            cliOptions.bookIndex = options.bookIndex;
-        }
-        if (phases !== undefined) {
-            cliOptions.phases = phases;
-        }
 
         return cliOptions;
     }
@@ -291,25 +284,10 @@ export class CleanBookCommand {
     }
 
     /**
-     * Parse filename metadata with CLI overrides
+     * Parse filename metadata
      */
     private parseFilenameMetadata(options: CLIOptions): FilenameMetadata {
-        const metadata = this.fileUtils.parseFilename(options.inputFile);
-
-        // Apply CLI overrides
-        if (options.author) {
-            metadata.author = options.author;
-        }
-
-        if (options.title) {
-            metadata.title = options.title;
-        }
-
-        if (options.bookIndex) {
-            metadata.bookIndex = options.bookIndex;
-        }
-
-        return metadata;
+        return this.fileUtils.parseFilename(options.inputFile);
     }
 
     /**

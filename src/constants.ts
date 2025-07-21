@@ -169,6 +169,27 @@ export const OCR_CONFIDENCE_THRESHOLDS = {
 export const OCR_PAGE_WIDTH = 2480; // A4 at 300 DPI
 export const OCR_PAGE_HEIGHT = 3508;
 
+// Header width validation
+export const HEADER_MAX_WIDTH_RATIO = 0.9; // Headers can only use max 90% of normal text width
+
+// Page layout metrics - relative x0 positions for different text types
+export const PAGE_METRICS_TYPES = {
+    PARAGRAPH_TEXT: 'paragraph-text',
+    PARAGRAPH_START: 'paragraph-start',
+    FOOTNOTE_TEXT: 'footnote-text',
+    FOOTNOTE_START: 'footnote-start',
+    QUOTE_TEXT: 'quote-text',
+} as const;
+
+// Default page metrics (can be overridden by configuration)
+export const DEFAULT_PAGE_METRICS = {
+    [PAGE_METRICS_TYPES.PARAGRAPH_TEXT]: { expectedX0: 200, tolerance: 15 },
+    [PAGE_METRICS_TYPES.PARAGRAPH_START]: { expectedX0: 180, tolerance: 10 },
+    [PAGE_METRICS_TYPES.FOOTNOTE_TEXT]: { expectedX0: 220, tolerance: 12 },
+    [PAGE_METRICS_TYPES.FOOTNOTE_START]: { expectedX0: 200, tolerance: 8 },
+    [PAGE_METRICS_TYPES.QUOTE_TEXT]: { expectedX0: 240, tolerance: 20 },
+};
+
 // ==================== Text Processing Constants ====================
 
 export const TEXT_SOURCES = {
@@ -301,27 +322,30 @@ export const CLI_COMMANDS = {
 export const CLI_OPTIONS = {
     INPUT_FILE: 'input-file',
     OUTPUT_DIR: 'output-dir',
-    AUTHOR: 'author',
-    TITLE: 'title',
-    BOOK_INDEX: 'book-index',
+    BOOK_TYPE: 'book-type',
     VERBOSE: 'verbose',
     DEBUG: 'debug',
     LOG_LEVEL: 'log-level',
     CONFIG: 'config',
-    PHASES: 'phases',
 } as const;
 
 export const CLI_ALIASES = {
     [CLI_OPTIONS.OUTPUT_DIR]: 'o',
-    [CLI_OPTIONS.AUTHOR]: 'a',
-    [CLI_OPTIONS.TITLE]: 't',
-    [CLI_OPTIONS.BOOK_INDEX]: 'b',
+    [CLI_OPTIONS.BOOK_TYPE]: 'b',
     [CLI_OPTIONS.VERBOSE]: 'v',
     [CLI_OPTIONS.DEBUG]: 'd',
     [CLI_OPTIONS.LOG_LEVEL]: 'l',
     [CLI_OPTIONS.CONFIG]: 'c',
-    [CLI_OPTIONS.PHASES]: 'p',
 } as const;
+
+// Valid book types
+export const BOOK_TYPES = {
+    RUDOLF_STEINER_GA_WERK: 'rudolf-steiner-ga-werk',
+    RUDOLF_STEINER_GA_VORTRAG: 'rudolf-steiner-ga-vortrag',
+    GOOGLE_PLAY_EBOOK: 'google-play-ebook',
+} as const;
+
+export const VALID_BOOK_TYPES = Object.values(BOOK_TYPES) as readonly string[];
 
 // ==================== File System Constants ====================
 

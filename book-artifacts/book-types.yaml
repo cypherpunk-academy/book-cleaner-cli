@@ -18,6 +18,12 @@ rudolf-steiner-ga-werk:
         - pattern: "{decimal-number}. {title}{no-paragraph-end-marker}"
           alignment: "center"
           example: "5. Ethische und historische Wissenschaften"
+  metrics: 
+    paragraph-text: 0
+    footnote-start: 25
+    footnote-text: 65
+    paragraph-start: 100
+    quote-text: 200
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
     - "/Buch\\s?:\\s{0,3}\\d+\\s*\\d{0,3}\\s+Seite\\s?:\\s?\\d+[ \\t]*\\d{0,4}/"

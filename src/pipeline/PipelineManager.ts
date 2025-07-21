@@ -168,6 +168,7 @@ export class PipelineManager {
             id: randomUUID(),
             inputFile: config.inputFile,
             outputDir: config.outputDir,
+            bookType: config.bookType,
             currentPhase: 0,
             totalPhases: enabledPhases.length,
             status: PIPELINE_STATUS.PENDING,

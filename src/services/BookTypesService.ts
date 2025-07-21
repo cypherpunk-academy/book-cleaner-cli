@@ -1,8 +1,6 @@
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
 import { DEFAULT_ARTIFACTS_DIR, ERROR_CODES, ERROR_MESSAGES, LOG_COMPONENTS } from '@/constants';
 import { AppError } from '@/utils/AppError';
-import yaml from 'js-yaml';
+import type { ConfigService } from './ConfigService';
 import type { LoggerService } from './LoggerService';
 
 /**
@@ -36,13 +34,12 @@ interface BookTypesConfig {
  */
 export class BookTypesService {
     private readonly logger: LoggerService;
-    private readonly configDir: string;
+    private readonly configService: ConfigService;
     private bookTypesCache: BookTypesConfig | null = null;
-    private readonly bookTypesFileName = 'book-types.yaml';
 
-    constructor(logger: LoggerService, configDir: string = DEFAULT_ARTIFACTS_DIR) {
+    constructor(logger: LoggerService, configService: ConfigService) {
         this.logger = logger;
-        this.configDir = configDir;
+        this.configService = configService;
     }
 
     /**
@@ -53,37 +50,41 @@ export class BookTypesService {
             return this.bookTypesCache;
         }
 
-        const bookTypesPath = path.join(this.configDir, this.bookTypesFileName);
-        const configLogger = this.logger.getConfigLogger(LOG_COMPONENTS.CONFIG_SERVICE);
-
         try {
-            const configContent = await fs.readFile(bookTypesPath, 'utf-8');
-            const bookTypes = yaml.load(configContent) as BookTypesConfig;
+            const rawBookTypes = await this.configService.loadBookTypesConfig();
+
+            if (!rawBookTypes) {
+                throw new AppError(
+                    ERROR_CODES.CONFIG_INVALID,
+                    LOG_COMPONENTS.CONFIG_SERVICE,
+                    'loadBookTypes',
+                    'Book types configuration file not found or empty',
+                    {},
+                );
+            }
+
+            const bookTypes = rawBookTypes as BookTypesConfig;
 
             // Validate the structure
             this.validateBookTypesConfig(bookTypes);
 
             this.bookTypesCache = bookTypes;
 
-            configLogger.info(
-                {
-                    bookTypesPath,
-                    typesLoaded: Object.keys(bookTypes).length,
-                },
-                'Book types configuration loaded successfully',
-            );
-
             return bookTypes;
         } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+
             throw new AppError(
                 ERROR_CODES.CONFIG_INVALID,
                 LOG_COMPONENTS.CONFIG_SERVICE,
                 'loadBookTypes',
                 ERROR_MESSAGES[ERROR_CODES.CONFIG_INVALID].replace(
                     '{details}',
-                    `Failed to load book types: ${bookTypesPath}`,
+                    'Failed to load book types configuration',
                 ),
-                { bookTypesPath },
+                {},
                 error instanceof Error ? error : new Error(String(error)),
             );
         }
@@ -181,10 +182,9 @@ export class BookTypesService {
      * Check if book types configuration file exists
      */
     public async exists(): Promise<boolean> {
-        const bookTypesPath = path.join(this.configDir, this.bookTypesFileName);
         try {
-            await fs.access(bookTypesPath);
-            return true;
+            const bookTypes = await this.configService.loadBookTypesConfig();
+            return bookTypes !== null;
         } catch {
             return false;
         }

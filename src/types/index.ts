@@ -28,6 +28,7 @@ export type SupportedFormat = 'pdf' | 'epub' | 'txt';
 export interface PipelineConfig {
     inputFile: string;
     outputDir: string;
+    bookType: string;
     author?: string;
     title?: string;
     bookIndex?: string;
@@ -46,6 +47,7 @@ export interface PipelineState {
     id: string;
     inputFile: string;
     outputDir: string;
+    bookType: string;
     currentPhase: number;
     totalPhases: number;
     status: PipelineStatus;
@@ -361,14 +363,11 @@ export type ProgressCallback = (progress: ProgressInfo) => void;
 export interface CLIOptions {
     inputFile: string;
     outputDir?: string;
-    author?: string;
-    title?: string;
-    bookIndex?: string;
+    bookType: string;
     verbose?: boolean;
     debug?: boolean;
     logLevel?: LogLevel;
     config?: string;
-    phases?: string[];
 }
 
 export interface CLIContext {
