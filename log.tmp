@@ -1,7 +1,7 @@
 Initializing...
 Data Loading & Format Detection: Starting phase (25%)
 Data Loading & Format Detection: Step 1: Detecting file format... (25%)
-[2025-07-21 11:17:41] [32mINFO[39m: [36mFile format detection completed[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mFile format detection completed[39m
     component: "FileHandler"
     tag: "text_extraction"
     filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -12,23 +12,23 @@ Data Loading & Format Detection: Step 1: Detecting file format... (25%)
       "PDF has mixed content (text and 10 images)"
     ]
     contentType: "hybrid"
-[2025-07-21 11:17:41] [32mINFO[39m: [36mConfiguration loaded successfully[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mConfiguration loaded successfully[39m
     component: "ConfigService"
     tag: "config"
     author: "Rudolf Steiner"
     title: "Einleitungen zu Goethes Naturwissenschaftlichen Schriften"
     configKey: "Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1"
-[2025-07-21 11:17:41] [32mINFO[39m: [36mStarting book cleaning process[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mStarting book cleaning process[39m
     component: "CLICommand"
     tag: "cli"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
     outputDir: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output"
     author: "Rudolf Steiner"
     title: "Einleitungen zu Goethes Naturwissenschaftlichen Schriften"
-[2025-07-21 11:17:41] [32mINFO[39m: [36mStarting processing of /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mStarting processing of /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
     phases: [
       "data_loading",
@@ -36,20 +36,20 @@ Data Loading & Format Detection: Step 1: Detecting file format... (25%)
       "evaluation",
       "ai_enhancements"
     ]
-[2025-07-21 11:17:41] [32mINFO[39m: [36mStarting phase 1: Data Loading & Format Detection[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mStarting phase 1: Data Loading & Format Detection[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 1
     phaseName: "Data Loading & Format Detection"
-[2025-07-21 11:17:41] [32mINFO[39m: [36mStarting data loading phase[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mStarting data loading phase[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
 Data Loading & Format Detection: Step 1: File format detected successfully (13%)
 Data Loading & Format Detection: Step 2: Extracting text based on book structure... (15%)
-[2025-07-21 11:17:41] [32mINFO[39m: [36mFile format detection completed[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mFile format detection completed[39m
     component: "FileHandler"
     tag: "text_extraction"
     filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -60,12 +60,12 @@ Data Loading & Format Detection: Step 2: Extracting text based on book structure
       "PDF has mixed content (text and 10 images)"
     ]
     contentType: "hybrid"
-[2025-07-21 11:17:41] [32mINFO[39m: [36mStarting Step 2: Text extraction based on book structure[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mStarting Step 2: Text extraction based on book structure[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     format: "pdf"
-[2025-07-21 11:17:41] [32mINFO[39m: [36mStarting text extraction based on book structure[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mStarting text extraction based on book structure[39m
     component: "PipelineManager"
     tag: "text_extraction"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -98,7 +98,7 @@ sehen.» [WA 8, 250
 punkt, aus dem wir Goethes wissenschaftliche Arbeiten zu
 betrachten haben. Es handelt sich be..."
 📍 If the end marker is not found, assume the document continues to the end
-[2025-07-21 11:17:41] [32mINFO[39m: [36mStarting structured OCR processing with Tesseract.js[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mStarting structured OCR processing with Tesseract.js[39m
     component: "PipelineManager"
     tag: "ocr_service"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -111,25 +111,23 @@ betrachten haben. Es handelt sich be..."
       "timeout": 300000
     }
 🇩🇪 OCR optimized for German text with umlaut recognition
-[2025-07-21 11:17:41] [32mINFO[39m: [36mConverting PDF to images[39m
+[2025-07-21 15:52:56] [32mINFO[39m: [36mConverting PDF to images[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
 ✅ PDF conversion complete! Found 15 pages
 🔍 Starting OCR processing...
-[2025-07-21 11:17:45] [32mINFO[39m: [36mProcessing pages with OCR[39m
+[2025-07-21 15:53:00] [32mINFO[39m: [36mProcessing pages with OCR[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageCount: 15
-[2025-07-21 11:17:45] [32mINFO[39m: [36mProcessing page 1/15 (7%)[39m
+[2025-07-21 15:53:00] [32mINFO[39m: [36mProcessing page 1/15 (7%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 1
     totalPages: 15
     progress: "7%"
-📝 Page 1: Found 1 headers, processed 4 paragraphs
-✅ Page 1 completed - Confidence: 92%
-[2025-07-21 11:17:48] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
+[2025-07-21 15:53:03] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
     component: "ConfigService"
     tag: "config"
     bookTypesPath: "book-artifacts/book-types.yaml"
@@ -139,7 +137,7 @@ betrachten haben. Es handelt sich be..."
       "rudolf-steiner-ga-vortrag",
       "google-play-ebook"
     ]
-[2025-07-21 11:17:48] [32mINFO[39m: [36mBook type configuration loaded successfully[39m
+[2025-07-21 15:53:03] [32mINFO[39m: [36mBook type configuration loaded successfully[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     bookType: "rudolf-steiner-ga-werk"
@@ -147,7 +145,7 @@ betrachten haben. Es handelt sich be..."
     hasLevel2Headers: true
     hasLevel3Headers: false
     removalPatternsCount: 3
-[2025-07-21 11:17:48] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:03] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -180,22 +178,26 @@ betrachten haben. Es handelt sich be..."
         "max": 1175
       }
     }
-[2025-07-21 11:17:48] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
+[2025-07-21 15:53:03] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    ordinalValue: 1
-    text: "I EINLEITUNG"
-    currentLevel1Index: 1
-    currentLevel2Index: 0
-    currentLevel3Index: 0
-[2025-07-21 11:17:48] [32mINFO[39m: [36mProcessing page 2/15 (13%)[39m
+    headerText: "\n\n# I EINLEITUNG\n\n"
+    newIndex: 1
+[2025-07-21 15:53:03] [32mINFO[39m: [36mHeader detected and processed[39m
+    component: "PipelineManager"
+    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
+    headerResult: {
+      "headerText": "\n\n# I EINLEITUNG\n\n",
+      "level": 1,
+      "newIndex": 1
+    }
+[2025-07-21 15:53:03] [32mINFO[39m: [36mProcessing page 2/15 (13%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 2
     totalPages: 15
     progress: "13%"
-✅ Page 2 completed - Confidence: 93%
-[2025-07-21 11:17:52] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:07] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -216,14 +218,13 @@ betrachten haben. Es handelt sich be..."
         "max": 55
       }
     }
-[2025-07-21 11:17:52] [32mINFO[39m: [36mProcessing page 3/15 (20%)[39m
+[2025-07-21 15:53:07] [32mINFO[39m: [36mProcessing page 3/15 (20%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 3
     totalPages: 15
     progress: "20%"
-✅ Page 3 completed - Confidence: 93%
-[2025-07-21 11:17:56] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:11] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -244,15 +245,13 @@ betrachten haben. Es handelt sich be..."
         "max": 36
       }
     }
-[2025-07-21 11:17:56] [32mINFO[39m: [36mProcessing page 4/15 (27%)[39m
+[2025-07-21 15:53:11] [32mINFO[39m: [36mProcessing page 4/15 (27%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 4
     totalPages: 15
     progress: "27%"
-✅ Page 4 completed - Confidence: 93%
-✅ Page 5 completed - Confidence: 92%
-[2025-07-21 11:17:59] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:14] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -273,13 +272,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 11:17:59] [32mINFO[39m: [36mProcessing page 5/15 (33%)[39m
+[2025-07-21 15:53:14] [32mINFO[39m: [36mProcessing page 5/15 (33%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 5
     totalPages: 15
     progress: "33%"
-[2025-07-21 11:18:00] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:15] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -296,15 +295,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 11:18:00] [32mINFO[39m: [36mProcessing page 6/15 (40%)[39m
+[2025-07-21 15:53:15] [32mINFO[39m: [36mProcessing page 6/15 (40%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 6
     totalPages: 15
     progress: "40%"
-📝 Page 6: Found 1 headers, processed 4 paragraphs
-✅ Page 6 completed - Confidence: 92%
-[2025-07-21 11:18:02] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:17] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -337,22 +334,26 @@ betrachten haben. Es handelt sich be..."
         "max": 1157
       }
     }
-[2025-07-21 11:18:02] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
+[2025-07-21 15:53:17] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    ordinalValue: 2
-    text: "II DIE ENISTEHUNG DER METAMORPHOSENLEHRE"
-    currentLevel1Index: 2
-    currentLevel2Index: 0
-    currentLevel3Index: 0
-[2025-07-21 11:18:02] [32mINFO[39m: [36mProcessing page 7/15 (47%)[39m
+    headerText: "\n\n# II DIE ENISTEHUNG DER METAMORPHOSENLEHRE\n\n"
+    newIndex: 2
+[2025-07-21 15:53:17] [32mINFO[39m: [36mHeader detected and processed[39m
+    component: "PipelineManager"
+    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
+    headerResult: {
+      "headerText": "\n\n# II DIE ENISTEHUNG DER METAMORPHOSENLEHRE\n\n",
+      "level": 1,
+      "newIndex": 2
+    }
+[2025-07-21 15:53:17] [32mINFO[39m: [36mProcessing page 7/15 (47%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 7
     totalPages: 15
     progress: "47%"
-✅ Page 7 completed - Confidence: 93%
-[2025-07-21 11:18:05] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:20] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -369,14 +370,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 11:18:05] [32mINFO[39m: [36mProcessing page 8/15 (53%)[39m
+[2025-07-21 15:53:20] [32mINFO[39m: [36mProcessing page 8/15 (53%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 8
     totalPages: 15
     progress: "53%"
-✅ Page 8 completed - Confidence: 93%
-[2025-07-21 11:18:08] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:23] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -393,14 +393,13 @@ betrachten haben. Es handelt sich be..."
         "max": 39
       }
     }
-[2025-07-21 11:18:08] [32mINFO[39m: [36mProcessing page 9/15 (60%)[39m
+[2025-07-21 15:53:23] [32mINFO[39m: [36mProcessing page 9/15 (60%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 9
     totalPages: 15
     progress: "60%"
-✅ Page 9 completed - Confidence: 88%
-[2025-07-21 11:18:11] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:26] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -425,14 +424,13 @@ betrachten haben. Es handelt sich be..."
         "max": 598
       }
     }
-[2025-07-21 11:18:11] [32mINFO[39m: [36mProcessing page 10/15 (67%)[39m
+[2025-07-21 15:53:26] [32mINFO[39m: [36mProcessing page 10/15 (67%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 10
     totalPages: 15
     progress: "67%"
-✅ Page 10 completed - Confidence: 89%
-[2025-07-21 11:18:14] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:28] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -457,14 +455,13 @@ betrachten haben. Es handelt sich be..."
         "max": 596
       }
     }
-[2025-07-21 11:18:14] [32mINFO[39m: [36mProcessing page 11/15 (73%)[39m
+[2025-07-21 15:53:28] [32mINFO[39m: [36mProcessing page 11/15 (73%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 11
     totalPages: 15
     progress: "73%"
-✅ Page 11 completed - Confidence: 88%
-[2025-07-21 11:18:16] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:31] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -485,14 +482,13 @@ betrachten haben. Es handelt sich be..."
         "max": 795
       }
     }
-[2025-07-21 11:18:16] [32mINFO[39m: [36mProcessing page 12/15 (80%)[39m
+[2025-07-21 15:53:31] [32mINFO[39m: [36mProcessing page 12/15 (80%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 12
     totalPages: 15
     progress: "80%"
-✅ Page 12 completed - Confidence: 90%
-[2025-07-21 11:18:19] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:34] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -513,14 +509,13 @@ betrachten haben. Es handelt sich be..."
         "max": 36
       }
     }
-[2025-07-21 11:18:19] [32mINFO[39m: [36mProcessing page 13/15 (87%)[39m
+[2025-07-21 15:53:34] [32mINFO[39m: [36mProcessing page 13/15 (87%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 13
     totalPages: 15
     progress: "87%"
-✅ Page 13 completed - Confidence: 91%
-[2025-07-21 11:18:23] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:37] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -545,14 +540,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 11:18:23] [32mINFO[39m: [36mProcessing page 14/15 (93%)[39m
+[2025-07-21 15:53:37] [32mINFO[39m: [36mProcessing page 14/15 (93%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 14
     totalPages: 15
     progress: "93%"
-✅ Page 14 completed - Confidence: 91%
-[2025-07-21 11:18:25] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:40] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -573,20 +567,19 @@ betrachten haben. Es handelt sich be..."
         "max": 599
       }
     }
-[2025-07-21 11:18:25] [32mINFO[39m: [36mProcessing page 15/15 (100%)[39m
+[2025-07-21 15:53:40] [32mINFO[39m: [36mProcessing page 15/15 (100%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 15
     totalPages: 15
     progress: "100%"
-✅ Page 15 completed - Confidence: 94%
 
 🎉 OCR Processing Complete!
 📊 Summary:
    • Total pages: 15
    • Successfully processed: 15
    • Failed pages: 0
-   • Average confidence: 91%
+   • Average confidence: 0%
    • Detected headers: 2
    • Structured text length: 23.258 characters
    • Footnote text length: 0 characters
@@ -628,17 +621,7 @@ Data Loading & Format Detection: Step 3: Enhancing text quality... (21%)
 Data Loading & Format Detection: Step 3: Text quality enhancement completed successfully (25%)
 Text Normalization & AI Cleaning: Starting phase (50%)
 Text Normalization & AI Cleaning: Normalizing text... (50%)
-Text Normalization & AI Cleaning: Text normalization completed (50%)
-Evaluation & Analysis: Starting phase (75%)
-Evaluation & Analysis: Evaluating processing quality... (75%)
-Evaluation & Analysis: Evaluation completed (75%)
-AI Enhancements: Starting phase (100%)
-AI Enhancements: Applying AI enhancements... (100%)
-AI Enhancements: AI enhancements completed (100%)
-✓ Book cleaning completed successfully!
-Output directory: /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output
-Processing time: 47s
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -659,30 +642,30 @@ Processing time: 47s
         "max": 210
       }
     }
-[2025-07-21 11:18:28] [32mINFO[39m: [36mApplied 4 German umlaut corrections[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mApplied 4 German umlaut corrections[39m
     component: "PipelineManager"
     tag: "pipeline"
     corrections: 4
     beforeLength: 23258
     afterLength: 23258
-[2025-07-21 11:18:28] [32mINFO[39m: [36mOCR processing completed with structured text extraction and German optimizations[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mOCR processing completed with structured text extraction and German optimizations[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     totalPages: 15
     successfulPages: 15
     failedPages: 0
-    averageConfidence: 91.46666666666667
+    averageConfidence: 0
     totalHeaders: 2
     structuredTextLength: 23258
     footnoteTextLength: 0
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStructured OCR processing completed successfully[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStructured OCR processing completed successfully[39m
     component: "PipelineManager"
     tag: "ocr_service"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-    processingTime: 47250
-    confidence: 91.46666666666667
+    processingTime: 47185
+    confidence: 0
     textLength: 23258
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStep 2 (Text Extraction) results saved to book-artifacts directory[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStep 2 (Text Extraction) results saved to book-artifacts directory[39m
     component: "PipelineManager"
     tag: "pipeline"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -692,16 +675,16 @@ Processing time: 47s
     ocrLength: 23189
     phase1Dir: "book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1"
     filesCreated: 2
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStarting Step 3: Text Quality Enhancement[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting Step 3: Text Quality Enhancement[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
     component: "PipelineManager"
     tag: "text_extraction"
     textLength: 25052
     manifestPath: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/book-manifest.yaml"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
     component: "ConfigService"
     tag: "config"
     bookTypesPath: "book-artifacts/book-types.yaml"
@@ -711,15 +694,15 @@ Processing time: 47s
       "rudolf-steiner-ga-vortrag",
       "google-play-ebook"
     ]
-[2025-07-21 11:18:28] [33mWARN[39m: [36mBook type missing or invalid text-removal-patterns array[39m
+[2025-07-21 15:53:43] [33mWARN[39m: [36mBook type missing or invalid text-removal-patterns array[39m
     component: "ConfigService"
     tag: "config"
     typeName: "default"
-[2025-07-21 11:18:28] [33mWARN[39m: [36mBook type missing or invalid header-type configuration[39m
+[2025-07-21 15:53:43] [33mWARN[39m: [36mBook type missing or invalid header-type configuration[39m
     component: "ConfigService"
     tag: "config"
     typeName: "rudolf-steiner-ga-werk"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mApplying text-removal-patterns[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mApplying text-removal-patterns[39m
     component: "PipelineManager"
     tag: "text_extraction"
     totalPatterns: 3
@@ -728,7 +711,7 @@ Processing time: 47s
       "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/",
       "/\d{0,3}\s?\[[\s\S]+?\]/"
     ]
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPattern application result: 15 replacements, 660 characters removed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPattern application result: 15 replacements, 660 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
@@ -736,7 +719,7 @@ Processing time: 47s
     charactersRemoved: 660
     beforeLength: 25052
     afterLength: 24392
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPattern application result: 15 replacements, 257 characters removed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPattern application result: 15 replacements, 257 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/"
@@ -744,7 +727,7 @@ Processing time: 47s
     charactersRemoved: 257
     beforeLength: 24392
     afterLength: 24135
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPattern application result: 13 replacements, 1193 characters removed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPattern application result: 13 replacements, 1193 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/\d{0,3}\s?\[[\s\S]+?\]/"
@@ -752,25 +735,25 @@ Processing time: 47s
     charactersRemoved: 1193
     beforeLength: 24135
     afterLength: 22942
-[2025-07-21 11:18:28] [32mINFO[39m: [36mText preprocessing completed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mText preprocessing completed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     originalLength: 25052
     processedLength: 22689
     patternsRemoved: 3
     paragraphsNormalized: true
-[2025-07-21 11:18:28] [32mINFO[39m: [36mSaved enhanced text to step3.txt[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mSaved enhanced text to step3.txt[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     path: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step3.txt"
     length: 22689
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
     component: "PipelineManager"
     tag: "text_extraction"
     textLength: 23189
     manifestPath: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/book-manifest.yaml"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mApplying text-removal-patterns[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mApplying text-removal-patterns[39m
     component: "PipelineManager"
     tag: "text_extraction"
     totalPatterns: 3
@@ -779,7 +762,7 @@ Processing time: 47s
       "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/",
       "/\d{0,3}\s?\[[\s\S]+?\]/"
     ]
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
@@ -787,7 +770,7 @@ Processing time: 47s
     charactersRemoved: 0
     beforeLength: 23189
     afterLength: 23189
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/"
@@ -795,7 +778,7 @@ Processing time: 47s
     charactersRemoved: 0
     beforeLength: 23189
     afterLength: 23189
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPattern application result: 2 replacements, 346 characters removed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPattern application result: 2 replacements, 346 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/\d{0,3}\s?\[[\s\S]+?\]/"
@@ -803,115 +786,125 @@ Processing time: 47s
     charactersRemoved: 346
     beforeLength: 23189
     afterLength: 22843
-[2025-07-21 11:18:28] [32mINFO[39m: [36mText preprocessing completed[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mText preprocessing completed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     originalLength: 23189
     processedLength: 22602
     patternsRemoved: 1
     paragraphsNormalized: true
-[2025-07-21 11:18:28] [32mINFO[39m: [36mSaved enhanced OCR to step3.ocr[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mSaved enhanced OCR to step3.ocr[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     path: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step3.ocr"
     length: 22602
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStep 3: Text Quality Enhancement completed successfully[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStep 3: Text Quality Enhancement completed successfully[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     txtEnhanced: true
     ocrEnhanced: true
-[2025-07-21 11:18:28] [32mINFO[39m: [36mData loading phase completed successfully[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mData loading phase completed successfully[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     format: "pdf"
     confidence: 0.95
     extractedTextLength: 25052
     textFiles: [
       "book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step2.txt"
     ]
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPhase 1 completed in 47366ms[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPhase 1 completed in 47297ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 1
     phaseName: "Data Loading & Format Detection"
-    duration: 47366
+    duration: 47297
     metrics: {}
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStarting phase 2: Text Normalization & AI Cleaning[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting phase 2: Text Normalization & AI Cleaning[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 2
     phaseName: "Text Normalization & AI Cleaning"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStarting text normalization phase (placeholder implementation)[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting text normalization phase (placeholder implementation)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mText normalization phase completed (placeholder)[39m
+Text Normalization & AI Cleaning: Text normalization completed (50%)
+Evaluation & Analysis: Starting phase (75%)
+Evaluation & Analysis: Evaluating processing quality... (75%)
+[2025-07-21 15:53:43] [32mINFO[39m: [36mText normalization phase completed (placeholder)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mPhase 2 completed in 102ms[39m
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPhase 2 completed in 102ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 2
     phaseName: "Text Normalization & AI Cleaning"
     duration: 102
     metrics: {}
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStarting phase 3: Evaluation & Analysis[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting phase 3: Evaluation & Analysis[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 3
     phaseName: "Evaluation & Analysis"
-[2025-07-21 11:18:28] [32mINFO[39m: [36mStarting evaluation phase (placeholder implementation)[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting evaluation phase (placeholder implementation)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-[2025-07-21 11:18:29] [32mINFO[39m: [36mEvaluation phase completed (placeholder)[39m
+Evaluation & Analysis: Evaluation completed (75%)
+AI Enhancements: Starting phase (100%)
+AI Enhancements: Applying AI enhancements... (100%)
+[2025-07-21 15:53:43] [32mINFO[39m: [36mEvaluation phase completed (placeholder)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
-[2025-07-21 11:18:29] [32mINFO[39m: [36mPhase 3 completed in 101ms[39m
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPhase 3 completed in 101ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 3
     phaseName: "Evaluation & Analysis"
     duration: 101
     metrics: {}
-[2025-07-21 11:18:29] [32mINFO[39m: [36mStarting phase 4: AI Enhancements[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting phase 4: AI Enhancements[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 4
     phaseName: "AI Enhancements"
-[2025-07-21 11:18:29] [32mINFO[39m: [36mStarting AI enhancements phase (placeholder implementation)[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mStarting AI enhancements phase (placeholder implementation)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-[2025-07-21 11:18:29] [32mINFO[39m: [36mAI enhancements phase completed (placeholder)[39m
+AI Enhancements: AI enhancements completed (100%)
+✓ Book cleaning completed successfully!
+Output directory: /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output
+Processing time: 47s
+[2025-07-21 15:53:43] [32mINFO[39m: [36mAI enhancements phase completed (placeholder)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
-[2025-07-21 11:18:29] [32mINFO[39m: [36mPhase 4 completed in 101ms[39m
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
+[2025-07-21 15:53:43] [32mINFO[39m: [36mPhase 4 completed in 102ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
     phase: 4
     phaseName: "AI Enhancements"
-    duration: 101
+    duration: 102
     metrics: {}
-[2025-07-21 11:18:29] [32mINFO[39m: [36mProcessing completed successfully in 47670ms[39m
+[2025-07-21 15:53:43] [32mINFO[39m: [36mProcessing completed successfully in 47603ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "9c8c4802-a16b-4978-8938-3d6bc0fc6855"
-    duration: 47670
+    pipelineId: "b29bb025-79c3-46c6-b4c6-94e3d10b4368"
+    duration: 47603
     phases: 4

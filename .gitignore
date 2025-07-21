@@ -109,9 +109,10 @@ public
 .out
 .storybook-out
 
-# Temporary folders
-tmp/
+# Temporary folders and files
+tmp*
 temp/
+log.tmp
 
 # Runtime data
 pids

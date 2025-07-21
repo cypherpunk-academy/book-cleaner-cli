@@ -561,34 +561,11 @@ export class OCRService {
                         scanResults,
                     );
 
-                    // scanResults.textWithHeaders is automatically updated by textProcessor
-                    totalConfidence += data.confidence || 0;
-
-                    // Log processing results
-                    if (processingResult.detectedHeaders > 0) {
-                        console.log(
-                            `📝 Page ${pageNumber}: Found ${processingResult.detectedHeaders} headers, processed ${processingResult.processedParagraphs} paragraphs`,
-                        );
-                    }
-
-                    // Log successful page completion
-                    console.log(
-                        `✅ Page ${pageNumber} completed - Confidence: ${Math.round(
-                            data.confidence || 0,
-                        )}%`,
-                    );
-                    ocrLogger.debug(
-                        {
-                            pageNumber,
-                            confidence: data.confidence,
-                            textLength: data.text?.length || 0,
-                            processedParagraphs: processingResult.processedParagraphs,
-                            detectedHeaders: processingResult.detectedHeaders,
-                            removedPatterns: processingResult.removedPatterns,
-                            processingSuccess: processingResult.success,
-                        },
-                        'Page OCR completed successfully',
-                    );
+                    scanResults.textWithHeaders += processingResult.textWithHeaders;
+                    scanResults.footnoteText += processingResult.footnoteText;
+                    scanResults.level1HeadingsIndex = processingResult.level1HeadingsIndex;
+                    scanResults.level2HeadingsIndex = processingResult.level2HeadingsIndex;
+                    scanResults.level3HeadingsIndex = processingResult.level3HeadingsIndex;
                 } catch (pageError) {
                     const errorMsg = `Failed to process page ${pageNumber}: ${
                         pageError instanceof Error ? pageError.message : String(pageError)

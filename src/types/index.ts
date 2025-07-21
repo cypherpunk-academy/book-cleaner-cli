@@ -2,6 +2,8 @@
  * Core types and interfaces for the Book Cleaner CLI
  */
 
+import { PAGE_METRICS_TYPES } from '@/constants';
+
 // ==================== File and Format Types ====================
 
 export interface FileInfo {
@@ -191,6 +193,21 @@ export interface BoundingBox {
     y: number;
     width: number;
     height: number;
+}
+
+// ==================== Page Metrics Types ====================
+
+export interface PageMetrics {
+    expectedX0: number;
+    tolerance: number;
+}
+
+export interface PageMetricsConfig {
+    [PAGE_METRICS_TYPES.PARAGRAPH_TEXT]: PageMetrics;
+    [PAGE_METRICS_TYPES.PARAGRAPH_START]: PageMetrics;
+    [PAGE_METRICS_TYPES.FOOTNOTE_TEXT]: PageMetrics;
+    [PAGE_METRICS_TYPES.FOOTNOTE_START]: PageMetrics;
+    [PAGE_METRICS_TYPES.QUOTE_TEXT]: PageMetrics;
 }
 
 // ==================== Document Processing Types ====================

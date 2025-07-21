@@ -1,5 +1,6 @@
 import type { LoggerService } from '@/services/LoggerService';
 import type { ConfigService } from '@/services/ConfigService';
+import type { PageMetricsConfig } from '@/types';
 import {
     ERROR_CODES,
     LOG_COMPONENTS,
@@ -9,7 +10,6 @@ import {
     PARAGRAPH_END_MARKERS,
     HEADER_MAX_WIDTH_RATIO,
     PAGE_METRICS_TYPES,
-    DEFAULT_PAGE_METRICS,
 } from '@/constants';
 import { AppError } from '@/utils/AppError';
 import pino from 'pino';
@@ -76,7 +76,7 @@ interface BookTypeConfig {
         level3?: HeaderTypeDefinition;
     };
     textRemovalPatterns: string[];
-    metrics?: typeof DEFAULT_PAGE_METRICS;
+    metrics?: PageMetricsConfig;
 }
 
 /**
@@ -108,22 +108,20 @@ interface PatternMatch {
  * Header detection result
  */
 interface HeaderResult {
+    headerText: string;
     level: number;
-    text: string;
-    ordinalValue: number;
-    matchedPattern: string;
-    confidence: number;
+    newIndex: number;
 }
 
 /**
  * Processed text result
  */
-interface ProcessedTextResult {
+interface ProcessedTextResult extends ScanResults {
     success: boolean;
+    errors: string[];
     processedParagraphs: number;
     detectedHeaders: number;
     removedPatterns: number;
-    errors: string[];
 }
 
 /**
@@ -253,7 +251,7 @@ export class GetTextAndStructureFromOcr {
      */
     private buildPageMetricsResult(
         groups: Array<{ average: number; values: number[]; min: number; max: number }>,
-        bookTypeMetrics: typeof DEFAULT_PAGE_METRICS,
+        bookTypeMetrics: PageMetricsConfig,
     ): Record<string, { min: number; max: number }> {
         const result: Record<string, { min: number; max: number }> = {};
 
@@ -298,11 +296,12 @@ export class GetTextAndStructureFromOcr {
 
         for (const type of availableTypes) {
             // Handle simple YAML structure where metrics are just numbers
+            const metricValue = bookTypeMetrics[type];
             const relativeOffset =
-                typeof bookTypeMetrics[type] === 'number'
-                    ? (bookTypeMetrics[type] as number)
-                    : (bookTypeMetrics[type] as any)?.expectedX0;
-            const tolerance = (bookTypeMetrics[type] as any)?.tolerance || 15;
+                typeof metricValue === 'number'
+                    ? metricValue
+                    : (metricValue as { expectedX0?: number })?.expectedX0;
+            const tolerance = (metricValue as { tolerance?: number })?.tolerance || 15;
 
             if (relativeOffset !== undefined) {
                 // Calculate expected absolute position: baseline + relative offset
@@ -361,7 +360,7 @@ export class GetTextAndStructureFromOcr {
      */
     private classifyPageGroups(
         groups: Array<{ center: number; values: number[] }>,
-        pageMetrics: typeof DEFAULT_PAGE_METRICS,
+        pageMetrics: PageMetricsConfig,
     ): Array<{
         type: string;
         averageX0: number;
@@ -503,6 +502,15 @@ export class GetTextAndStructureFromOcr {
         scanResults: ScanResults,
     ): Promise<ProcessedTextResult> {
         try {
+            // Initialize scanResultsThisPage with the current header indices from scanResults
+            const scanResultsThisPage: ScanResults = {
+                textWithHeaders: '',
+                footnoteText: '',
+                level1HeadingsIndex: scanResults.level1HeadingsIndex,
+                level2HeadingsIndex: scanResults.level2HeadingsIndex,
+                level3HeadingsIndex: scanResults.level3HeadingsIndex,
+            };
+
             // Load book type configuration
             const bookConfig = await this.loadBookTypeConfig(bookType);
 
@@ -515,6 +523,7 @@ export class GetTextAndStructureFromOcr {
             let processedParagraphs = 0;
             let detectedHeaders = 0;
             let removedPatterns = 0;
+            let lastParagraphWasHeader = false;
             const errors: string[] = [];
 
             // Process each paragraph
@@ -532,37 +541,54 @@ export class GetTextAndStructureFromOcr {
                         const headerResult = await this.detectAndProcessHeaders(
                             paragraph,
                             bookConfig,
-                            scanResults,
+                            scanResultsThisPage,
                         );
 
                         if (headerResult) {
                             // Successfully processed as header
                             detectedHeaders++;
-                            this.logger.debug(
+
+                            scanResultsThisPage.textWithHeaders += headerResult?.headerText ?? '';
+
+                            switch (headerResult.level) {
+                                case 1:
+                                    scanResultsThisPage.level1HeadingsIndex = headerResult.newIndex;
+                                    break;
+                                case 2:
+                                    scanResultsThisPage.level2HeadingsIndex = headerResult.newIndex;
+                                    break;
+                                case 3:
+                                    scanResultsThisPage.level3HeadingsIndex = headerResult.newIndex;
+                                    break;
+                            }
+
+                            this.logger.info(
                                 {
-                                    level: headerResult.level,
-                                    text: headerResult.text.substring(0, 50),
-                                    ordinal: headerResult.ordinalValue,
+                                    headerResult,
                                 },
                                 'Header detected and processed',
                             );
 
+                            lastParagraphWasHeader = true;
+
                             continue; // Headers are supposed to be alone in a paragraph
-                        } else {
-                            // Process as regular paragraph
-                            const cleanedText = this.applyTextRemovalPatterns(
-                                paragraph.text,
-                                bookConfig.textRemovalPatterns,
-                            );
+                        }
 
-                            if (cleanedText.length !== paragraph.text.length) {
-                                removedPatterns++;
-                            }
+                        // add function this.processParagraphText(paragraph, bookConfig, scanResults)
 
-                            // Add paragraph to results if not empty after cleaning
-                            if (cleanedText.trim().length > 0) {
-                                scanResults.textWithHeaders += `${cleanedText.trim()}\n\n`;
-                            }
+                        // Process as regular paragraph
+                        const cleanedText = this.applyTextRemovalPatterns(
+                            paragraph.text,
+                            bookConfig.textRemovalPatterns,
+                        );
+
+                        if (cleanedText.length !== paragraph.text.length) {
+                            removedPatterns++;
+                        }
+
+                        // Add paragraph to results if not empty after cleaning
+                        if (cleanedText.trim().length > 0) {
+                            scanResultsThisPage.textWithHeaders += `${cleanedText.trim()}\n\n`;
                         }
                     } catch (paragraphError) {
                         const errorMsg = `Failed to process paragraph: ${
@@ -588,6 +614,11 @@ export class GetTextAndStructureFromOcr {
                 detectedHeaders,
                 removedPatterns,
                 errors,
+                textWithHeaders: scanResultsThisPage.textWithHeaders,
+                footnoteText: scanResultsThisPage.footnoteText,
+                level1HeadingsIndex: scanResultsThisPage.level1HeadingsIndex,
+                level2HeadingsIndex: scanResultsThisPage.level2HeadingsIndex,
+                level3HeadingsIndex: scanResultsThisPage.level3HeadingsIndex,
             };
         } catch (error) {
             const errorMsg = `OCR data processing failed: ${
@@ -601,6 +632,11 @@ export class GetTextAndStructureFromOcr {
                 detectedHeaders: 0,
                 removedPatterns: 0,
                 errors: [errorMsg],
+                textWithHeaders: '',
+                footnoteText: '',
+                level1HeadingsIndex: scanResults.level1HeadingsIndex,
+                level2HeadingsIndex: scanResults.level2HeadingsIndex,
+                level3HeadingsIndex: scanResults.level3HeadingsIndex,
             };
         }
     }
@@ -610,8 +646,9 @@ export class GetTextAndStructureFromOcr {
      */
     private async loadBookTypeConfig(bookType: string): Promise<BookTypeConfig> {
         // Check cache first
-        if (this.bookTypeConfigCache.has(bookType)) {
-            return this.bookTypeConfigCache.get(bookType)!;
+        const cachedConfig = this.bookTypeConfigCache.get(bookType);
+        if (cachedConfig) {
+            return cachedConfig;
         }
 
         try {
@@ -654,7 +691,7 @@ export class GetTextAndStructureFromOcr {
                     (config.textRemovalPatterns as string[]) ||
                     (config['text-removal-patterns'] as string[]) ||
                     [],
-                metrics: (config.metrics as typeof DEFAULT_PAGE_METRICS) || undefined,
+                metrics: (config.metrics as PageMetricsConfig) || undefined,
             };
 
             // Cache the configuration
@@ -694,7 +731,7 @@ export class GetTextAndStructureFromOcr {
     private async detectAndProcessHeaders(
         paragraph: OCRParagraph,
         bookConfig: BookTypeConfig,
-        scanResults: ScanResults,
+        scanResultsThisPage: ScanResults,
     ): Promise<HeaderResult | null> {
         // Check if paragraph is centered
         if (!this.isTextCentered(paragraph)) {
@@ -719,16 +756,8 @@ export class GetTextAndStructureFromOcr {
                 continue;
             }
 
-            // For level 1 and 2 headers, require they start at the beginning
+            // For level 1 and 2 headers, require they start at the beginning of the paragraph
             if ((level === 1 || level === 2) && !startsAtBeginning) {
-                this.logger.debug(
-                    {
-                        level,
-                        normalizedText,
-                        startsAtBeginning,
-                    },
-                    'Skipping level 1/2 header check - does not start at beginning of text',
-                );
                 continue;
             }
 
@@ -743,34 +772,28 @@ export class GetTextAndStructureFromOcr {
 
                 if (patternMatch && patternMatch.matched) {
                     // Extract ordinal value for sequence validation
-                    const ordinalValue = this.extractOrdinalValue(patternMatch.extractedValues);
+                    const newIndex = this.extractOrdinalValue(patternMatch.extractedValues);
 
-                    if (ordinalValue !== null) {
+                    if (newIndex !== null) {
                         // Validate header sequence
-                        if (this.validateHeaderSequence(level, ordinalValue, scanResults)) {
+                        if (this.validateHeaderSequence(level, newIndex, scanResultsThisPage)) {
                             // Add header to results with double newlines before and after
                             const markdownLevel = '#'.repeat(level);
                             const headerText = `\n\n${markdownLevel} ${normalizedText}\n\n`;
-                            scanResults.textWithHeaders += headerText;
 
                             this.logger.info(
                                 {
+                                    headerText,
                                     level,
-                                    ordinalValue,
-                                    text: normalizedText,
-                                    currentLevel1Index: scanResults.level1HeadingsIndex,
-                                    currentLevel2Index: scanResults.level2HeadingsIndex,
-                                    currentLevel3Index: scanResults.level3HeadingsIndex,
+                                    newIndex,
                                 },
                                 'Header successfully processed and added',
                             );
 
                             return {
+                                headerText,
                                 level,
-                                text: normalizedText,
-                                ordinalValue,
-                                matchedPattern: format.pattern,
-                                confidence: paragraph.confidence,
+                                newIndex,
                             };
                         }
                     }
@@ -1012,25 +1035,33 @@ export class GetTextAndStructureFromOcr {
     private validateHeaderSequence(
         headerLevel: number,
         extractedNumber: number,
-        scanResults: ScanResults,
+        scanResultsThisPage: ScanResults,
     ): boolean {
         let currentIndex: number;
         let expectedNumber: number;
 
         switch (headerLevel) {
             case 1:
-                currentIndex = scanResults.level1HeadingsIndex;
+                currentIndex = scanResultsThisPage.level1HeadingsIndex;
                 expectedNumber = currentIndex + 1;
                 break;
             case 2:
-                currentIndex = scanResults.level2HeadingsIndex;
+                currentIndex = scanResultsThisPage.level2HeadingsIndex;
                 expectedNumber = currentIndex + 1;
                 break;
             case 3:
-                currentIndex = scanResults.level3HeadingsIndex;
+                currentIndex = scanResultsThisPage.level3HeadingsIndex;
                 expectedNumber = currentIndex + 1;
                 break;
             default:
+                this.logger.error(
+                    {
+                        headerLevel,
+                        extractedNumber,
+                        scanResultsThisPage,
+                    },
+                    'Invalid header level',
+                );
                 throw new AppError(
                     ERROR_CODES.VALIDATION_ERROR,
                     LOG_COMPONENTS.PIPELINE_MANAGER,
@@ -1048,9 +1079,9 @@ export class GetTextAndStructureFromOcr {
                     extractedNumber,
                     expectedNumber,
                     currentIndex,
-                    level1Index: scanResults.level1HeadingsIndex,
-                    level2Index: scanResults.level2HeadingsIndex,
-                    level3Index: scanResults.level3HeadingsIndex,
+                    level1Index: scanResultsThisPage.level1HeadingsIndex,
+                    level2Index: scanResultsThisPage.level2HeadingsIndex,
+                    level3Index: scanResultsThisPage.level3HeadingsIndex,
                 },
                 errorMsg,
             );
@@ -1065,34 +1096,10 @@ export class GetTextAndStructureFromOcr {
                     headerLevel,
                     extractedNumber,
                     expectedNumber,
-                    scanResults,
+                    scanResultsThisPage,
                 },
             );
         }
-
-        // Update the appropriate counter
-        switch (headerLevel) {
-            case 1:
-                scanResults.level1HeadingsIndex = extractedNumber;
-                break;
-            case 2:
-                scanResults.level2HeadingsIndex = extractedNumber;
-                break;
-            case 3:
-                scanResults.level3HeadingsIndex = extractedNumber;
-                break;
-        }
-
-        this.logger.debug(
-            {
-                headerLevel,
-                extractedNumber,
-                newLevel1Index: scanResults.level1HeadingsIndex,
-                newLevel2Index: scanResults.level2HeadingsIndex,
-                newLevel3Index: scanResults.level3HeadingsIndex,
-            },
-            'Header sequence validated and updated',
-        );
 
         return true;
     }

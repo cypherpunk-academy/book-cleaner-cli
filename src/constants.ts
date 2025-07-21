@@ -181,15 +181,6 @@ export const PAGE_METRICS_TYPES = {
     QUOTE_TEXT: 'quote-text',
 } as const;
 
-// Default page metrics (can be overridden by configuration)
-export const DEFAULT_PAGE_METRICS = {
-    [PAGE_METRICS_TYPES.PARAGRAPH_TEXT]: { expectedX0: 200, tolerance: 15 },
-    [PAGE_METRICS_TYPES.PARAGRAPH_START]: { expectedX0: 180, tolerance: 10 },
-    [PAGE_METRICS_TYPES.FOOTNOTE_TEXT]: { expectedX0: 220, tolerance: 12 },
-    [PAGE_METRICS_TYPES.FOOTNOTE_START]: { expectedX0: 200, tolerance: 8 },
-    [PAGE_METRICS_TYPES.QUOTE_TEXT]: { expectedX0: 240, tolerance: 20 },
-};
-
 // ==================== Text Processing Constants ====================
 
 export const TEXT_SOURCES = {
