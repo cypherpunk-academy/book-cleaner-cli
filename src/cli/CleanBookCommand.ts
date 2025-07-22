@@ -19,6 +19,7 @@ import { EvaluationPhase } from '@/pipeline/EvaluationPhase';
 import { PipelineManager } from '@/pipeline/PipelineManager';
 import { TextNormalizationPhase } from '@/pipeline/TextNormalizationPhase';
 import { ConfigService } from '@/services/ConfigService';
+import { BookStructureService } from '@/services/BookStructureService';
 import { type LoggerService, createDefaultLoggerService } from '@/services/LoggerService';
 import type { CLIOptions, FilenameMetadata, LogLevel, PipelineState, ProgressInfo } from '@/types';
 import { AppError, isAppError } from '@/utils/AppError';
@@ -50,6 +51,7 @@ interface CommanderOptions {
 export class CleanBookCommand {
     private logger: LoggerService;
     private configService: ConfigService;
+    private bookStructureService: BookStructureService;
     private fileUtils: FileUtils;
     private pipelineManager: PipelineManager;
     // private spinner: Ora | null = null; // Removed to fix interactive prompt issues
@@ -57,6 +59,7 @@ export class CleanBookCommand {
     constructor() {
         this.logger = createDefaultLoggerService();
         this.configService = new ConfigService(this.logger);
+        this.bookStructureService = new BookStructureService(this.logger);
         this.fileUtils = new FileUtils(this.logger);
         this.pipelineManager = new PipelineManager(this.logger);
 
@@ -68,7 +71,11 @@ export class CleanBookCommand {
      * Register all pipeline phases
      */
     private registerPipelinePhases(): void {
-        const dataLoadingPhase = new DataLoadingPhase(this.logger, this.configService);
+        const dataLoadingPhase = new DataLoadingPhase(
+            this.logger,
+            this.configService,
+            this.bookStructureService,
+        );
         const textNormalizationPhase = new TextNormalizationPhase(this.logger);
         const evaluationPhase = new EvaluationPhase(this.logger);
         const aiEnhancementsPhase = new AIEnhancementsPhase(this.logger);
@@ -138,6 +145,9 @@ export class CleanBookCommand {
 
             // Parse filename metadata
             const metadata = this.parseFilenameMetadata(cliOptions);
+
+            // Load book manifest (centralized loading)
+            await this.bookStructureService.loadBookManifest(metadata);
 
             // Load configuration
             const bookConfig = await this.configService.loadBookConfig(

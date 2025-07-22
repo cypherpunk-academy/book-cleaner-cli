@@ -250,6 +250,71 @@ export interface EPUBData {
 
 // ==================== Configuration Types ====================
 
+/**
+ * Raw book structure YAML interface
+ */
+export interface BookManifest {
+    author?: string;
+    title?: string;
+    'book-index'?: string;
+    'text-before-first-chapter'?: string;
+    'text-after-last-chapter'?: string;
+    [key: string]: unknown;
+}
+
+/**
+ * Comprehensive book manifest information extracted from YAML files
+ * Consolidates BookStructureInfo and BookManifest with all YAML structure types
+ */
+export interface BookManifestInfo {
+    // Basic book metadata
+    author: string;
+    title: string;
+    bookIndex?: string;
+
+    // Text boundary markers for extraction
+    textBeforeFirstChapter?: string;
+    textAfterLastChapter?: string;
+
+    // Original file information
+    original?: {
+        format?: string;
+        size?: number;
+        pages?: number;
+        'book-type'?: string;
+    };
+
+    // Book structure information
+    structure?: BookStructureItem[];
+
+    // Footnotes information
+    footnotes?: BookFootnote[];
+
+    // Additional metadata (for extensibility)
+    [key: string]: unknown;
+}
+
+/**
+ * Book structure item (chapter, sub-chapter, paragraph, etc.)
+ */
+export interface BookStructureItem {
+    type: 'chapter' | 'sub-chapter' | 'paragraph';
+    title?: string | null;
+    number?: string | null;
+    content?: BookStructureItem[];
+    firstFiveWords?: string | null;
+}
+
+/**
+ * Book footnote information
+ */
+export interface BookFootnote {
+    index: number;
+    originalIndex: number;
+    marker: string[];
+    footnote: string[];
+}
+
 export interface BookConfig {
     author: string;
     title: string;

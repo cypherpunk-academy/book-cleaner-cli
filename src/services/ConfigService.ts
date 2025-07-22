@@ -6,7 +6,7 @@ import {
     DEFAULT_AI_CONFIG,
     DEFAULT_ARTIFACTS_DIR,
     DEFAULT_CHAPTER_MARKERS,
-    DEFAULT_CONFIG_FILE,
+    DEFAULT_BOOK_MANIFEST_FILE,
     DEFAULT_FILENAME_PATTERN,
     DEFAULT_FOOTNOTE_MARKERS,
     DEFAULT_LOG_LEVEL,
@@ -20,13 +20,13 @@ import {
     OCR_ENGINES,
     OCR_LANGUAGES,
     OUTPUT_FORMATS,
-    VALIDATION_PATTERNS,
 } from '@/constants';
 import type { BookConfig, FilenameMetadata, LogLevel, PipelineConfig } from '@/types';
 import { AppError } from '@/utils/AppError';
 import { FileUtils } from '@/utils/FileUtils';
 import yaml from 'js-yaml';
-import { type BookStructureInfo, BookStructureService } from './BookStructureService';
+import { BookStructureService } from './BookStructureService';
+import type { BookManifestInfo } from '@/types';
 import type { LoggerService } from './LoggerService';
 
 /**
@@ -182,66 +182,6 @@ export class ConfigService {
     }
 
     /**
-     * Load default configuration
-     */
-    private async loadDefaultConfig(): Promise<BookConfig> {
-        const defaultConfigPath = path.join(this.configDir, DEFAULT_CONFIG_FILE);
-
-        try {
-            const configContent = await fs.readFile(defaultConfigPath, 'utf-8');
-            const config = yaml.load(configContent) as BookConfig;
-
-            // Merge with environment variables
-            this.mergeEnvironmentVariables(config);
-
-            return config;
-        } catch (_error) {
-            // If default config doesn't exist, create a minimal one
-            return this.createMinimalConfig();
-        }
-    }
-
-    /**
-     * Load configuration from file
-     */
-    private async loadConfigFromFile(configKey: string): Promise<BookConfig> {
-        const configPath = path.join(this.configDir, `${configKey}${CONFIG_FILE_EXTENSION}`);
-
-        try {
-            const configContent = await fs.readFile(configPath, 'utf-8');
-            const bookStructure = yaml.load(configContent) as {
-                author?: string;
-                title?: string;
-                [key: string]: unknown;
-            };
-
-            // Convert book structure to full BookConfig
-            const defaultConfig = this.createMinimalConfig();
-
-            // Override with book structure information
-            if (bookStructure.author) defaultConfig.author = bookStructure.author;
-            if (bookStructure.title) defaultConfig.title = bookStructure.title;
-
-            // Merge with environment variables
-            this.mergeEnvironmentVariables(defaultConfig);
-
-            return defaultConfig;
-        } catch (error) {
-            throw new AppError(
-                ERROR_CODES.CONFIG_INVALID,
-                LOG_COMPONENTS.CONFIG_SERVICE,
-                'loadConfigFromFile',
-                ERROR_MESSAGES[ERROR_CODES.CONFIG_INVALID].replace(
-                    '{details}',
-                    `File not found: ${configPath}`,
-                ),
-                { configPath, configKey },
-                error instanceof Error ? error : new Error(String(error)),
-            );
-        }
-    }
-
-    /**
      * Create minimal configuration when no config file exists
      */
     private createMinimalConfig(): BookConfig {
@@ -322,114 +262,6 @@ export class ConfigService {
     /**
      * Validate configuration
      */
-    private validateConfig(config: BookConfig): void {
-        const errors: string[] = [];
-
-        // Validate author and title
-        if (!config.author || config.author.trim().length === 0) {
-            errors.push('Author is required');
-        }
-
-        if (!config.title || config.title.trim().length === 0) {
-            errors.push('Title is required');
-        }
-
-        // Validate text boundaries
-        if (
-            !config.textBoundaries.paragraphMarkers ||
-            config.textBoundaries.paragraphMarkers.length === 0
-        ) {
-            errors.push('Paragraph markers are required');
-        }
-
-        // Validate AI configuration
-        if (!config.ai.apiKey || config.ai.apiKey.trim().length === 0) {
-            errors.push('AI API key is required');
-        }
-
-        if (!Object.values(AI_PROVIDERS).includes(config.ai.provider)) {
-            errors.push(`Invalid AI provider: ${config.ai.provider}`);
-        }
-
-        // Validate OCR configuration
-        if (!Object.values(OCR_ENGINES).includes(config.processing.ocr.engine)) {
-            errors.push(`Invalid OCR engine: ${config.processing.ocr.engine}`);
-        }
-
-        if (config.processing.ocr.confidence < 0 || config.processing.ocr.confidence > 1) {
-            errors.push('OCR confidence must be between 0 and 1');
-        }
-
-        // Validate output configuration
-        if (!Object.values(OUTPUT_FORMATS).includes(config.output.format)) {
-            errors.push(`Invalid output format: ${config.output.format}`);
-        }
-
-        if (errors.length > 0) {
-            throw new AppError(
-                ERROR_CODES.CONFIG_INVALID,
-                LOG_COMPONENTS.CONFIG_SERVICE,
-                'validateConfig',
-                ERROR_MESSAGES[ERROR_CODES.CONFIG_INVALID].replace('{details}', errors.join(', ')),
-                { errors, config: `${config.author}#${config.title}` },
-            );
-        }
-    }
-
-    /**
-     * Generate configuration key from metadata
-     */
-    private getConfigKey(metadata: FilenameMetadata): string {
-        return FileUtils.generateConfigKey(metadata);
-    }
-
-    /**
-     * Save configuration to file
-     */
-    public async saveConfig(metadata: FilenameMetadata, config: BookConfig): Promise<void> {
-        const configKey = this.getConfigKey(metadata);
-        const configPath = path.join(this.configDir, `${configKey}${CONFIG_FILE_EXTENSION}`);
-
-        try {
-            // Ensure config directory exists
-            await fs.mkdir(this.configDir, { recursive: true });
-
-            // Convert to YAML and save
-            const yamlContent = yaml.dump(config, {
-                indent: 2,
-                lineWidth: 120,
-                noRefs: true,
-            });
-
-            await fs.writeFile(configPath, yamlContent, 'utf-8');
-
-            // Update cache
-            this.configCache.set(configKey, config);
-
-            const configLogger = this.logger.getConfigLogger(LOG_COMPONENTS.CONFIG_SERVICE);
-            configLogger.info(
-                {
-                    author: metadata.author,
-                    title: metadata.title,
-                    configPath,
-                },
-                'Configuration saved successfully',
-            );
-        } catch (error) {
-            throw new AppError(
-                ERROR_CODES.CONFIG_INVALID,
-                LOG_COMPONENTS.CONFIG_SERVICE,
-                'saveConfig',
-                ERROR_MESSAGES[ERROR_CODES.CONFIG_INVALID].replace(
-                    '{details}',
-                    `Failed to save config: ${configPath}`,
-                ),
-                { configPath, configKey },
-                error instanceof Error ? error : new Error(String(error)),
-            );
-        }
-    }
-
     /**
      * Clear configuration cache
      */
@@ -454,7 +286,7 @@ export class ConfigService {
     /**
      * Create BookConfig from book structure information
      */
-    private createBookConfigFromStructure(bookStructure: BookStructureInfo): BookConfig {
+    private createBookConfigFromStructure(bookStructure: BookManifestInfo): BookConfig {
         const config = this.createMinimalConfig();
 
         // Override with book structure information
@@ -471,7 +303,7 @@ export class ConfigService {
      * Create default configuration file if it doesn't exist
      */
     public async ensureDefaultConfig(): Promise<void> {
-        const defaultConfigPath = path.join(this.configDir, DEFAULT_CONFIG_FILE);
+        const defaultConfigPath = path.join(this.configDir, DEFAULT_BOOK_MANIFEST_FILE);
 
         try {
             await fs.access(defaultConfigPath);

@@ -1,9 +1,8 @@
-import type { RecognizeOptions, Worker } from 'tesseract.js';
-import { ERROR_CODES, LOG_COMPONENTS, OCR_PAGE_HEIGHT, OCR_PAGE_WIDTH } from '../../../constants';
+import type { Worker } from 'tesseract.js';
+import { LOG_COMPONENTS, OCR_PAGE_HEIGHT, OCR_PAGE_WIDTH } from '../../../constants';
 import type { LoggerService } from '../../../services/LoggerService';
 import type { ConfigService } from '../../../services/ConfigService';
-import type { FileInfo } from '../../../types';
-import { AppError } from '../../../utils/AppError';
+import type { FileInfo, BookManifestInfo } from '../../../types';
 import { GetTextAndStructureFromOcr } from './GetTextAndStructureFromOcr';
 
 /**
@@ -43,18 +42,6 @@ interface OCRWord {
     text: string;
     confidence: number;
     bbox: { x0: number; y0: number; x1: number; y1: number };
-}
-
-/**
- * Generic OCR data structure for analysis
- */
-interface OCRData {
-    text: string;
-    confidence: number;
-    blocks?: OCRBlock[];
-    paragraphs?: OCRParagraph[];
-    lines?: OCRLine[];
-    words?: OCRWord[];
 }
 
 /**
@@ -98,6 +85,84 @@ export class OCRService {
     constructor(logger: LoggerService, configService: ConfigService) {
         this.logger = logger;
         this.configService = configService;
+    }
+
+    /**
+     * Check if the given text contains the boundary start marker
+     * Uses the textBeforeFirstChapter from the book manifest
+     */
+    private checkForBoundaryStartMarker(text: string, bookManifest?: BookManifestInfo): boolean {
+        if (!bookManifest?.textBeforeFirstChapter) {
+            return false;
+        }
+
+        const normalizedText = this.normalizeTextForComparison(text);
+        const normalizedMarker = this.normalizeTextForComparison(
+            bookManifest.textBeforeFirstChapter,
+        );
+
+        const found = normalizedText.includes(normalizedMarker);
+
+        this.logger.info(LOG_COMPONENTS.PIPELINE_MANAGER, 'Boundary start marker check', {
+            originalMarker: bookManifest.textBeforeFirstChapter,
+            normalizedMarker,
+            normalizedText: normalizedText.slice(-200),
+            found,
+        });
+
+        return found;
+    }
+
+    /**
+     * Check if the given text contains the boundary end marker
+     * Uses the textAfterLastChapter from the book manifest
+     */
+    private checkForBoundaryEndMarker(text: string, bookManifest?: BookManifestInfo): boolean {
+        if (!bookManifest?.textAfterLastChapter) {
+            return false;
+        }
+
+        const normalizedText = this.normalizeTextForComparison(text);
+        const normalizedMarker = this.normalizeTextForComparison(bookManifest.textAfterLastChapter);
+
+        // Remove quotes from marker if present
+        const cleanMarker = normalizedMarker.replace(/^["']|["']$/g, '');
+
+        const found = normalizedText.includes(cleanMarker);
+
+        this.logger.debug(LOG_COMPONENTS.PIPELINE_MANAGER, 'Boundary end marker check', {
+            originalMarker: bookManifest.textAfterLastChapter,
+            normalizedMarker,
+            cleanMarker,
+            textSample: normalizedText.slice(-200),
+            found,
+        });
+
+        return found;
+    }
+
+    /**
+     * Normalize text for comparison by removing extra whitespace, normalizing line endings,
+     * and standardizing German umlauts with Unicode normalization
+     */
+    private normalizeTextForComparison(text: string): string {
+        return (
+            text
+                // Unicode normalization (NFD -> NFC) to handle different umlaut representations
+                .normalize('NFC')
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n')
+                .replace(/\s+/g, ' ')
+                // Handle different umlaut representations (composed vs decomposed)
+                .replace(/a\u0308/g, 'ä') // a + combining diaeresis -> ä
+                .replace(/o\u0308/g, 'ö') // o + combining diaeresis -> ö
+                .replace(/u\u0308/g, 'ü') // u + combining diaeresis -> ü
+                .replace(/A\u0308/g, 'Ä') // A + combining diaeresis -> Ä
+                .replace(/O\u0308/g, 'Ö') // O + combining diaeresis -> Ö
+                .replace(/U\u0308/g, 'Ü') // U + combining diaeresis -> Ü
+                .replace(/s\u0323/g, 'ß') // s + combining dot below -> ß (less common)
+                .trim()
+        );
     }
 
     /**
@@ -190,14 +255,15 @@ export class OCRService {
      * @param fileInfo - File information
      * @param options - OCR processing options
      * @param bookType - Book type for structured text processing
+     * @param bookManifest - Book manifest containing boundary markers
      * @returns OCR result with structured text and metadata
      */
     async performOCR(
         fileInfo: FileInfo,
         options: OCROptions = {},
         bookType: string,
+        bookManifest?: BookManifestInfo,
     ): Promise<OCRResult> {
-        const startTime = Date.now();
         const ocrLogger = this.logger.getTaggedLogger(
             LOG_COMPONENTS.PIPELINE_MANAGER,
             'ocr_service',
@@ -240,9 +306,9 @@ export class OCRService {
                 const result = await this.processWithStructuredRecognition(
                     worker,
                     fileInfo,
-                    options,
                     ocrLogger,
                     bookType,
+                    bookManifest,
                 );
 
                 ocrLogger.info(
@@ -295,9 +361,9 @@ export class OCRService {
     private async processWithStructuredRecognition(
         worker: Worker,
         fileInfo: FileInfo,
-        options: OCROptions,
         _logger: unknown,
         bookType: string,
+        bookManifest?: BookManifestInfo,
     ): Promise<OCRResult> {
         const filePath = fileInfo.path;
         if (!filePath) {
@@ -310,8 +376,12 @@ export class OCRService {
 
         // Handle PDF files by converting to images first
         if (fileInfo.format === 'pdf') {
-            const processingTime = Date.now();
-            const pdfResults = await this.processPDFWithOCR(filePath, worker, bookType);
+            const pdfResults = await this.processPDFWithOCR(
+                filePath,
+                worker,
+                bookType,
+                bookManifest,
+            );
 
             return pdfResults;
         }
@@ -332,6 +402,7 @@ export class OCRService {
         filePath: string,
         worker: Worker,
         bookType: string,
+        bookManifest?: BookManifestInfo,
     ): Promise<OCRResult> {
         const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.PIPELINE_MANAGER, 'pdf_ocr');
 
@@ -365,7 +436,6 @@ export class OCRService {
             console.log(`✅ PDF conversion complete! Found ${results.length} pages`);
             console.log('🔍 Starting OCR processing...');
 
-            let totalConfidence = 0;
             const scanResults: {
                 textWithHeaders: string;
                 footnoteText: string;
@@ -389,6 +459,8 @@ export class OCRService {
 
             ocrLogger.info({ pageCount: results.length }, 'Processing pages with OCR');
 
+            let firstContentPageFound = false;
+
             // Process each page
             for (let i = 0; i < results.length; i++) {
                 const result = results[i];
@@ -410,6 +482,18 @@ export class OCRService {
                 try {
                     const { data } = await worker.recognize(pageBuffer);
 
+                    if (!firstContentPageFound) {
+                        firstContentPageFound = this.checkForBoundaryStartMarker(
+                            data.text,
+                            bookManifest,
+                        );
+
+                        continue;
+                    } else {
+                        if (this.checkForBoundaryEndMarker(data.text, bookManifest)) {
+                            break;
+                        }
+                    }
                     // Convert Tesseract data to our OCRData format (handle null vs undefined)
                     const paragraphs = data.paragraphs;
 
@@ -477,7 +561,6 @@ export class OCRService {
             // Clean up temporary files if needed
             // Note: pdf2pic with buffer response type doesn't create temp files
 
-            const averageConfidence = results.length > 0 ? totalConfidence / results.length : 0;
             const successfulPages = results.length - errors.length;
 
             // Log completion summary
@@ -486,7 +569,6 @@ export class OCRService {
             console.log(`   • Total pages: ${results.length}`);
             console.log(`   • Successfully processed: ${successfulPages}`);
             console.log(`   • Failed pages: ${errors.length}`);
-            console.log(`   • Average confidence: ${Math.round(averageConfidence)}%`);
             console.log(
                 `   • Detected headers: ${scanResults.level1HeadingsIndex + scanResults.level2HeadingsIndex + scanResults.level3HeadingsIndex}`,
             );
@@ -511,7 +593,6 @@ export class OCRService {
                     totalPages: results.length,
                     successfulPages,
                     failedPages: errors.length,
-                    averageConfidence,
                     structuredTextLength: correctedStructuredText.length,
                     footnoteTextLength: scanResults.footnoteText.length,
                 },
@@ -568,16 +649,19 @@ export class OCRService {
             return firstText;
         }
 
-        const lastCharOfFirst = firstText.charAt(firstText.length - 1);
+        // Remove trailing spaces (but not newlines) from first text before checking hyphenation
+        const trimmedFirstText = firstText.replace(/[ \t]+$/, '');
+
+        const lastCharOfFirst = trimmedFirstText.charAt(trimmedFirstText.length - 1);
         const firstCharOfSecond = secondText.charAt(0);
 
         // Check if last character is hyphen and first character is lowercase
         if (lastCharOfFirst === '-' && firstCharOfSecond === firstCharOfSecond.toLowerCase()) {
             // Remove hyphen and glue the texts together
-            return firstText.slice(0, -1) + secondText;
+            return trimmedFirstText.slice(0, -1) + secondText;
         } else {
             // Add space between texts
-            return firstText + ' ' + secondText;
+            return trimmedFirstText + ' ' + secondText;
         }
     }
 }

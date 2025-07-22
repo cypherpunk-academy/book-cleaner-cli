@@ -2,23 +2,11 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { ARTIFACTS_STRUCTURE, ERROR_CODES, LOG_COMPONENTS } from '@/constants';
 import type { ConfigService } from '@/services/ConfigService';
+import { BookStructureService } from '@/services/BookStructureService';
 import type { LoggerService } from '@/services/LoggerService';
-import type { FileInfo, FilenameMetadata, OCRResult, ProcessingMetadata } from '@/types';
+import type { FileInfo, FilenameMetadata } from '@/types';
 import { AppError } from '@/utils/AppError';
-import * as yaml from 'js-yaml';
 import { OCRService } from './OCRService';
-
-/**
- * Raw book structure YAML interface
- */
-interface RawBookStructureYaml {
-    author?: string;
-    title?: string;
-    'book-index'?: string;
-    'text-before-first-chapter'?: string;
-    'text-after-last-chapter'?: string;
-    [key: string]: unknown;
-}
 
 /**
  * Text extraction options
@@ -49,11 +37,18 @@ export class TextExtractor {
     private readonly logger: LoggerService;
     private readonly configDir: string;
     private readonly ocrService: OCRService;
+    private readonly bookStructureService: BookStructureService;
 
-    constructor(logger: LoggerService, configService: ConfigService, configDir: string) {
+    constructor(
+        logger: LoggerService,
+        configService: ConfigService,
+        configDir: string,
+        bookStructureService: BookStructureService,
+    ) {
         this.logger = logger;
         this.configDir = configDir;
         this.ocrService = new OCRService(logger, configService);
+        this.bookStructureService = bookStructureService;
     }
 
     /**
@@ -115,52 +110,45 @@ export class TextExtractor {
         metadata: FilenameMetadata,
         options: TextExtractionOptions,
     ): Promise<TextExtractionOptions> {
-        const configKey = this.getConfigKey(metadata);
-        const bookDir = path.join(this.configDir, configKey);
-        const configPath = path.join(bookDir, ARTIFACTS_STRUCTURE.BOOK_MANIFEST);
+        // Get the cached manifest from BookStructureService
+        const manifest = this.bookStructureService.getBookManifest(metadata);
+
+        if (!manifest) {
+            throw new AppError(
+                ERROR_CODES.CONFIG_INVALID,
+                LOG_COMPONENTS.PIPELINE_MANAGER,
+                'checkAndPromptBoundaries',
+                'Book manifest not loaded. Call loadBookManifest first.',
+                { metadata },
+            );
+        }
 
         // Ensure book directory exists
+        const configKey = this.getConfigKey(metadata);
+        const bookDir = path.join(this.configDir, configKey);
         await fs.mkdir(bookDir, { recursive: true });
-
-        // Load the current YAML configuration
-        let config: RawBookStructureYaml = {};
-        try {
-            const configContent = await fs.readFile(configPath, 'utf-8');
-            config = yaml.load(configContent) as RawBookStructureYaml;
-        } catch {
-            // Config file doesn't exist, will be created
-        }
 
         const updatedOptions = { ...options };
 
         if (options.hasTextBoundaries) {
             // Check for text-based boundaries
-            if (!config['text-before-first-chapter'] || !config['text-after-last-chapter']) {
+            if (!manifest.textBeforeFirstChapter || !manifest.textAfterLastChapter) {
                 const { textBefore, textAfter } = await this.promptWithSpinnerPause(
                     () => this.promptForTextBoundaries(metadata),
                     metadata,
                 );
-                config['text-before-first-chapter'] = textBefore;
-                config['text-after-last-chapter'] = textAfter;
+
+                // Update the manifest in the BookStructureService
+                await this.bookStructureService.updateBookManifest(metadata, {
+                    textBeforeFirstChapter: textBefore,
+                    textAfterLastChapter: textAfter,
+                });
+
                 updatedOptions.boundaries.textBefore = textBefore;
                 updatedOptions.boundaries.textAfter = textAfter;
-
-                // Save the updated config
-                try {
-                    await fs.writeFile(configPath, yaml.dump(config), 'utf-8');
-                } catch (error) {
-                    this.logger.warn(
-                        LOG_COMPONENTS.PIPELINE_MANAGER,
-                        'Failed to save updated config',
-                        {
-                            configPath,
-                            error: error instanceof Error ? error.message : String(error),
-                        },
-                    );
-                }
             } else {
-                updatedOptions.boundaries.textBefore = config['text-before-first-chapter'];
-                updatedOptions.boundaries.textAfter = config['text-after-last-chapter'];
+                updatedOptions.boundaries.textBefore = manifest.textBeforeFirstChapter;
+                updatedOptions.boundaries.textAfter = manifest.textAfterLastChapter;
             }
         }
 
@@ -240,7 +228,7 @@ export class TextExtractor {
     }
 
     /**
-     * Extract text between text boundaries using string markers
+     * Extract text between text boundaries using string markers, when the full text is extracted
      */
     private extractTextBoundaries(
         text: string,
@@ -415,6 +403,9 @@ export class TextExtractor {
 
         // Perform OCR if no existing file found
         try {
+            // Get the book manifest for boundary markers
+            const bookManifest = this.bookStructureService.getBookManifest(metadata);
+
             const ocrResult = await this.ocrService.performOCR(
                 fileInfo,
                 {
@@ -424,6 +415,7 @@ export class TextExtractor {
                     timeout: 300000,
                 },
                 bookType,
+                bookManifest,
             );
 
             return {

@@ -6,8 +6,8 @@ original:
   size: 15916374
   pages: 350
   book-type: rudolf-steiner-ga-werk
-text-before-first-chapter: "müsse, um ihm erkennend beizukommen."
-text-after-last-chapter: "Daten zur Herausgabe von Goethes"
+text-before-first-chapter: müsse, um ihm erkennend beizukommen.
+text-after-last-chapter: Daten zur Herausgabe von Goethes
 structure:
   - type: chapter
     title: null

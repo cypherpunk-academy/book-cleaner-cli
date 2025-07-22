@@ -1,5 +1,6 @@
 import { ERROR_CODES, LOG_COMPONENTS } from '../constants';
 import type { ConfigService } from '../services/ConfigService';
+import { BookStructureService } from '../services/BookStructureService';
 import type { LoggerService } from '../services/LoggerService';
 import type { FileFormatResult, FileInfo, PipelineState, ProgressCallback } from '../types';
 import { AppError } from '../utils/AppError';
@@ -22,13 +23,24 @@ export class DataLoadingPhase extends AbstractPhase {
     private textExtractor: TextExtractor;
     private textEnhancer: TextEnhancer;
     private fileUtils: FileUtils;
+    private bookStructureService: BookStructureService;
 
-    constructor(logger: LoggerService, configService: ConfigService) {
+    constructor(
+        logger: LoggerService,
+        configService: ConfigService,
+        bookStructureService: BookStructureService,
+    ) {
         super(logger);
         this.formatDetector = new FileFormatDetector(logger);
-        this.textExtractor = new TextExtractor(logger, configService, './book-artifacts');
+        this.textExtractor = new TextExtractor(
+            logger,
+            configService,
+            './book-artifacts',
+            bookStructureService,
+        );
         this.textEnhancer = new TextEnhancer(logger, configService);
         this.fileUtils = new FileUtils(logger);
+        this.bookStructureService = bookStructureService;
     }
 
     public override getName(): string {
@@ -168,12 +180,12 @@ export class DataLoadingPhase extends AbstractPhase {
             }
 
             // Get manifest path for text enhancement
+            const manifestPath = this.bookStructureService.getManifestPath(metadata);
+
+            // Read the extracted text files
             const configKey = this.getConfigKey(metadata);
             const bookArtifactsDir = './book-artifacts';
             const bookDir = `${bookArtifactsDir}/${configKey}`;
-            const manifestPath = `${bookDir}/book-manifest.yaml`;
-
-            // Read the extracted text files
             const phase1Dir = `${bookDir}/phase1`;
             const step2TxtPath = `${phase1Dir}/step2.txt`;
             const step2OcrPath = `${phase1Dir}/step2.ocr`;
@@ -288,7 +300,7 @@ export class DataLoadingPhase extends AbstractPhase {
                     format: formatResult.format,
                     confidence: formatResult.confidence,
                     extractedTextLength: textExtractionResult.extractedText.length,
-                    textFiles: textExtractionResult.textFiles,
+                    ocrTextLength: textExtractionResult.ocrText?.length || 0,
                 },
                 'Data loading phase completed successfully',
             );

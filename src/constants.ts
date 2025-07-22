@@ -63,7 +63,7 @@ export const PIPELINE_STATUS = {
 // ==================== Configuration Constants ====================
 
 export const DEFAULT_ARTIFACTS_DIR = 'book-artifacts';
-export const DEFAULT_CONFIG_FILE = 'default-book-manifest.yaml';
+export const DEFAULT_BOOK_MANIFEST_FILE = 'default-book-manifest.yaml';
 export const BOOK_MANIFEST_FILE = 'book-manifest.yaml';
 export const CONFIG_FILE_EXTENSION = '.yaml';
 
@@ -75,7 +75,7 @@ export const DEFAULT_FILENAME_PATTERN = '{author}#{title}[#{bookIndex}]-{timesta
 
 export const ARTIFACTS_STRUCTURE = {
     BASE_DIR: DEFAULT_ARTIFACTS_DIR,
-    DEFAULT_MANIFEST: DEFAULT_CONFIG_FILE,
+    DEFAULT_MANIFEST: DEFAULT_BOOK_MANIFEST_FILE,
     BOOK_MANIFEST: BOOK_MANIFEST_FILE,
     PHASE_DIRS: {
         PHASE1: 'phase1',
