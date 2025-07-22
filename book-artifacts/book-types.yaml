@@ -26,7 +26,7 @@ rudolf-steiner-ga-werk:
     quote-text: 200
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
-    - "/Buch\\s?:\\s{0,3}\\d+\\s*\\d{0,3}\\s+Seite\\s?:\\s?\\d+[ \\t]*\\d{0,4}/"
+    - "/Buch\\s?:\\s*\\d*\\s*\\d{0,3}\\s+Seite\\s?:\\s*\\d+[ \\t]*\\d{0,4}/"
     - "/\\d{0,3}\\s?\\[[\\s\\S]+?\\]/"
 
 rudolf-steiner-ga-vortrag:
@@ -39,7 +39,7 @@ rudolf-steiner-ga-vortrag:
           example: "ERSTER VORTRAG Dornach, 12. Semptember 1921"
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
-    - "/Buch\\s?:\\s{0,3}\\d+\\s*\\d{0,3}\\s+Seite\\s?:\\s?\\d+[ \\t]*\\d{0,4}/"
+    - "/Buch\\s?:\\s*\\d*\\s*\\d{0,3}\\s+Seite\\s?:\\s*\\d+[ \\t]*\\d{0,4}/"
     - "/\\d{0,3}\\s?\\[[\\s\\S]+?\\]/"
 
 google-play-ebook:
