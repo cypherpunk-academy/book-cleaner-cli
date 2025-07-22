@@ -117,10 +117,6 @@ interface HeaderResult {
  */
 interface ProcessedTextResult extends ScanResults {
     success: boolean;
-    errors: string[];
-    processedParagraphs: number;
-    detectedHeaders: number;
-    removedPatterns: number;
 }
 
 /**
@@ -727,7 +723,7 @@ export class GetTextAndStructureFromOcr {
             const pageMetrics = this.analyzePageMetrics(ocrData, bookConfig);
 
             // Debug: Log the page metrics result
-            this.logger.info({ pageMetrics }, 'Page Metrics Result');
+            this.logger.debug({ pageMetrics }, 'Page Metrics Result');
 
             let processedParagraphs = 0;
             let detectedHeaders = 0;
@@ -770,13 +766,6 @@ export class GetTextAndStructureFromOcr {
                                     break;
                             }
 
-                            this.logger.info(
-                                {
-                                    headerResult,
-                                },
-                                'Header detected and processed',
-                            );
-
                             continue; // Headers are supposed to be alone in a paragraph
                         }
 
@@ -788,13 +777,6 @@ export class GetTextAndStructureFromOcr {
                             scanResultsThisPage,
                             pageMetrics,
                             isFirstParagraph,
-                        );
-
-                        this.logger.info(
-                            {
-                                processedText,
-                            },
-                            'Processed paragraph text',
                         );
 
                         // Apply text removal patterns to paragraph text
@@ -836,10 +818,6 @@ export class GetTextAndStructureFromOcr {
 
             return {
                 success: errors.length === 0,
-                processedParagraphs,
-                detectedHeaders,
-                removedPatterns,
-                errors,
                 textWithHeaders: scanResultsThisPage.textWithHeaders,
                 footnoteText: scanResultsThisPage.footnoteText,
                 level1HeadingsIndex: scanResultsThisPage.level1HeadingsIndex,
@@ -854,10 +832,6 @@ export class GetTextAndStructureFromOcr {
 
             return {
                 success: false,
-                processedParagraphs: 0,
-                detectedHeaders: 0,
-                removedPatterns: 0,
-                errors: [errorMsg],
                 textWithHeaders: '',
                 footnoteText: '',
                 level1HeadingsIndex: scanResults.level1HeadingsIndex,

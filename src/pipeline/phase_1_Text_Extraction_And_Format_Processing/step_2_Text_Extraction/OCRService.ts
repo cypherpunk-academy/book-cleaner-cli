@@ -61,50 +61,9 @@ interface OCRData {
  * OCR result interface with structured text recognition
  */
 export interface OCRResult {
-    extractedText: string;
     structuredText: string; // Text with structure markers (# for headings, \n\n for paragraphs, [M]/[T] for footnotes)
-    confidence: number;
-    processingTime: number;
     pageCount: number;
-    language: string;
-    errors: string[];
-    detectedStructure?: {
-        headings: HeadingInfo[];
-        paragraphs: ParagraphInfo[];
-        footnotes: FootnoteInfo[];
-    };
-}
-
-/**
- * Heading information from OCR analysis
- */
-interface HeadingInfo {
-    text: string;
-    level: number; // 1 for #, 2 for ##
-    confidence: number;
-    position: { x: number; y: number; width: number; height: number };
-    fontSize: number;
-}
-
-/**
- * Paragraph information
- */
-interface ParagraphInfo {
-    text: string;
-    confidence: number;
-    position: { x: number; y: number; width: number; height: number };
-    wordCount: number;
-}
-
-/**
- * Footnote information
- */
-interface FootnoteInfo {
-    marker: string;
-    text: string;
-    confidence: number;
-    markerPosition: { x: number; y: number; width: number; height: number };
-    textPosition: { x: number; y: number; width: number; height: number };
+    errors?: string[];
 }
 
 /**
@@ -286,15 +245,9 @@ export class OCRService {
                     bookType,
                 );
 
-                const processingTime = Date.now() - startTime;
-                result.processingTime = processingTime;
-
                 ocrLogger.info(
                     {
                         filename: fileInfo.name,
-                        processingTime,
-                        confidence: result.confidence,
-                        textLength: result.extractedText.length,
                     },
                     'Structured OCR processing completed successfully',
                 );
@@ -328,24 +281,16 @@ export class OCRService {
             );
 
             return {
-                extractedText: '',
                 structuredText: '',
-                confidence: 0,
-                processingTime: Date.now() - startTime,
                 pageCount: 0,
-                language: options.language || this.defaultLanguage,
                 errors: [`OCR processing failed: ${errorMessage}`],
-                detectedStructure: {
-                    headings: [],
-                    paragraphs: [],
-                    footnotes: [],
-                },
             };
         }
     }
 
     /**
      * Process file with structured text recognition
+     * Simplified to focus on PDF processing which is our primary use case
      */
     private async processWithStructuredRecognition(
         worker: Worker,
@@ -354,94 +299,31 @@ export class OCRService {
         _logger: unknown,
         bookType: string,
     ): Promise<OCRResult> {
-        // For files with paths, perform actual OCR
         const filePath = fileInfo.path;
-        if (filePath) {
-            // Handle PDF files by converting to images first
-            if (fileInfo.format === 'pdf') {
-                const processingTime = Date.now();
-                const pdfResults = await this.processPDFWithOCR(
-                    filePath,
-                    worker,
-                    options,
-                    bookType,
-                );
-                pdfResults.processingTime = Date.now() - processingTime;
-                return pdfResults;
-            }
-
-            // Handle image files directly
-            const result = await (
-                worker as unknown as {
-                    recognize: (...args: unknown[]) => Promise<{ data: OCRData }>;
-                }
-            ).recognize(filePath);
-            const { data } = result;
-
-            // Analyze structure from OCR data
-            const detectedStructure = this.analyzeDocumentStructure(
-                data as unknown as OCRData,
-                options,
-            );
-
-            // Create structured text with markers
-            const structuredText = this.applyStructuredMarkers(data.text, detectedStructure);
-
-            // Apply German umlaut corrections
-            const correctedText = this.fixGermanUmlautErrors(data.text);
-            const correctedStructuredText = this.fixGermanUmlautErrors(structuredText);
-
+        if (!filePath) {
             return {
-                extractedText: correctedText,
-                structuredText: correctedStructuredText,
-                confidence: data.confidence,
-                processingTime: 0,
-                pageCount: 1,
-                language: options.language || this.defaultLanguage,
-                errors: [],
-                detectedStructure,
+                structuredText: '',
+                pageCount: 0,
+                errors: ['No file path provided'],
             };
         }
 
-        // Fallback for files without path
+        // Handle PDF files by converting to images first
+        if (fileInfo.format === 'pdf') {
+            const processingTime = Date.now();
+            const pdfResults = await this.processPDFWithOCR(filePath, worker, bookType);
+
+            return pdfResults;
+        }
+
+        // For non-PDF files, return simple fallback
+        // This code path is rarely used in our current workflow
         return {
-            extractedText: '',
             structuredText: '',
-            confidence: 0,
-            processingTime: 0,
             pageCount: 0,
-            language: options.language || this.defaultLanguage,
-            errors: ['No file path provided'],
-            detectedStructure: {
-                headings: [],
-                paragraphs: [],
-                footnotes: [],
-            },
+            errors: ['Non-PDF files not fully supported in current implementation'],
         };
     }
-
-    /**
-     * Analyze document structure using fallback stubs (no actual analysis)
-     */
-    private analyzeDocumentStructure(
-        _ocrData: OCRData,
-        _options?: OCROptions,
-    ): {
-        headings: HeadingInfo[];
-        paragraphs: ParagraphInfo[];
-        footnotes: FootnoteInfo[];
-    } {
-        // Simple fallback stub - return empty structures
-        // This preserves the interface but doesn't perform any analysis
-        return {
-            headings: [],
-            paragraphs: [],
-            footnotes: [],
-        };
-    }
-
-    // Note: Old text-pattern matching methods and VisualLayoutAnalyzer
-    // have been removed and replaced with simple fallback stubs
 
     /**
      * Process PDF by converting to images and running OCR
@@ -449,7 +331,6 @@ export class OCRService {
     private async processPDFWithOCR(
         filePath: string,
         worker: Worker,
-        options: OCROptions,
         bookType: string,
     ): Promise<OCRResult> {
         const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.PIPELINE_MANAGER, 'pdf_ocr');
@@ -555,17 +436,30 @@ export class OCRService {
                     }
 
                     // Process OCR data with structured text extraction
-                    const processingResult = await textProcessor.processOCRData(
-                        data,
-                        bookType,
-                        scanResults,
-                    );
+                    const {
+                        success,
+                        textWithHeaders,
+                        footnoteText,
+                        level1HeadingsIndex,
+                        level2HeadingsIndex,
+                        level3HeadingsIndex,
+                    } = await textProcessor.processOCRData(data, bookType, scanResults);
 
-                    scanResults.textWithHeaders += processingResult.textWithHeaders;
-                    scanResults.footnoteText += processingResult.footnoteText;
-                    scanResults.level1HeadingsIndex = processingResult.level1HeadingsIndex;
-                    scanResults.level2HeadingsIndex = processingResult.level2HeadingsIndex;
-                    scanResults.level3HeadingsIndex = processingResult.level3HeadingsIndex;
+                    if (success) {
+                        scanResults.textWithHeaders = this.concatenateText(
+                            scanResults.textWithHeaders,
+                            textWithHeaders,
+                        );
+                        scanResults.footnoteText = this.concatenateText(
+                            scanResults.footnoteText,
+                            footnoteText,
+                        );
+                        scanResults.level1HeadingsIndex = level1HeadingsIndex;
+                        scanResults.level2HeadingsIndex = level2HeadingsIndex;
+                        scanResults.level3HeadingsIndex = level3HeadingsIndex;
+                    } else {
+                        errors.push(`Page ${pageNumber} failed to process`);
+                    }
                 } catch (pageError) {
                     const errorMsg = `Failed to process page ${pageNumber}: ${
                         pageError instanceof Error ? pageError.message : String(pageError)
@@ -618,10 +512,6 @@ export class OCRService {
                     successfulPages,
                     failedPages: errors.length,
                     averageConfidence,
-                    totalHeaders:
-                        scanResults.level1HeadingsIndex +
-                        scanResults.level2HeadingsIndex +
-                        scanResults.level3HeadingsIndex,
                     structuredTextLength: correctedStructuredText.length,
                     footnoteTextLength: scanResults.footnoteText.length,
                 },
@@ -629,13 +519,8 @@ export class OCRService {
             );
 
             return {
-                extractedText: correctedStructuredText,
                 structuredText: correctedStructuredText,
-                confidence: averageConfidence,
-                processingTime: 0, // Will be set by caller
                 pageCount: results.length,
-                language: options.language || this.defaultLanguage,
-                errors,
             };
         } catch (error) {
             const errorMsg = `PDF OCR processing failed: ${
@@ -645,81 +530,11 @@ export class OCRService {
 
             // Return empty result as fallback
             return {
-                extractedText: '',
                 structuredText: '',
-                confidence: 0,
-                processingTime: 0,
                 pageCount: 0,
-                language: options.language || this.defaultLanguage,
                 errors: [errorMsg],
-                detectedStructure: {
-                    headings: [],
-                    paragraphs: [],
-                    footnotes: [],
-                },
             };
         }
-    }
-
-    /**
-     * Apply structured markers to create formatted text
-     * Fallback stub: returns original text unchanged when no structure is detected
-     */
-    private applyStructuredMarkers(
-        originalText: string,
-        structure: {
-            headings: HeadingInfo[];
-            paragraphs: ParagraphInfo[];
-            footnotes: FootnoteInfo[];
-        },
-    ): string {
-        const { headings, paragraphs, footnotes } = structure;
-
-        // If no structure detected, return original text unchanged
-        if (headings.length === 0 && paragraphs.length === 0 && footnotes.length === 0) {
-            return originalText;
-        }
-
-        // This code path will not be reached with current fallback stubs,
-        // but kept for potential future structure detection
-        let structuredText = '';
-
-        // Sort all elements by vertical position
-        const allElements = [
-            ...headings.map((h) => ({ ...h, type: 'heading' as const })),
-            ...paragraphs.map((p) => ({ ...p, type: 'paragraph' as const })),
-            ...footnotes.map((f) => ({
-                ...f,
-                type: 'footnote' as const,
-                position: f.textPosition,
-            })),
-        ].sort((a, b) => a.position.y - b.position.y);
-
-        // Build structured text with markers
-        for (const element of allElements) {
-            switch (element.type) {
-                case 'heading': {
-                    const heading = element as HeadingInfo & { type: 'heading' };
-                    const marker = '#'.repeat(heading.level);
-                    structuredText += `${marker} ${heading.text}\n\n`;
-                    break;
-                }
-
-                case 'paragraph': {
-                    const paragraph = element as ParagraphInfo & { type: 'paragraph' };
-                    structuredText += `${paragraph.text}\n\n`;
-                    break;
-                }
-
-                case 'footnote': {
-                    const footnote = element as FootnoteInfo & { type: 'footnote' };
-                    structuredText += `[M]${footnote.marker}[/M] [T]${footnote.text}[/T]\n\n`;
-                    break;
-                }
-            }
-        }
-
-        return structuredText.replace(/^\s+/, '').replace(/\s+$/, '');
     }
 
     /**
@@ -740,127 +555,29 @@ export class OCRService {
     }
 
     /**
-     * Get OCR statistics for analysis
+     * Concatenate two text strings with hyphenation handling
+     * If last character of first text is hyphen and first character of second text is lowercase,
+     * then glue them (remove hyphen), otherwise put a space in between
      */
-    getOCRStatistics(result: OCRResult): {
-        textQuality: 'excellent' | 'good' | 'fair' | 'poor';
-        structureDetected: boolean;
-        recommendedLanguage: string;
-        processingEfficiency: number;
-    } {
-        const textQuality =
-            result.confidence > 90
-                ? 'excellent'
-                : result.confidence > 75
-                  ? 'good'
-                  : result.confidence > 60
-                    ? 'fair'
-                    : 'poor';
+    private concatenateText(firstText: string, secondText: string): string {
+        if (!firstText || firstText.length === 0) {
+            return secondText;
+        }
 
-        const structureDetected = result.structuredText.includes('#');
+        if (!secondText || secondText.length === 0) {
+            return firstText;
+        }
 
-        const processingEfficiency =
-            result.extractedText.length / Math.max(result.processingTime, 1);
+        const lastCharOfFirst = firstText.charAt(firstText.length - 1);
+        const firstCharOfSecond = secondText.charAt(0);
 
-        return {
-            textQuality,
-            structureDetected,
-            recommendedLanguage: result.language,
-            processingEfficiency,
-        };
-    }
-
-    /**
-     * Log raw Tesseract data to tesseract_raw.json file
-     */
-    private async logTesseractRawData(
-        pageNumber: number,
-        data: OCRData,
-        filePath: string,
-    ): Promise<void> {
-        try {
-            const { promises: fs } = await import('node:fs');
-            const path = await import('node:path');
-
-            // Extract relevant data from Tesseract response
-            const pageData = {
-                pageNumber,
-                timestamp: new Date().toISOString(),
-                sourceFile: path.basename(filePath),
-                confidence: data.confidence || 0,
-                text: data.text || '',
-                paragraphs:
-                    data.paragraphs?.map((paragraph) => ({
-                        text: paragraph.text || '',
-                        confidence: paragraph.confidence || 0,
-                        bbox: paragraph.bbox || null,
-                        lines:
-                            paragraph.lines?.map((line) => ({
-                                text: line.text || '',
-                                confidence: line.confidence || 0,
-                                bbox: line.bbox || null,
-                                words:
-                                    line.words?.map((word) => ({
-                                        text: word.text || '',
-                                        confidence: word.confidence || 0,
-                                        bbox: word.bbox || null,
-                                    })) || [],
-                            })) || [],
-                    })) || [],
-                blocks:
-                    data.blocks?.map((block) => ({
-                        text: block.text || '',
-                        confidence: block.confidence || 0,
-                        bbox: block.bbox || null,
-                    })) || [],
-            };
-
-            // Determine output file path
-            const outputDir = path.dirname(filePath);
-            const tesseractRawFile = path.join(outputDir, 'tesseract_raw.json');
-
-            // Load existing data if file exists
-            let existingData: Array<typeof pageData> = [];
-            try {
-                const existingContent = await fs.readFile(tesseractRawFile, 'utf8');
-                existingData = JSON.parse(existingContent);
-                if (!Array.isArray(existingData)) {
-                    existingData = [];
-                }
-            } catch {
-                // File doesn't exist or is invalid, start with empty array
-                existingData = [];
-            }
-
-            // Add new page data
-            existingData.push(pageData);
-
-            // Sort by page number
-            existingData.sort((a, b) => a.pageNumber - b.pageNumber);
-
-            // Write back to file
-            await fs.writeFile(tesseractRawFile, JSON.stringify(existingData, null, 2), 'utf8');
-
-            const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.OCR_SERVICE, 'ocr');
-            ocrLogger.debug(
-                {
-                    pageNumber,
-                    filePath: tesseractRawFile,
-                    textLength: pageData.text.length,
-                    paragraphCount: pageData.paragraphs.length,
-                    blockCount: pageData.blocks.length,
-                },
-                'Raw Tesseract data saved to tesseract_raw.json',
-            );
-        } catch (error) {
-            const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.OCR_SERVICE, 'ocr');
-            ocrLogger.warn(
-                {
-                    pageNumber,
-                    error: error instanceof Error ? error.message : String(error),
-                },
-                'Failed to save raw Tesseract data',
-            );
+        // Check if last character is hyphen and first character is lowercase
+        if (lastCharOfFirst === '-' && firstCharOfSecond === firstCharOfSecond.toLowerCase()) {
+            // Remove hyphen and glue the texts together
+            return firstText.slice(0, -1) + secondText;
+        } else {
+            // Add space between texts
+            return firstText + ' ' + secondText;
         }
     }
 }

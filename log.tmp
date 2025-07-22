@@ -2,7 +2,7 @@
 Initializing...
 Data Loading & Format Detection: Starting phase (25%)
 Data Loading & Format Detection: Step 1: Detecting file format... (25%)
-[2025-07-21 18:23:53] [32mINFO[39m: [36mFile format detection completed[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mFile format detection completed[39m
     component: "FileHandler"
     tag: "text_extraction"
     filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -13,23 +13,23 @@ Data Loading & Format Detection: Step 1: Detecting file format... (25%)
       "PDF has mixed content (text and 10 images)"
     ]
     contentType: "hybrid"
-[2025-07-21 18:23:53] [32mINFO[39m: [36mConfiguration loaded successfully[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mConfiguration loaded successfully[39m
     component: "ConfigService"
     tag: "config"
     author: "Rudolf Steiner"
     title: "Einleitungen zu Goethes Naturwissenschaftlichen Schriften"
     configKey: "Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1"
-[2025-07-21 18:23:53] [32mINFO[39m: [36mStarting book cleaning process[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mStarting book cleaning process[39m
     component: "CLICommand"
     tag: "cli"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
     outputDir: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output"
     author: "Rudolf Steiner"
     title: "Einleitungen zu Goethes Naturwissenschaftlichen Schriften"
-[2025-07-21 18:23:53] [32mINFO[39m: [36mStarting processing of /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mStarting processing of /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
     phases: [
       "data_loading",
@@ -37,20 +37,20 @@ Data Loading & Format Detection: Step 1: Detecting file format... (25%)
       "evaluation",
       "ai_enhancements"
     ]
-[2025-07-21 18:23:53] [32mINFO[39m: [36mStarting phase 1: Data Loading & Format Detection[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mStarting phase 1: Data Loading & Format Detection[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 1
     phaseName: "Data Loading & Format Detection"
-[2025-07-21 18:23:53] [32mINFO[39m: [36mStarting data loading phase[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mStarting data loading phase[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
 Data Loading & Format Detection: Step 1: File format detected successfully (13%)
 Data Loading & Format Detection: Step 2: Extracting text based on book structure... (15%)
-[2025-07-21 18:23:53] [32mINFO[39m: [36mFile format detection completed[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mFile format detection completed[39m
     component: "FileHandler"
     tag: "text_extraction"
     filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -61,12 +61,12 @@ Data Loading & Format Detection: Step 2: Extracting text based on book structure
       "PDF has mixed content (text and 10 images)"
     ]
     contentType: "hybrid"
-[2025-07-21 18:23:53] [32mINFO[39m: [36mStarting Step 2: Text extraction based on book structure[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mStarting Step 2: Text extraction based on book structure[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     format: "pdf"
-[2025-07-21 18:23:53] [32mINFO[39m: [36mStarting text extraction based on book structure[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mStarting text extraction based on book structure[39m
     component: "PipelineManager"
     tag: "text_extraction"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -101,9 +101,9 @@ punkt, aus dem wir Goethes wissenschaftliche Arbeiten zu
 betrachten haben. Es handelt sich be..."
 ❌ End text marker not found: "Daten zur Herausgabe von Goethes"
 📍 If the end marker is not found, assume the document continues to the end
-(node:50771) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:94835) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-[2025-07-21 18:23:53] [32mINFO[39m: [36mStarting structured OCR processing with Tesseract.js[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mStarting structured OCR processing with Tesseract.js[39m
     component: "PipelineManager"
     tag: "ocr_service"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
@@ -115,26 +115,26 @@ betrachten haben. Es handelt sich be..."
       "detectStructure": true,
       "timeout": 300000
     }
-(node:50771) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:94835) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 🇩🇪 OCR optimized for German text with umlaut recognition
-[2025-07-21 18:23:53] [32mINFO[39m: [36mConverting PDF to images[39m
+[2025-07-22 05:24:29] [32mINFO[39m: [36mConverting PDF to images[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     filePath: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
 ✅ PDF conversion complete! Found 15 pages
 🔍 Starting OCR processing...
-[2025-07-21 18:23:58] [32mINFO[39m: [36mProcessing pages with OCR[39m
+[2025-07-22 05:24:33] [32mINFO[39m: [36mProcessing pages with OCR[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageCount: 15
-[2025-07-21 18:23:58] [32mINFO[39m: [36mProcessing page 1/15 (7%)[39m
+[2025-07-22 05:24:33] [32mINFO[39m: [36mProcessing page 1/15 (7%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 1
     totalPages: 15
     progress: "7%"
-[2025-07-21 18:24:01] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
+[2025-07-22 05:24:36] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
     component: "ConfigService"
     tag: "config"
     bookTypesPath: "book-artifacts/book-types.yaml"
@@ -144,7 +144,7 @@ betrachten haben. Es handelt sich be..."
       "rudolf-steiner-ga-vortrag",
       "google-play-ebook"
     ]
-[2025-07-21 18:24:01] [32mINFO[39m: [36mBook type configuration loaded successfully[39m
+[2025-07-22 05:24:36] [32mINFO[39m: [36mBook type configuration loaded successfully[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     bookType: "rudolf-steiner-ga-werk"
@@ -152,7 +152,7 @@ betrachten haben. Es handelt sich be..."
     hasLevel2Headers: true
     hasLevel3Headers: false
     removalPatternsCount: 3
-[2025-07-21 18:24:01] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:36] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -185,12 +185,12 @@ betrachten haben. Es handelt sich be..."
         "max": 1175
       }
     }
-[2025-07-21 18:24:01] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
+[2025-07-22 05:24:36] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     headerText: "\n\n# I EINLEITUNG\n\n"
     newIndex: 1
-[2025-07-21 18:24:01] [32mINFO[39m: [36mHeader detected and processed[39m
+[2025-07-22 05:24:36] [32mINFO[39m: [36mHeader detected and processed[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     headerResult: {
@@ -198,34 +198,13 @@ betrachten haben. Es handelt sich be..."
       "level": 1,
       "newIndex": 1
     }
-[2025-07-21 18:24:01] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Am 18. August des Jahres 1787 schrieb Goethe von Italien aus an Knebel: Nach dem, was ich bei Neapel, in Sizilien von Pflanzen und Fischen gesehen habe, würde ich, wenn ich zehn Jahre jünger wäre, sehr versucht sein, eine Reise nach Indien zu machen, nicht um etwas Neues zu entdecken, sondern um das Entdeckte nach meiner Art anzusehen. [WA 8, 2501] In diesen Worten liegt der Gesichtspunkt, aus dem wir Goethes wissenschaftliche Arbeiten zu betrachten haben. Es handelt sich bei ihm nie um die Entdeckung neuer Tatsachen, sondern um das Eröffnen eines neuen Gesichtspunktes, um eine bestimmte Art die Natur anzusehen. Es ist wahr, daß Goethe eine Reihe großer Einzelentdeckungen gemacht hat, wie jene des Zwischenknochens und der Wirbeltheorie des Schädels in der Osteologie, der Identität aller Pflanzenorgane mit dem Stammblatte in der Botanik usf. Aber als belebende Seele aller dieser Einzelheiten haben wir eine großartige Naturanschauung zu betrachten, von der sie getragen werden, haben wir in der Lehre von den Organismen vor allem eine großartige, alles übrige in den Schatten stellende Entdeckung ins Auge zu fassen: die des Wesens des Organismus selbst. Jenes Prinzip, durch welches ein Organismus das ist, als das er sich dar-",
-      "footnoteText": "\n\n[1] [Alle Stellen aus von Goethe verfaßten Briefen sind zitiert nach der sog. Weimarer Ausgabe (- WA) oder Sophien-Ausgabe von Goethes Werken, Abteilung IV: Briefe, 50 Bde., Weimar 1887-1912; die beiden Ziffern beziehen sich auf Band und Seitenzahl dieser Abteilung. — Hinzufügungen des Herausgebers sind in eckige Klammern"
-    }
-[2025-07-21 18:24:01] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "gesetzt. ]"
-    }
-[2025-07-21 18:24:01] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch: 1           Seite: 9",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:01] [32mINFO[39m: [36mProcessing page 2/15 (13%)[39m
+[2025-07-22 05:24:36] [32mINFO[39m: [36mProcessing page 2/15 (13%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 2
     totalPages: 15
     progress: "13%"
-[2025-07-21 18:24:04] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:40] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -246,20 +225,13 @@ betrachten haben. Es handelt sich be..."
         "max": 55
       }
     }
-[2025-07-21 18:24:04] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "stellt, die Ursachen, als deren Folge uns die Äußerungen des Lebens erscheinen, und zwar alles, was wir in prinzipieller Hinsicht diesbezüglich zu fragen haben, hat er dargelegt.? Es ist dies vom Anfange an das Ziel alles seines Strebens in bezug auf die organischen Naturwissenschaften; bei Verfolgung desselben drängen sich ihm jene Einzelheiten wie von selbst auf. Er mußte sie finden, wenn er im weiteren Streben nicht gehindert sein wollte. Die Naturwissenschaft vor ihm, die das Wesen der Lebenserscheinungen nicht kannte und die Organismen einfach nach der Zusammensetzung aus Teilen, nach deren äußerlichen Merkmalen untersuchte, so wie man dieses bei unorganischen Dingen auch macht, mußte auf ihrem Wege oft den Einzelheiten eine falsche Deutung geben, sie in ein falsches Licht setzen. An den Einzelheiten als solchen kann man natürlich einen solchen Irrtum nicht bemerken. Das erkennen wir eben erst, wenn wir den Organismus verstehen, da die Einzelheiten für sich, abgesondert betrachtet, das Prinzip ihrer Erklärung nicht in sich tragen. Sie sind nur durch die Natur des Ganzen zu erklären, weil es das Ganze ist, das ihnen Wesen und Be- Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1           Seite: 10",
-      "footnoteText": "\n\n[2] Wer ein solches Ziel von vornherein für unerreichbar erklärt, der wird zum Verständnis Goethescher Naturanschauungen nie kommen; wer dagegen vorurteilslos, diese Frage offenlassend, an das Studium derselben geht, der wird sie nach Beendigung desselben gewiß bejahend beantworten. Es könnten wohl manchem durch einige Bemerkungen Goethes selbst Bedenken aufsteigen, wie z. B. folgende ist: Wir hätten... ohne Anmaßung, die ersten Triebfedern der Naturwirkungen entdecken zu wollen, auf Äußerung der Kräfte, durch welche die Pflanze ein und dasselbe Organ nach und nach umbildet, unsere Aufmerksamkeit gerichtet. Allein solche Aussprüche richten sich bei Goethe nie gegen die prinzipielle Möglichkeit, die Wesenheit der Dinge zu erkennen, sondern er ist nur vorsichtig genug über die physikalisch-mechanischen Bedingungen, welche dem Organismus zugrunde liegen, nicht vorschnell abzuurteilen, da er wohl wußte, daß solche Fragen nur im Laufe der Zeit gelöst werden können."
-    }
-[2025-07-21 18:24:04] [32mINFO[39m: [36mProcessing page 3/15 (20%)[39m
+[2025-07-22 05:24:40] [32mINFO[39m: [36mProcessing page 3/15 (20%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 3
     totalPages: 15
     progress: "20%"
-[2025-07-21 18:24:08] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:43] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -280,90 +252,13 @@ betrachten haben. Es handelt sich be..."
         "max": 36
       }
     }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "deutung gibt. Erst nachdem Goethe eben diese Natur des Ganzen enthüllt hatte, wurden ihm jene irrtümlichen Auslegungen sichtbar; sie waren mit seiner Theorie der Lebewesen nicht zu vereinigen, sie widersprachen derselben. Wollte er auf seinem Wege weiter gehen, so mußte er dergleichen Vorurteile wegschaffen. Dies war beim Zwischenknochen der Fall. Tatsachen, die nur dann von Wert und Interesse sind, wenn man eben jene Theorie besitzt, wie die Wirbelnatur der Schädelknochen, waren jener älteren Naturlehre unbekannt. Alle diese Hindernisse mußten durch Einzelerfahrungen aus dem Wege geräumt werden. So erscheinen uns denn die letzteren bei Goethe nie als Selbstzweck; sie müssen immer gemacht werden, um einen großen Gedanken, um jene zentrale Entdeckung zu bestätigen. Es ist nicht zu leugnen, daß Goethes Zeitgenossen früher oder später zu denselben Beobachtungen kamen, und daß heute vielleicht alle auch ohne Goethes Bestrebungen bekannt wären; aber noch viel weniger ist zu leugnen, daß seine große, die ganze organische Natur umspannende Entdeckung bis heute von keinem zweiten unabhängig von Goethe in gleich vortrefflicher Weise ausgesprochen worden ist?, ja es fehlt uns bis heute an einer auch nur einiger-",
-      "footnoteText": "\n\n[3] Damit wollen wir keineswegs sagen, Goethe sei in dieser Hinsicht"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "überhaupt nie verstanden worden. Im Gegenteil: Wir nehmen in"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "dieser Ausgabe selbst wiederholt Anlaß, auf eine Reihe von Män-"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "nern hinzuweisen, die uns als Fortsetzer und Ausarbeiter Goethescher"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "Ideen erscheinen. Namen wie Voigt, Nees von Esenbeck, dAlton"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "(der ältere und der jüngere), Schelver, C. G. Carus, Martius u. a."
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "gehören in diese Reihe. Aber diese bauten eben auf der Grundlage"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "der in den Goetheschen Schriften niedergelegten Anschauungen ihre"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "Systeme auf, und man kann gerade von ihnen nicht sagen, daß sie"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "auch ohne Goethe zu ihren Begriffen gelangt wären, wogegen aller-"
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1          Seite: 11",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:08] [32mINFO[39m: [36mProcessing page 4/15 (27%)[39m
+[2025-07-22 05:24:43] [32mINFO[39m: [36mProcessing page 4/15 (27%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 4
     totalPages: 15
     progress: "27%"
-[2025-07-21 18:24:11] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:46] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -384,41 +279,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 18:24:11] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "maßen befriedigenden Würdigung derselben. Es erscheint im Grunde gleichgültig, ob Goethe eine Tatsache zuerst oder nur wiederentdeckt hat; sie gewinnt durch die Art, wie er sie seiner Naturanschauung einfügt, erst ihre wahre Bedeutung. Das ist es, was man bisher übersehen hat. Man hob jene besonderen Tatsachen zu sehr hervor und forderte dadurch zur Polemik auf. Wohl wies man oft auf Goethes Überzeugung von der Konsequenz der Natur hin, allein man beachtete nicht, daß damit nur ein ganz nebensächliches, wenig bedeutsames Charakteristikon der Goetheschen Anschauungen gegeben ist und daß es beispielsweise in bezug auf die Organik die Hauptsache ist, zu zeigen, welcher Natur das ist, welches jene Konsequenz bewahrt.       ; Nennt man da den Typus, so hat man zu sagen, worinnen die Wesenheit des Typus im Sinne Goethes besteht.",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:11] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nDas Bedeutsame der Pflanzenmetamorphose liegt z. B. nicht in der Entdeckung der einzelnen Tatsache, daß Blatt, Kelch, Krone usw. identische Organe seien, sondern in dem großartigen gedanklichen Aufbau eines lebendigen Ganzen durcheinander wirkender Bildungsgesetze, welcher daraus hervorgeht und der die Einzelheiten, die einzelnen Stufen der Entwicklung, aus sich heraus bestimmt. Die Größe dieses Gedankens, den Goethe dann auch auf die Tierwelt auszudehnen suchte, geht einem nur dann auf, wenn man versucht, sich denselben im Geiste lebendig zu machen, wenn man es unternimmt ihn nachzudenken. Man wird dann gewahr, daß er die in die dee übersetzte Natur der Pflanze selbst ist, die in unserem Geiste ebenso lebt wie",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:11] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "dings Zeitgenossen des letzteren — z. B. Josephi von Göttingen — selbständig auf den Zwischenknochen, oder Oken auf die Wirbeltheorie gekommen sind."
-    }
-[2025-07-21 18:24:11] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch:         Seite: 12",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:11] [32mINFO[39m: [36mProcessing page 5/15 (33%)[39m
+[2025-07-22 05:24:46] [32mINFO[39m: [36mProcessing page 5/15 (33%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 5
     totalPages: 15
     progress: "33%"
-[2025-07-21 18:24:12] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:47] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -435,34 +302,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 18:24:12] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "im Objekte; man bemerkt auch, daß man sich einen Organismus bis in die kleinsten Teile hinein belebt, nicht als toten, abgeschlossenen Gegenstand, sondern als sich Entwickelndes, Werdendes, als die stetige Unruhe in sich selbst vorstellt.",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:12] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nIndem wir nun im folgenden versuchen, alles hier Angedeutete eingehend darzulegen, wird sich uns zugleich das wahre Verhältnis der Goetheschen Naturanschauung zu jener unserer Zeit offenbaren, namentlich zur Entwicklungstheorie in moderner Gestalt,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:12] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch: 1          Seite: 13",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:12] [32mINFO[39m: [36mProcessing page 6/15 (40%)[39m
+[2025-07-22 05:24:47] [32mINFO[39m: [36mProcessing page 6/15 (40%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 6
     totalPages: 15
     progress: "40%"
-[2025-07-21 18:24:14] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:50] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -495,12 +341,12 @@ betrachten haben. Es handelt sich be..."
         "max": 1157
       }
     }
-[2025-07-21 18:24:14] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
+[2025-07-22 05:24:50] [37mUSERLVL[39m: [36mHeader successfully processed and added[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     headerText: "\n\n# II DIE ENISTEHUNG DER METAMORPHOSENLEHRE\n\n"
     newIndex: 2
-[2025-07-21 18:24:14] [32mINFO[39m: [36mHeader detected and processed[39m
+[2025-07-22 05:24:50] [32mINFO[39m: [36mHeader detected and processed[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     headerResult: {
@@ -508,34 +354,13 @@ betrachten haben. Es handelt sich be..."
       "level": 1,
       "newIndex": 2
     }
-[2025-07-21 18:24:14] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Wenn man der Entstehungsgeschichte von Goethes Gedanken über die Bildung der Organismen nachgeht, so kommt man nur allzuleicht in Zweifel über den Anteil, den man der Jugend des Dichters, d. h. der Zeit vor seinem Eintritte in Weimar zuzuschreiben hat. Goethe selbst dachte sehr gering von seinen naturwissenschaftlichen Kenntnissen in dieser Zeit: Von dem..., was eigentlich äußere Natur heißt, hatte ich keinen Begriff und von ihren sogenannten drei Reichen nicht die geringste Kenntnis. (Siehe Goethes Naturwissenschaftliche Schriften in Kürschners Deutscher National-Literatur, I. Band [S. 64].) Auf diese Außerung gestützt, denkt man sich meistens den Beginn seines naturwissenschaftlichen Nachdenkens erst nach seiner Ankunft in Weimar. Dennoch erscheint es geboten, noch weiter zurückzugehen, wenn man nicht den ganzen Geist seiner Anschauungen unerklärt lassen will. Die belebende Gewalt, welche seine Studien in jene Richtung lenkte, die wir später darlegen wollen, zeigt sich schon in frühester Jugend.",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:14] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nAls Goethe an die Leipziger Hochschule kam, herrschte in den naturwissenschaftlichen Bestrebungen daselbst noch ganz jener Geist, der für einen großen Teil des achtzehnten Jahrhunderts charakteristisch ist und der die gesamte Wissenschaft in zwei Extreme auseinanderwarf, welche zu vereinigen man kein Bedürfnis fühlte. Auf der einen Seite stand die Philosophie Christian Wolffs (1679-1754), wel-",
-      "footnoteText": "\n\n[4] (Im folgenden mit Natw. Schr. abgekürzt.]"
-    }
-[2025-07-21 18:24:14] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1          Seite: 14",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:14] [32mINFO[39m: [36mProcessing page 7/15 (47%)[39m
+[2025-07-22 05:24:50] [32mINFO[39m: [36mProcessing page 7/15 (47%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 7
     totalPages: 15
     progress: "47%"
-[2025-07-21 18:24:17] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:53] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -552,34 +377,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 18:24:17] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "che sich ganz in einem abstrakten Elemente bewegte; auf der anderen die einzelnen Wissenschaftszweige, welche in der äußerlichen Beschreibung unendlicher Einzelheiten sich verloren und denen jedes Bestreben mangelte, in der Welt ihrer Objekte ein höheres Prinzip aufzusuchen. Jene Philosophie konnte den Weg aus der Sphäre ihrer allgemeinen Begriffe in das Reich der unmittelbaren Wirklichkeit, des individuellen Daseins nicht finden. Da wurden die selbstverständlichsten Dinge mit aller Ausführlichkeit behandelt. Man erfuhr, daß das Ding ein Etwas sei, welches keinen Widerspruch in sich habe, daß es endliche und unendliche Substanzen gebe usw. Trat man aber mit diesen Allgemeinheiten an die Dinge selbst heran, um deren Wirken und Leben zu verstehen, so stand man völlig ratlos da; man konnte keine Anwendung jener Begriffe auf die Welt, in der wir leben und die wir verstehen wollen, machen. Die uns umgebenden Dinge selbst aber beschrieb man in ziemlich prinziploser Weise, rein nach dem Augenschein, nach ihren äußerlichen Merkmalen. Es standen sich hier eine Wissenschaft der Prinzipien, welcher der lebendige Gehalt, die liebevolle Vertiefung in die unmittelbare Wirklichkeit fehlte, und eine prinziplose Wissenschaft, welche des ideellen Gehaltes ermangelte, gegenüber ohne Vermittlung, jede für die andere unfruchtbar. Goethes gesunde Natur fand sich von beiden Einseitigkeiten in gleicher Weise abgestoßen5 und im Widerstreite mit ihnen entwickelten sich bei ihm Vorstellungen, die ihn später zu jener fruchtbaren Naturauffassung führten, in welcher Idee und Erfahrung in allseitiger Durchdringung sich gegenseitig beleben und zu einem Ganzen werden.",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:17] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "",
-      "footnoteText": "\n\n[5] Siche Dichtung und Wahrheit, II. Teil, 6. Buch."
-    }
-[2025-07-21 18:24:17] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1         Seite: 15",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:17] [32mINFO[39m: [36mProcessing page 8/15 (53%)[39m
+[2025-07-22 05:24:53] [32mINFO[39m: [36mProcessing page 8/15 (53%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 8
     totalPages: 15
     progress: "53%"
-[2025-07-21 18:24:20] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:56] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -596,27 +400,13 @@ betrachten haben. Es handelt sich be..."
         "max": 39
       }
     }
-[2025-07-21 18:24:20] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nDer Begriff, den jene Extreme am wenigsten erfassen konnten, entwickelte sich daher bei Goethe zuerst: der Begriff des Lebens. Ein lebendes Wesen stellt uns, wenn wir es seiner äußeren Erscheinung nach betrachten, eine Menge von Einzelheiten dar, die uns als dessen Glieder oder Organe erscheinen. Die Beschreibung dieser Glieder, ihrer Form, gegenseitigen Lage, Größe usw. nach, kann den Gegenstand weitläufigen Vortrages bilden, dem sich die zweite der von uns bezeichneten Richtungen hingab. Aber in dieser Weise kann man auch jede mechanische Zusammensetzung aus unorganischen Körpern beschreiben. Man vergaß völlig, daß bei dem Organismus vor allem festgehalten werden müsse, daß hier die äußere Erscheinung von einem inneren Prinzipe beherrscht wird, daß in jedem Organe das Ganze wirkt. Jene äußere Erscheinung, das räumliche Nebeneinander der Glieder kann auch nach der Zerstörung des Lebens betrachtet werden, denn sie dauert ja noch eine Zeitlang fort. Aber was wir an einem toten Organismus vor uns haben, ist in Wahrheit kein Organismus mehr. Es ist jenes Prinzip verschwunden, welches alle Einzelheiten durchdringt. Jener Betrachtung, welche das Leben zerstört, um das Leben zu erkennen, setzt Goethe frühzeitig die Möglichkeit und das Bedürfnis einer höheren entgegen. Wir sehen dies schon in einem Briefe aus der Straßburger Zeit vom 14. Juli 1770, wo er von einem Schmetterlinge spricht: Das arme Tier zittert im Netz, streift sich die schönsten Farben ab; und wenn man es ja unversehrt erwischt, so steckt es doch endlich steif und leblos da; der Leichnam ist nicht das ganze Tier, es gehört noch etwas dazu, noch ein Hauptstück und bei der Gelegenheit, wie bei jeder andern, ein hauptsächliches Hauptstück: das Leben ... [WA 1,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:20] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch: 1           Seite: 16",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:20] [32mINFO[39m: [36mProcessing page 9/15 (60%)[39m
+[2025-07-22 05:24:56] [32mINFO[39m: [36mProcessing page 9/15 (60%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 9
     totalPages: 15
     progress: "60%"
-[2025-07-21 18:24:22] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:24:58] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -641,20 +431,13 @@ betrachten haben. Es handelt sich be..."
         "max": 598
       }
     }
-[2025-07-21 18:24:22] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "238] Derselben Anschauung sind ja auch die Worte im Faust [I. TeilStudierzimmer] entsprungen: Wer will was Lebendiges erkennen und beschreiben, Sucht erst den Geist herauszutreiben; Dann hat er die Teile in der Hand, Fehlt, leider! nur das geistige Band. Bei dieser Negation einer Auffassung blieb aber Goethe, wie dies bei seiner Natur wohl vorauszusetzen ist, nicht stehen, sondern er suchte seine eigene immer mehr auszubilden, und wir erkennen in den Andeutungen, welche wir über sein Denken von 1769-1775 haben, gar oft schon die Keime für seine späteren Arbeiten. Er bildet sich hier die Idee eines Wesens aus, bei dem jeder Teil den andern belebt, bei dem ein Prinzip alle Einzelheiten durchdringt. Im Faust [I. TeilNacht] heißt es: Wie alles sich zum Ganzen webt, Eins in dem andern wirkt und lebt. und im Satyros [4. Akt]: Wie im Unding das Urding erquoll, Lichtsmacht durch die Nacht scholl, Durchdrang die Tiefen der Wesen all, Daß aufkeimte Begehrungs-Schwall Und die Elemente sich erschlossen, Mit Hunger ineinander ergossen, Alldurchdringend, alldurchdrungen. Dieses Wesen wird so gedacht, daß es in der Zeit steten Veränderungen unterworfen ist, daß aber in allen Stufen der Veränderungen sich immer nur ein Wesen offenbart, Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1     Seite: 17      I",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:22] [32mINFO[39m: [36mProcessing page 10/15 (67%)[39m
+[2025-07-22 05:24:58] [32mINFO[39m: [36mProcessing page 10/15 (67%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 10
     totalPages: 15
     progress: "67%"
-[2025-07-21 18:24:25] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:25:01] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -679,55 +462,13 @@ betrachten haben. Es handelt sich be..."
         "max": 596
       }
     }
-[2025-07-21 18:24:25] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "das sich als das Dauernde, Beständige im Wechsel behauptet. Im Satyros heißt es von jenem Urdinge weiter:",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:25] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Und auf und ab sich rollend ging",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:25] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Das all und ein und ewig Ding,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:25] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Immer verändert, immer beständig! Man vergleiche damit, was Goethe im Jahre 1807 als Einleitung zu seiner Metamorphosenlehre schrieb: Betrachten wir aber alle Gestalten, besonders die organischen, so finden wir, daß nirgend ein Bestehendes, nirgend ein Ruhendes, ein Abgeschlossenes vorkommt, sonderndaß vielmehr alles in einer steten Bewegung schwanke. (Natw. Schr., 1. Bd. [S. 8]) Diesem Schwankenden stellt er dort die Idee oder ein in der Erfahrung nur für den Augenblick Festgehaltenes als das Beständige entgegen. Man wird aus obiger Stelle aus Satyros deutlich genug erkennen, daß der Grund zu den morphologischen Gedanken schon in der Zeit vor dem Eintritte in Weimar gelegt wurde.",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:25] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nDas, was aber festgehalten werden muß, ist, daß jene Idee eines lebenden Wesens nicht gleich auf einen einzelnen Organismus angewendet, sondern daß das ganze Universum als ein solches Lebewesen vorgestellt wird. Hierzu ist freilich in den alchymistischen Arbeiten mit Fräulein von Klettenberg und in der Lektüre des Theophrastus Paracelsus nach seiner Rückkehr von Leipzig (1768769) die Veranlassung zu suchen. Man suchte jenes das ganze Universum durchdringende Prinzip durch irgendeinen Versuch festzuhalten, es in einem Stoffe darzustellen. Doch bildet diese ans Mystische streifende Art der Weltbetrachtung nur eine vorübergehende Episode in Goethes Entwicklung und",
-      "footnoteText": "\n\n[8] Dichtung und Wahrheit, II. Teil, 8. Buch."
-    }
-[2025-07-21 18:24:25] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung   Buch: 1         Seite: 18",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:25] [32mINFO[39m: [36mProcessing page 11/15 (73%)[39m
+[2025-07-22 05:25:01] [32mINFO[39m: [36mProcessing page 11/15 (73%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 11
     totalPages: 15
     progress: "73%"
-[2025-07-21 18:24:28] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:25:04] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -748,76 +489,13 @@ betrachten haben. Es handelt sich be..."
         "max": 795
       }
     }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "weicht bald einer gesunderen und objektiveren Vorstellungsweise. Die Anschauung von dem ganzen Weltall als einem großen Organismus, wie wir sie oben in den Stellen aus Faust und Satyros angedeutet fanden, bleibt aber noch aufrecht bis in die Zeit um 1780, wie wir später aus dem Aufsatze Die Natur sehen werden. Sie tritt uns im Faust noch einmal entgegen, und zwar da, wo der Erdgeist als jenes den All-Organismus durchdringende Lebensprinzip dargestellt wird [I. TeilNacht]:",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "In Lebensfluten, im Tatensturm",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Wall ich auf und ab,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Webe hin und her!",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Geburt und Grab,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Ein ewiges Meer,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Ein wechselnd Weben,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Ein glühend Leben. Während sich so bestimmte Anschauungen in Goethes Geist entwickelten, kam ihm in Straßburg ein Buch in die Hand, welches eine Weltanschauung, die der seinigen gerade entgegengesetzt ist, zur Geltung bringen wollte. Es war Holbachs Systeme de la nature.? Hatte er bis dahin nur den Umstand zu tadeln gehabt, daß man das Lebendige wie eine mechanische Zusammenhäufung einzelner Dinge beschrieb, so konnte er in Holbach einen Philosophen kennenlernen, der das Lebendige wirklich für einen Mechanismus ansah. Was dort bloß aus einer Unfähigkeit, das Leben in seiner Wurzel zu erkennen, entsprang, das führte hier zu einem das Leben ertötenden Dogma. Goethe sagt darüber in Dichtung und Wahrheit (III. Teil, 11. Buch): Eine",
-      "footnoteText": "\n\n[7] Dichtung und Wahrheit, III. Teil, 11. Buch."
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch: 1           Seite: 19",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:28] [32mINFO[39m: [36mProcessing page 12/15 (80%)[39m
+[2025-07-22 05:25:04] [32mINFO[39m: [36mProcessing page 12/15 (80%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 12
     totalPages: 15
     progress: "80%"
-[2025-07-21 18:24:31] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:25:07] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -838,20 +516,13 @@ betrachten haben. Es handelt sich be..."
         "max": 36
       }
     }
-[2025-07-21 18:24:31] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Materie sollte sein von Ewigkeit, und von Ewigkeit her bewegt, und sollte nun mit dieser Bewegung rechts und links und nach allen Seiten, ohne weiteres, die unendlichen Phänomene des Daseins hervorbringen. Dies alles wären wir sogar zufrieden gewesen, wenn der Verfasser wirklich aus seiner bewegten Materie die Welt vor unseren Augen aufgebaut hätte. Aber er mochte von der Natur so wenig wissen als wir; denn indem er einige allgemeine Begriffe hingepfahlt, verläßt er sie sogleich, um dasjenige, was höher als die Natur, oder als höhere Natur in der Natur erscheint, zur materiellen, schweren, zwar bewegten, aber doch richtungs- und gestaltlosen Natur zu verwandeln, und glaubt dadurch recht viel gewonnen zu haben. Goethe konnte darinnen nichts finden als bewegte Materie und im Gegensatze dazu bildeten sich seine Begriffe von Natur immer klarer aus. Wir finden sie im Zusammenhange dargestellt in seinem Aufsatz Die Natur2, welcher um das Jahr 1780 geschrieben ist. Da in diesem Aufsatze alle Gedanken Goethes über die Natur, welche wir bis dahin nur zerstreut angedeutet finden, zusammengestellt sind, so gewinnt er eine besondere Bedeutung. Die Idee eines Wesens, welches in beständiger Veränderung begriffen ist und dabei doch immer identisch bleibt, tritt uns hier entgegen: Alles ist neu und immer das Alte. Sie (die Natur) verwandelt sich ewig, und ist kein Moment Stillstehen in ihr, aber ihre Gesetze sind unwandelbar. Wir werden später sehen, daß Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1           Seite: 20",
-      "footnoteText": "\n\n[8] [Natw. Schr., 2. Bd., S. 5ff.; bezüglich dieses Aufsatzes vgl. man auch die Ausführungen Rudolf Steiners in Grundlinien einer Erkenntnistheorie der Goetheschen Weltanschauung, Gesamtausgabe Dornach 1960, S. 138 (Anm. zu S. 28) und Methodische Grundlagen der Anthroposophie 1884-1901, Gesamtausgabe Dornach 1961, S. 320 f.]"
-    }
-[2025-07-21 18:24:31] [32mINFO[39m: [36mProcessing page 13/15 (87%)[39m
+[2025-07-22 05:25:07] [32mINFO[39m: [36mProcessing page 13/15 (87%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 13
     totalPages: 15
     progress: "87%"
-[2025-07-21 18:24:34] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:25:10] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -876,20 +547,13 @@ betrachten haben. Es handelt sich be..."
         "max": 34
       }
     }
-[2025-07-21 18:24:34] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Goethe in der unendlichen Menge von Pflanzengestalten die eine Urpflanze sucht. Auch diesen Gedanken finden wir hier schon angedeutet: Jedes ihrer (der Natur) Werke hat ein eigenes Wesen, jede ihrer Erscheinungen den isoliertesten Begriff, und doch macht alles Eins aus. Ja sogar die Stellung, welche er später Ausnahmefällen gegenüber einnahm, nämlich sie nicht einfach als Bildungsfehler anzusehen, sondern aus Naturgesetzen zu erklären, spricht sich hier schon ganz deutlich aus: Auch das Unnatürlichste ist Natur und ihre Ausnahmen sind selten.?\n\nWir haben gesehen, daß Goethe sich schon vor seinem Eintritte in Weimar einen bestimmten Begriff von einem Organismus ausgebildet hatte. Denn wenngleich der erwähnte Aufsatz Die Natur erst lange nach demselben entstanden ist, so enthält er doch größtenteils frühere Anschauungen Goethes. Auf eine bestimmte Gattung von Naturobjekten, auf einzelne Wesen hatte er diesen Begriff noch nicht angewendet. Dazu bedurfte es der konkreten Welt der lebenden Wesen in unmittelbarer Wirklichkeit. Der durch den menschlichen Geist hindurchgegangene Abglanz der Natur war durchaus nicht das Element, welches Goethe anregen konnte. Die botanischen Gespräche bei Hofrat Ludwig in Leipzig blieben ebenso ohne tiefere Wirkung, wie die Tischgespräche mit den medizinischen Freunden in Straßburg. In bezug auf die wissenschaftlichen Stu- Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1         Seite: 21",
-      "footnoteText": "\n\n[9] Siehe über die Autorschaft dieses Aufsatzes Anmerkung 1 am Schlusse dieser Schrift. [Rudolf Steiner hatte die Absicht, für die Sonderausgabe sämtlicher Einleitungen zu Goethes Naturwissenschaftlichen Schriften, 1.-5. Aufl., Dornach 1926, an dieser und weiteren 35 bereits von ihm bezeichneten Stellen — diese Stellen tragen im vorliegenden Text sämtlich einen  — Anmerkungen zu schreiben. Er konnte diese Absicht nicht mehr verwirklichen.]"
-    }
-[2025-07-21 18:24:34] [32mINFO[39m: [36mProcessing page 14/15 (93%)[39m
+[2025-07-22 05:25:10] [32mINFO[39m: [36mProcessing page 14/15 (93%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 14
     totalPages: 15
     progress: "93%"
-[2025-07-21 18:24:37] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:25:13] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -910,56 +574,7 @@ betrachten haben. Es handelt sich be..."
         "max": 599
       }
     }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "dien erscheint uns der junge Goethe ganz als der die Frische ursprünglichen Anschauens der Natur entbehrende Faust, welcher seine Sehnsucht nach derselben mit den Worten ausspricht [1I. TeilNacht]:",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Ach! könnt ich doch auf Bergeshöhn",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "In deinem (des Mondes) lieben Lichte gehn,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Um Bergeshöhle mit Geistern schweben,",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Auf Wiesen in deinem Dämmer weben. Wie eine Erfüllung dieser Sehnsucht erscheint es uns, wenn ihm bei seinem Eintritte in Weimar gegönnt ist, Stubenund Stadtluft mit Land-, Wald- und Gartenatmosphäre zu vertauschen (Natw. Schr., 1. Bd., S. 64).",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nAls die unmittelbare Anregung zum Studium der Pflanzen haben wir des Dichters Beschäftigung mit dem Pflanzen von Gewächsen in den ihm von dem Herzoge Karl August geschenkten Garten zu betrachten. Die Empfangnahme desselben von seiten Goethes erfolgte am 21. April 1776 und das von R. Keil herausgegebene Tagebuch meldet uns von nun an oft von Goethes Arbeiten in diesem Garten, die eines seiner Lieblingsgeschäfte werden. Ein weiteres Feld für Bestrebungen in dieser Richtung bot ihm der Thüringerwald, wo er Gelegenheit hatte, auch die niederen Organismen in ihren Lebenserscheinungen kennenzulernen. Es interessieren ihn besonders die Moose und Flechten. Am 31. Oktober 1778 bittet er Frau von Stein um Moose von allen Sorten und womöglich mit den Wurzeln und feucht, damit sie sich wieder fortpflanzen. Es muß uns höchst bedeutsam erscheinen, daß Goethe sich hier schon mit dieser tiefstehenden Organismenwelt beschäftigte und später die Gesetze der Pflanzenorganisation doch von den höheren",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1           Seite: 22",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:37] [32mINFO[39m: [36mProcessing page 15/15 (100%)[39m
+[2025-07-22 05:25:13] [32mINFO[39m: [36mProcessing page 15/15 (100%)[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     pageNumber: 15
@@ -973,49 +588,18 @@ betrachten haben. Es handelt sich be..."
    • Failed pages: 0
    • Average confidence: 0%
    • Detected headers: 2
-   • Structured text length: 20.589 characters
-   • Footnote text length: 3.072 characters
+   • Structured text length: 20.597 characters
+   • Footnote text length: 3.079 characters
 🔤 Applying German umlaut corrections...
 🔤 Fixed 4 German umlaut recognition errors
-❌ Start text marker not found: "müsse, um ihm erkennend beizukommen."
-📍 If the start marker is not found, assume the document starts at position 0
-🔍 Debugging start marker search for: "müsse, um ihm erkennend beizukommen."
-📄 Total text length: 23620 characters
-🔍 Searching for partial matches of 5 words...
-  ✅ Found word "müsse," at position 9451:
-     Context: "... bei dem Organismus vor allem festgehalten werden müsse, daß hier die äußere Erscheinung von einem inneren..."
-  ✅ Found word "ihm" at position 484:
-     Context: "...Arbeiten zu betrachten haben. Es handelt sich bei ihm nie um die Entdeckung neuer Tatsachen, sondern um..."
-📖 Document beginning (first 500 chars):
-     " # I EINLEITUNG Am 18. August des Jahres 1787 schrieb Goethe von Italien aus an Knebel: Nach dem, was ich bei Neapel, in Sizilien von Pflanzen und Fischen gesehen habe, würde ich, wenn ich zehn Jahre jünger wäre, sehr versucht sein, eine Reise nach Indien zu machen, nicht um etwas Neues zu entdecken, sondern um das Entdeckte nach meiner Art anzusehen. In diesen Worten liegt der Gesichtspunkt, aus dem wir Goethes wissenschaftliche Arbeiten zu betrachten haben. Es handelt sich bei ihm nie um die E..."
-❌ End text marker not found: "Daten zur Herausgabe von Goethes"
-📍 If the end marker is not found, assume the document continues to the end
-📝 Hybrid processing: PDF text (25052 chars) + OCR text (23620 chars)
 💾 Saved text file: book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step2.txt
 💾 Saved OCR file: book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step2.ocr
-
-📁 Files written to book-artifacts directory:
-   • 2 files created in 'book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1'
-   • step2.txt
-   • step2.ocr
 Data Loading & Format Detection: Step 2: Text extraction completed successfully (20%)
 Data Loading & Format Detection: Step 3: Enhancing text quality... (21%)
 Data Loading & Format Detection: Step 3: Text quality enhancement completed successfully (25%)
 Text Normalization & AI Cleaning: Starting phase (50%)
 Text Normalization & AI Cleaning: Normalizing text... (50%)
-Text Normalization & AI Cleaning: Text normalization completed (50%)
-Evaluation & Analysis: Starting phase (75%)
-Evaluation & Analysis: Evaluating processing quality... (75%)
-Evaluation & Analysis: Evaluation completed (75%)
-AI Enhancements: Starting phase (100%)
-AI Enhancements: Applying AI enhancements... (100%)
-AI Enhancements: AI enhancements completed (100%)
-✓ Book cleaning completed successfully!
-Output directory: /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output
-Processing time: 47s
-(node:50771) ExperimentalWarning: CommonJS module /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/src/utils/ChalkUtils.ts is loading ES Module /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/node_modules/chalk/source/index.js using require().
-Support for loading ES Module in require() is an experimental feature and might change at any time
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPage Metrics Result[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPage Metrics Result[39m
     component: "PipelineManager"
     tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
     pageMetrics: {
@@ -1036,77 +620,44 @@ Support for loading ES Module in require() is an experimental feature and might 
         "max": 210
       }
     }
-[2025-07-21 18:24:40] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Pflanzen ableitete. Wir haben dies in Erwägung dieses Umstandes nicht, wie viele tun, einer Unterschätzung der Bedeutung der weniger entwickelten Wesen, sondern vollbewußter Absicht zuzuschreiben.",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:40] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nNun verläßt der Dichter das Reich der Pflanzen nicht mehr. Schon sehr früh mögen wohl Linnes Schriften vorgenommen worden sein. Wir erfahren von der Bekanntschaft mit denselben zuerst aus den Briefen an Frau von Stein im Jahre 1782.",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:40] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "\n\nLinnes Bestrebungen gingen dahin, eine systematische Übersichtlichkeit in die Kenntnis der Pflanzen zu bringen. Es sollte eine gewisse Reihenfolge gefunden werden, in der jeder Organismus an einer bestimmten Stelle steht, so daß man ihn jederzeit leicht auffinden könne, ja daß man überhaupt ein Mittel der Orientierung in der grenzenlosen Menge der Einzelheiten hätte. Zu diesem Zwecke mußten die Lebewesen nach Graden ihrer Verwandtschaft untersucht und diesen entsprechend in Gruppen zusammengestellt werden. Da es sich dabei vor allem darum handelte, jede Pflanze zu erkennen und ihren Platz im Systeme leicht aufzufinden, so mußte man insbesondere auf jene Merkmale Rücksicht nehmen, welche die Pflanzen voneinander unterscheiden. Um eine Verwechslung einer Pflanze mit einer anderen unmöglich zu machen, suchte man vorzüglich diese unterscheidenden Kennzeichen auf. Dabei wurden von Linne und seinen Schülern äußerliche Kennzeichen, Größe, Zahl und Stellung der einzelnen Organe als charakteristisch angesehen. Die Pflanzen waren auf diese Weise wohl in eine Reihe geordnet, aber so, wie man auch eine Anzahl unorganischer Körper hätte ordnen können: nach Merkmalen, welche dem Augenscheine, nicht der in-",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:40] [32mINFO[39m: [36mProcessed paragraph text[39m
-    component: "PipelineManager"
-    tag: "GET_TEXT_AND_STRUCTURE_FROM_OCR"
-    processedText: {
-      "paragraphText": "Copyright Rudolf Steiner Nachlass-Verwaltung Buch:1          Seite: 23",
-      "footnoteText": ""
-    }
-[2025-07-21 18:24:40] [32mINFO[39m: [36mApplied 4 German umlaut corrections[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mApplied 4 German umlaut corrections[39m
     component: "PipelineManager"
     tag: "pipeline"
     corrections: 4
-    beforeLength: 23661
-    afterLength: 23661
-[2025-07-21 18:24:40] [32mINFO[39m: [36mOCR processing completed with structured text extraction and German optimizations[39m
+    beforeLength: 23676
+    afterLength: 23676
+[2025-07-22 05:25:16] [32mINFO[39m: [36mOCR processing completed with structured text extraction and German optimizations[39m
     component: "PipelineManager"
     tag: "pdf_ocr"
     totalPages: 15
     successfulPages: 15
     failedPages: 0
     averageConfidence: 0
-    totalHeaders: 2
-    structuredTextLength: 23661
-    footnoteTextLength: 3072
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStructured OCR processing completed successfully[39m
+    structuredTextLength: 23676
+    footnoteTextLength: 3079
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStructured OCR processing completed successfully[39m
     component: "PipelineManager"
     tag: "ocr_service"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-    processingTime: 46673
-    confidence: 0
-    textLength: 23661
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStep 2 (Text Extraction) results saved to book-artifacts directory[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStep 2 (Text Extraction) results saved to book-artifacts directory[39m
     component: "PipelineManager"
     tag: "pipeline"
     filename: "Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
     textFile: "book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step2.txt"
     ocrFile: "book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step2.ocr"
     extractedLength: 25052
-    ocrLength: 23620
+    ocrLength: 23676
     phase1Dir: "book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1"
-    filesCreated: 2
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting Step 3: Text Quality Enhancement[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting Step 3: Text Quality Enhancement[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
     component: "PipelineManager"
     tag: "text_extraction"
     textLength: 25052
     manifestPath: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/book-manifest.yaml"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mBook types configuration loaded successfully[39m
     component: "ConfigService"
     tag: "config"
     bookTypesPath: "book-artifacts/book-types.yaml"
@@ -1116,15 +667,15 @@ Support for loading ES Module in require() is an experimental feature and might 
       "rudolf-steiner-ga-vortrag",
       "google-play-ebook"
     ]
-[2025-07-21 18:24:40] [33mWARN[39m: [36mBook type missing or invalid text-removal-patterns array[39m
+[2025-07-22 05:25:16] [33mWARN[39m: [36mBook type missing or invalid text-removal-patterns array[39m
     component: "ConfigService"
     tag: "config"
     typeName: "default"
-[2025-07-21 18:24:40] [33mWARN[39m: [36mBook type missing or invalid header-type configuration[39m
+[2025-07-22 05:25:16] [33mWARN[39m: [36mBook type missing or invalid header-type configuration[39m
     component: "ConfigService"
     tag: "config"
     typeName: "rudolf-steiner-ga-werk"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mApplying text-removal-patterns[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mApplying text-removal-patterns[39m
     component: "PipelineManager"
     tag: "text_extraction"
     totalPatterns: 3
@@ -1133,7 +684,7 @@ Support for loading ES Module in require() is an experimental feature and might 
       "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/",
       "/\d{0,3}\s?\[[\s\S]+?\]/"
     ]
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPattern application result: 15 replacements, 660 characters removed[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPattern application result: 15 replacements, 660 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
@@ -1141,7 +692,7 @@ Support for loading ES Module in require() is an experimental feature and might 
     charactersRemoved: 660
     beforeLength: 25052
     afterLength: 24392
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPattern application result: 15 replacements, 257 characters removed[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPattern application result: 15 replacements, 257 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/"
@@ -1149,7 +700,7 @@ Support for loading ES Module in require() is an experimental feature and might 
     charactersRemoved: 257
     beforeLength: 24392
     afterLength: 24135
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPattern application result: 13 replacements, 1193 characters removed[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPattern application result: 13 replacements, 1193 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/\d{0,3}\s?\[[\s\S]+?\]/"
@@ -1157,25 +708,25 @@ Support for loading ES Module in require() is an experimental feature and might 
     charactersRemoved: 1193
     beforeLength: 24135
     afterLength: 22942
-[2025-07-21 18:24:40] [32mINFO[39m: [36mText preprocessing completed[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mText preprocessing completed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     originalLength: 25052
     processedLength: 22689
     patternsRemoved: 3
     paragraphsNormalized: true
-[2025-07-21 18:24:40] [32mINFO[39m: [36mSaved enhanced text to step3.txt[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mSaved enhanced text to step3.txt[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     path: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step3.txt"
     length: 22689
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting text preprocessing with manifest patterns and paragraph normalization[39m
     component: "PipelineManager"
     tag: "text_extraction"
-    textLength: 23620
+    textLength: 23676
     manifestPath: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/book-manifest.yaml"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mApplying text-removal-patterns[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mApplying text-removal-patterns[39m
     component: "PipelineManager"
     tag: "text_extraction"
     totalPatterns: 3
@@ -1184,139 +735,148 @@ Support for loading ES Module in require() is an experimental feature and might 
       "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/",
       "/\d{0,3}\s?\[[\s\S]+?\]/"
     ]
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
     replacementCount: 0
     charactersRemoved: 0
-    beforeLength: 23620
-    afterLength: 23620
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
+    beforeLength: 23676
+    afterLength: 23676
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPattern application result: 0 replacements, 0 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/"
     replacementCount: 0
     charactersRemoved: 0
-    beforeLength: 23620
-    afterLength: 23620
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPattern application result: 13 replacements, 1055 characters removed[39m
+    beforeLength: 23676
+    afterLength: 23676
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPattern application result: 13 replacements, 1057 characters removed[39m
     component: "PipelineManager"
     tag: "text_extraction"
     pattern: "/\d{0,3}\s?\[[\s\S]+?\]/"
     replacementCount: 13
-    charactersRemoved: 1055
-    beforeLength: 23620
-    afterLength: 22565
-[2025-07-21 18:24:40] [32mINFO[39m: [36mText preprocessing completed[39m
+    charactersRemoved: 1057
+    beforeLength: 23676
+    afterLength: 22619
+[2025-07-22 05:25:16] [32mINFO[39m: [36mText preprocessing completed[39m
     component: "PipelineManager"
     tag: "text_extraction"
-    originalLength: 23620
-    processedLength: 22564
+    originalLength: 23676
+    processedLength: 22600
     patternsRemoved: 1
     paragraphsNormalized: true
-[2025-07-21 18:24:40] [32mINFO[39m: [36mSaved enhanced OCR to step3.ocr[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mSaved enhanced OCR to step3.ocr[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     path: "./book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step3.ocr"
-    length: 22564
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStep 3: Text Quality Enhancement completed successfully[39m
+    length: 22600
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStep 3: Text Quality Enhancement completed successfully[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     txtEnhanced: true
     ocrEnhanced: true
-[2025-07-21 18:24:40] [32mINFO[39m: [36mData loading phase completed successfully[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mData loading phase completed successfully[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     format: "pdf"
     confidence: 0.95
     extractedTextLength: 25052
-    textFiles: [
-      "book-artifacts/Rudolf Steiner#Einleitungen zu Goethes Naturwissenschaftlichen Schriften#1/phase1/step2.txt"
-    ]
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPhase 1 completed in 46783ms[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPhase 1 completed in 47238ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 1
     phaseName: "Data Loading & Format Detection"
-    duration: 46783
+    duration: 47238
     metrics: {}
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting phase 2: Text Normalization & AI Cleaning[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting phase 2: Text Normalization & AI Cleaning[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 2
     phaseName: "Text Normalization & AI Cleaning"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting text normalization phase (placeholder implementation)[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting text normalization phase (placeholder implementation)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mText normalization phase completed (placeholder)[39m
+Text Normalization & AI Cleaning: Text normalization completed (50%)
+Evaluation & Analysis: Starting phase (75%)
+Evaluation & Analysis: Evaluating processing quality... (75%)
+[2025-07-22 05:25:16] [32mINFO[39m: [36mText normalization phase completed (placeholder)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPhase 2 completed in 102ms[39m
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPhase 2 completed in 101ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 2
     phaseName: "Text Normalization & AI Cleaning"
-    duration: 102
+    duration: 101
     metrics: {}
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting phase 3: Evaluation & Analysis[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting phase 3: Evaluation & Analysis[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 3
     phaseName: "Evaluation & Analysis"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting evaluation phase (placeholder implementation)[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting evaluation phase (placeholder implementation)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mEvaluation phase completed (placeholder)[39m
+Evaluation & Analysis: Evaluation completed (75%)
+AI Enhancements: Starting phase (100%)
+AI Enhancements: Applying AI enhancements... (100%)
+[2025-07-22 05:25:16] [32mINFO[39m: [36mEvaluation phase completed (placeholder)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPhase 3 completed in 101ms[39m
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPhase 3 completed in 101ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 3
     phaseName: "Evaluation & Analysis"
     duration: 101
     metrics: {}
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting phase 4: AI Enhancements[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting phase 4: AI Enhancements[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 4
     phaseName: "AI Enhancements"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mStarting AI enhancements phase (placeholder implementation)[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mStarting AI enhancements phase (placeholder implementation)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     inputFile: "/Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/tests/fixtures/pdfs/Rudolf_Steiner#Einleitungen_zu_Goethes_Naturwissenschaftlichen_Schriften#1.pdf"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mAI enhancements phase completed (placeholder)[39m
+AI Enhancements: AI enhancements completed (100%)
+✓ Book cleaning completed successfully!
+Output directory: /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/output
+Processing time: 47s
+(node:94835) ExperimentalWarning: CommonJS module /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/src/utils/ChalkUtils.ts is loading ES Module /Users/michaelschmidt/Reniets/Ai/12_weltanschauungen/book-cleaner-cli/node_modules/chalk/source/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+[2025-07-22 05:25:16] [32mINFO[39m: [36mAI enhancements phase completed (placeholder)[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
-[2025-07-21 18:24:40] [32mINFO[39m: [36mPhase 4 completed in 102ms[39m
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
+[2025-07-22 05:25:16] [32mINFO[39m: [36mPhase 4 completed in 102ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
     phase: 4
     phaseName: "AI Enhancements"
     duration: 102
     metrics: {}
-[2025-07-21 18:24:40] [32mINFO[39m: [36mProcessing completed successfully in 47088ms[39m
+[2025-07-22 05:25:16] [32mINFO[39m: [36mProcessing completed successfully in 47543ms[39m
     component: "PipelineManager"
     tag: "pipeline"
-    pipelineId: "2767aebd-030a-4086-86d2-3be6d6824ddd"
-    duration: 47088
+    pipelineId: "16ab289e-cfed-4db4-a5d9-99ede293f485"
+    duration: 47543
     phases: 4

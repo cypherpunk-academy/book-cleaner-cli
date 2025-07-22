@@ -40,18 +40,6 @@ export interface TextExtractionResult {
     extractedText: string;
     ocrText?: string; // Separate OCR text for comparison and quality analysis
     pagesExtracted?: number;
-    textFiles: string[];
-    ocrFiles?: string[];
-    boundaries: {
-        startFound: boolean;
-        endFound: boolean;
-    };
-    ocrMetadata?: {
-        ocrResult?: OCRResult;
-        confidence: number;
-        processingTime: number;
-        pageCount: number;
-    };
 }
 
 /**
@@ -59,13 +47,11 @@ export interface TextExtractionResult {
  */
 export class TextExtractor {
     private readonly logger: LoggerService;
-    private readonly configService: ConfigService;
     private readonly configDir: string;
     private readonly ocrService: OCRService;
 
     constructor(logger: LoggerService, configService: ConfigService, configDir: string) {
         this.logger = logger;
-        this.configService = configService;
         this.configDir = configDir;
         this.ocrService = new OCRService(logger, configService);
     }
@@ -250,11 +236,6 @@ export class TextExtractor {
         return {
             extractedText,
             pagesExtracted: pdfData.numpages,
-            textFiles: [],
-            boundaries: {
-                startFound: boundaryResult?.startFound ?? true,
-                endFound: boundaryResult?.endFound ?? true,
-            },
         };
     }
 
@@ -420,35 +401,15 @@ export class TextExtractor {
         const existingOcr = await this.checkForExistingOcrFile(fileInfo, metadata);
 
         let ocrText: string;
-        let ocrMetadata: {
-            confidence: number;
-            processingTime: number;
-            pageCount: number;
-        };
 
         if (existingOcr.exists && existingOcr.content) {
             // Use existing OCR file - DON'T apply boundaries as file is already processed
             ocrText = existingOcr.content;
 
-            // Set metadata for existing file (no real OCR was performed)
-            ocrMetadata = {
-                confidence: 1.0, // Assume existing file is good
-                processingTime: 0, // No time spent on OCR
-                pageCount: ocrText.split(/\f|\[PAGE_BREAK\]/).length,
-            };
-
-            console.log(
-                `📝 Using existing OCR file (${ocrText.length} chars) + PDF text (${textResult.extractedText.length} chars)`,
-            );
-
             return {
                 extractedText: textResult.extractedText,
                 ocrText,
                 pagesExtracted: textResult.pagesExtracted,
-                textFiles: [],
-                ocrFiles: existingOcr.filePath ? [existingOcr.filePath] : [],
-                boundaries: textResult.boundaries,
-                ocrMetadata,
             };
         }
 
@@ -465,39 +426,9 @@ export class TextExtractor {
                 bookType,
             );
 
-            // Use the structured text with markup for OCR output
-            // Prefer structured text if available, otherwise use extracted text
-            let ocrText =
-                ocrResult.structuredText && ocrResult.structuredText.trim().length > 0
-                    ? ocrResult.structuredText
-                    : ocrResult.extractedText;
-
-            // Apply text boundaries to OCR text if specified
-            if (options.boundaries.textBefore && options.boundaries.textAfter) {
-                const boundaryResult = this.extractTextBoundaries(
-                    ocrText,
-                    options.boundaries.textBefore,
-                    options.boundaries.textAfter,
-                );
-                ocrText = boundaryResult.extractedText;
-            }
-
-            console.log(
-                `📝 Hybrid processing: PDF text (${textResult.extractedText.length} chars) + OCR text (${ocrText.length} chars)`,
-            );
-
             return {
                 extractedText: textResult.extractedText,
-                ocrText, // OCR text with structured markup for .ocr file
-                pagesExtracted: textResult.pagesExtracted,
-                textFiles: [],
-                ocrFiles: [], // Initialize ocrFiles array for saveResults to populate
-                boundaries: textResult.boundaries,
-                ocrMetadata: {
-                    confidence: ocrResult.confidence,
-                    processingTime: ocrResult.processingTime,
-                    pageCount: ocrResult.pageCount,
-                },
+                ocrText: ocrResult.structuredText, // OCR text with structured markup for .ocr file
             };
         } catch (error) {
             this.logger.error(
@@ -515,187 +446,8 @@ export class TextExtractor {
                 ocrText:
                     '# OCR Processing Failed\n\nOCR processing failed during hybrid extraction. Using embedded text only.',
                 pagesExtracted: textResult.pagesExtracted,
-                textFiles: [],
-                ocrFiles: [],
-                boundaries: textResult.boundaries,
-                ocrMetadata: {
-                    confidence: 0,
-                    processingTime: 0,
-                    pageCount: 0,
-                },
             };
         }
-    }
-
-    /**
-     * Extract text from PDF (OCR-based with structured recognition)
-     */
-    private async extractFromPdfOcr(
-        fileInfo: FileInfo,
-        options: TextExtractionOptions,
-        bookType: string,
-    ): Promise<TextExtractionResult> {
-        this.logger.info(
-            LOG_COMPONENTS.PIPELINE_MANAGER,
-            'Starting OCR processing with structured text recognition',
-            {
-                filename: fileInfo.name,
-                format: fileInfo.format,
-                size: fileInfo.size,
-                options: {
-                    language: 'deu+eng', // German + English for philosophical texts
-                    detectStructure: true,
-                    enhanceImage: true,
-                    timeout: 300000,
-                },
-            },
-        );
-
-        try {
-            // Perform OCR with structured text recognition
-            const ocrResult = await this.ocrService.performOCR(
-                fileInfo,
-                {
-                    language: 'deu', // Pure German for better umlaut recognition
-                    detectStructure: true,
-                    enhanceImage: true,
-                    timeout: 300000,
-                },
-                bookType,
-            );
-
-            // Apply text boundaries if specified
-            let extractedText = ocrResult.extractedText;
-            let _structuredText = ocrResult.structuredText;
-            let boundaries = { startFound: false, endFound: false };
-
-            if (options.boundaries.textBefore && options.boundaries.textAfter) {
-                const boundaryResult = this.extractTextBoundaries(
-                    ocrResult.extractedText,
-                    options.boundaries.textBefore,
-                    options.boundaries.textAfter,
-                );
-                extractedText = boundaryResult.extractedText;
-                boundaries = {
-                    startFound: boundaryResult.startFound,
-                    endFound: boundaryResult.endFound,
-                };
-
-                // Also apply boundaries to structured text
-                const structuredBoundaryResult = this.extractTextBoundaries(
-                    ocrResult.structuredText,
-                    options.boundaries.textBefore,
-                    options.boundaries.textAfter,
-                );
-                _structuredText = structuredBoundaryResult.extractedText;
-            }
-
-            this.logger.info(
-                LOG_COMPONENTS.PIPELINE_MANAGER,
-                'OCR processing completed with structured recognition',
-                {
-                    filename: fileInfo.name,
-                    confidence: ocrResult.confidence,
-                    headingsDetected: ocrResult.detectedStructure?.headings.length ?? 0,
-                    paragraphsDetected: ocrResult.detectedStructure?.paragraphs.length ?? 0,
-                    footnotesDetected: ocrResult.detectedStructure?.footnotes.length ?? 0,
-                    processingTime: ocrResult.processingTime,
-                },
-            );
-
-            return {
-                extractedText,
-                pagesExtracted: ocrResult.pageCount,
-                textFiles: [],
-                ocrFiles: [], // Will be populated by saveResults
-                boundaries,
-                ocrMetadata: {
-                    confidence: ocrResult.confidence,
-                    processingTime: ocrResult.processingTime,
-                    pageCount: ocrResult.pageCount,
-                },
-            };
-        } catch (error) {
-            this.logger.error(
-                LOG_COMPONENTS.PIPELINE_MANAGER,
-                'OCR processing failed, using demonstration content',
-                {
-                    filename: fileInfo.name,
-                    error: error instanceof Error ? error.message : String(error),
-                },
-            );
-
-            // Return demonstration structured content
-            const demoStructuredText = this.createDemoStructuredText(fileInfo.name);
-
-            return {
-                extractedText: demoStructuredText.plain,
-                pagesExtracted: 1,
-                textFiles: [],
-                ocrFiles: [],
-                boundaries: { startFound: true, endFound: true },
-                ocrMetadata: {
-                    confidence: 85,
-                    processingTime: 1000,
-                    pageCount: 1,
-                },
-            };
-        }
-    }
-
-    /**
-     * Create demonstration structured text to show OCR features
-     */
-    private createDemoStructuredText(_filename: string) {
-        const structured = `# Einleitung zu Goethes Naturwissenschaft
-
-Goethe hat in seinen naturwissenschaftlichen Arbeiten eine neue Art des Erkennens entwickelt, die sich grundlegend von der mechanistischen Naturforschung seiner Zeit unterscheidet.
-
-## Die Metamorphosenlehre
-
-Diese Erkenntnisart basiert auf einer unmittelbaren Anschauung der Naturphänomene und deren innerer Gesetzmäßigkeiten, ohne sie auf äußere mechanische Ursachen zurückzuführen[M]1[/M].
-
-Die Methode Goethes zeigt sich besonders deutlich in seiner Farbenlehre, wo er die Farbe als ein ursprüngliches Phänomen behandelt[M]*[/M].
-
-[M]1[/M] [T]Siehe Rudolf Steiner, Goethes Naturwissenschaftliche Schriften, GA 1[/T]
-
-[M]*[/M] [T]Diese Methode wird heute als phänomenologischer Ansatz bezeichnet[/T]`;
-
-        const plain = `Einleitung zu Goethes Naturwissenschaft
-
-Goethe hat in seinen naturwissenschaftlichen Arbeiten eine neue Art des Erkennens entwickelt, die sich grundlegend von der mechanistischen Naturforschung seiner Zeit unterscheidet.
-
-Die Metamorphosenlehre
-
-Diese Erkenntnisart basiert auf einer unmittelbaren Anschauung der Naturphänomene und deren innerer Gesetzmäßigkeiten, ohne sie auf äußere mechanische Ursachen zurückzuführen.
-
-Die Methode Goethes zeigt sich besonders deutlich in seiner Farbenlehre, wo er die Farbe als ein ursprüngliches Phänomen behandelt.
-
-1 Siehe Rudolf Steiner, Goethes Naturwissenschaftliche Schriften, GA 1
-* Diese Methode wird heute als phänomenologischer Ansatz bezeichnet`;
-
-        const structure = {
-            headings: [
-                { text: 'Einleitung zu Goethes Naturwissenschaft', level: 1, confidence: 92 },
-                { text: 'Die Metamorphosenlehre', level: 2, confidence: 88 },
-            ],
-            paragraphs: [
-                { text: 'Goethe hat in seinen naturwissenschaftlichen...', confidence: 85 },
-                { text: 'Diese Erkenntnisart basiert auf...', confidence: 87 },
-            ],
-            footnotes: [
-                {
-                    marker: '1',
-                    text: 'Siehe Rudolf Steiner, Goethes Naturwissenschaftliche Schriften, GA 1',
-                },
-                {
-                    marker: '*',
-                    text: 'Diese Methode wird heute als phänomenologischer Ansatz bezeichnet',
-                },
-            ],
-        };
-
-        return { structured, plain, structure };
     }
 
     /**
@@ -711,11 +463,6 @@ Die Methode Goethes zeigt sich besonders deutlich in seiner Farbenlehre, wo er d
         return {
             extractedText,
             pagesExtracted: 0,
-            textFiles: [],
-            boundaries: {
-                startFound: false,
-                endFound: false,
-            },
         };
     }
 
@@ -754,11 +501,6 @@ Die Methode Goethes zeigt sich besonders deutlich in seiner Farbenlehre, wo er d
         return {
             extractedText,
             pagesExtracted: 0,
-            textFiles: [],
-            boundaries: {
-                startFound: boundaryResult?.startFound ?? true,
-                endFound: boundaryResult?.endFound ?? true,
-            },
         };
     }
 
@@ -791,7 +533,6 @@ Die Methode Goethes zeigt sich besonders deutlich in seiner Farbenlehre, wo er d
         if (result.ocrText && result.ocrText.trim().length > 0) {
             await fs.writeFile(ocrFile, result.ocrText, 'utf-8');
             console.log(`💾 Saved OCR file: ${ocrFile}`);
-            result.ocrFiles = [ocrFile];
         } else if (options.fileType === 'pdf-text-ocr') {
             // For hybrid processing, always create an OCR file even if empty
             await fs.writeFile(
@@ -800,21 +541,6 @@ Die Methode Goethes zeigt sich besonders deutlich in seiner Farbenlehre, wo er d
                 'utf-8',
             );
             console.log(`💾 Saved empty OCR file (processing failed): ${ocrFile}`);
-            result.ocrFiles = [ocrFile];
-        }
-
-        // Summary of files created
-        const filesCreated = [textFile];
-        if (result.ocrFiles && result.ocrFiles.length > 0) {
-            filesCreated.push(...result.ocrFiles);
-        }
-
-        console.log('\n📁 Files written to book-artifacts directory:');
-        console.log(
-            `   • ${filesCreated.length} file${filesCreated.length === 1 ? '' : 's'} created in '${phase1Dir}'`,
-        );
-        for (const file of filesCreated) {
-            console.log(`   • ${path.basename(file)}`);
         }
 
         this.logger.info(
@@ -827,11 +553,8 @@ Die Methode Goethes zeigt sich besonders deutlich in seiner Farbenlehre, wo er d
                 extractedLength: result.extractedText.length,
                 ocrLength: result.ocrText?.length || 0,
                 phase1Dir,
-                filesCreated: filesCreated.length,
             },
         );
-
-        result.textFiles = [textFile];
     }
 
     /**
