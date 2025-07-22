@@ -172,6 +172,9 @@ export const OCR_PAGE_HEIGHT = 3508;
 // Header width validation
 export const HEADER_MAX_WIDTH_RATIO = 0.9; // Headers can only use max 90% of normal text width
 
+// Header processing constants
+export const HEADER_MAX_LENGTH = 100; // Maximum length for header continuation lines
+
 // Page layout metrics - relative x0 positions for different text types
 export const PAGE_METRICS_TYPES = {
     PARAGRAPH_TEXT: 'paragraph-text',

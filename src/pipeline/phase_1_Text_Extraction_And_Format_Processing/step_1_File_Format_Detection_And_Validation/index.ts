@@ -10,14 +10,14 @@
  */
 
 // Export the main format detector class
-export { FileFormatDetector } from './FileFormatDetector';
+export { FileFormatDetector } from "./FileFormatDetector";
 
 // Export step configuration and interfaces
-export type { Step1_1ExecutionSummary } from './ExecutionSummary';
+export type { Step1_1ExecutionSummary } from "./ExecutionSummary";
 
 // Export utility functions
 export {
-    createStep1_1ExecutionSummary,
-    updateStep1_1ExecutionSummary,
-    updateStep1_1ExecutionSummaryWithError,
-} from './ExecutionSummary';
+  createStep1_1ExecutionSummary,
+  updateStep1_1ExecutionSummary,
+  updateStep1_1ExecutionSummaryWithError,
+} from "./ExecutionSummary";

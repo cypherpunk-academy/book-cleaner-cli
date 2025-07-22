@@ -1,17 +1,18 @@
-import type { LoggerService } from '@/services/LoggerService';
-import type { ConfigService } from '@/services/ConfigService';
-import type { PageMetricsConfig } from '@/types';
 import {
     ERROR_CODES,
+    GERMAN_ORDINALS,
+    HEADER_MAX_LENGTH,
     LOG_COMPONENTS,
     OCR_PAGE_WIDTH,
-    ROMAN_NUMERALS,
-    GERMAN_ORDINALS,
-    PARAGRAPH_END_MARKERS,
     PAGE_METRICS_TYPES,
+    PARAGRAPH_END_MARKERS,
+    ROMAN_NUMERALS,
 } from '@/constants';
+import type { ConfigService } from '@/services/ConfigService';
+import type { LoggerService } from '@/services/LoggerService';
+import type { PageMetricsConfig } from '@/types';
 import { AppError } from '@/utils/AppError';
-import pino from 'pino';
+import type pino from 'pino';
 
 /**
  * OCR Paragraph structure from Tesseract
@@ -109,7 +110,8 @@ interface PatternMatch {
 interface HeaderResult {
     headerText: string;
     level: number;
-    newIndex: number;
+    newHeaderIndex: number;
+    newLineIndex: number;
 }
 
 /**
@@ -153,15 +155,15 @@ export class GetTextAndStructureFromOcr {
 
         // Collect all x0 values from lines within all paragraphs
         const x0Values: number[] = [];
-        let totalLines = 0;
-        let linesWithBbox = 0;
+        let _totalLines = 0;
+        let _linesWithBbox = 0;
 
         for (const paragraph of pageOcrData.paragraphs) {
             if (paragraph.lines && paragraph.lines.length > 0) {
                 for (const line of paragraph.lines) {
-                    totalLines++;
+                    _totalLines++;
                     if (line.bbox && typeof line.bbox.x0 === 'number') {
-                        linesWithBbox++;
+                        _linesWithBbox++;
                         x0Values.push(line.bbox.x0);
                     }
                 }
@@ -205,7 +207,12 @@ export class GetTextAndStructureFromOcr {
         sortedX0Values: number[],
         tolerance: number,
     ): Array<{ average: number; values: number[]; min: number; max: number }> {
-        const groups: Array<{ average: number; values: number[]; min: number; max: number }> = [];
+        const groups: Array<{
+            average: number;
+            values: number[];
+            min: number;
+            max: number;
+        }> = [];
 
         for (const x0 of sortedX0Values) {
             let foundGroup = false;
@@ -454,7 +461,7 @@ export class GetTextAndStructureFromOcr {
      */
     private groupX0Values(
         sortedX0Values: number[],
-        tolerance: number = 15,
+        tolerance = 15,
     ): Array<{ center: number; values: number[] }> {
         const groups: Array<{ center: number; values: number[] }> = [];
 
@@ -491,7 +498,6 @@ export class GetTextAndStructureFromOcr {
     private processParagraphText(
         paragraph: OCRParagraph,
         bookConfig: BookTypeConfig,
-        scanResultsThisPage: ScanResults,
         pageMetrics: Record<string, { min: number; max: number }>,
         isFirstParagraph: boolean,
     ): { paragraphText: string; footnoteText: string } {
@@ -502,9 +508,21 @@ export class GetTextAndStructureFromOcr {
             return { paragraphText, footnoteText };
         }
 
-        for (let lineIndex = 0; lineIndex < paragraph.lines.length; lineIndex++) {
-            const line = paragraph.lines[lineIndex];
+        const lines = paragraph.lines;
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const line = lines[lineIndex];
             if (!line || !line.bbox) {
+                continue;
+            }
+
+            // Check for headers starting from this line
+            const headerResult = this.detectAndProcessHeaders(lineIndex, lines, bookConfig);
+
+            if (headerResult) {
+                // Update processed line index to skip processed header lines
+                lineIndex = headerResult.newLineIndex;
+                paragraphText += headerResult.headerText;
+
                 continue;
             }
 
@@ -534,7 +552,7 @@ export class GetTextAndStructureFromOcr {
                     paragraphText += `\n\n${lineText}`;
                     break;
 
-                case PAGE_METRICS_TYPES.FOOTNOTE_START:
+                case PAGE_METRICS_TYPES.FOOTNOTE_START: {
                     const footnoteResult = this.processFootnoteStart(
                         lineText,
                         paragraphText,
@@ -543,6 +561,7 @@ export class GetTextAndStructureFromOcr {
                     paragraphText = footnoteResult.paragraphText;
                     footnoteText = footnoteResult.footnoteText;
                     break;
+                }
 
                 case PAGE_METRICS_TYPES.PARAGRAPH_TEXT:
                     paragraphText = this.processParagraphTextLine(lineText, paragraphText);
@@ -607,7 +626,7 @@ export class GetTextAndStructureFromOcr {
         );
 
         // Add footnote content to footnote text
-        const updatedFootnoteText = footnoteText + `\n\n${footnoteMarker} ${footnoteContent}`;
+        const updatedFootnoteText = `${footnoteText}\n\n${footnoteMarker} ${footnoteContent}`;
 
         return {
             paragraphText: updatedParagraphText,
@@ -671,10 +690,9 @@ export class GetTextAndStructureFromOcr {
         if (endsWithHyphen && !firstCharIsCapital) {
             // Connect hyphenated word
             return paragraphText.slice(0, -1) + lineText;
-        } else {
-            // Add space and new line text
-            return paragraphText + ' ' + lineText;
         }
+        // Add space and new line text
+        return `${paragraphText} ${lineText}`;
     }
 
     /**
@@ -692,10 +710,9 @@ export class GetTextAndStructureFromOcr {
         if (endsWithHyphen && !firstCharIsCapital) {
             // Connect hyphenated word
             return footnoteText.slice(0, -1) + lineText;
-        } else {
-            // Add space and new line text
-            return footnoteText + ' ' + lineText;
         }
+        // Add space and new line text
+        return `${footnoteText} ${lineText}`;
     }
 
     /**
@@ -726,8 +743,6 @@ export class GetTextAndStructureFromOcr {
             this.logger.debug({ pageMetrics }, 'Page Metrics Result');
 
             let processedParagraphs = 0;
-            let detectedHeaders = 0;
-            let removedPatterns = 0;
             const errors: string[] = [];
 
             // Process each paragraph
@@ -737,44 +752,21 @@ export class GetTextAndStructureFromOcr {
                         processedParagraphs++;
 
                         // Skip empty paragraphs
-                        if (!paragraph.text || paragraph.text.trim().length === 0) {
+                        if (
+                            !paragraph.text ||
+                            paragraph.text.trim().length === 0 ||
+                            paragraph.lines?.length === 0 ||
+                            paragraph.lines?.length === undefined
+                        ) {
                             continue;
-                        }
-
-                        // Check if this paragraph is a header
-                        const headerResult = await this.detectAndProcessHeaders(
-                            paragraph,
-                            bookConfig,
-                            scanResultsThisPage,
-                        );
-
-                        if (headerResult) {
-                            // Successfully processed as header
-                            detectedHeaders++;
-
-                            scanResultsThisPage.textWithHeaders += headerResult?.headerText ?? '';
-
-                            switch (headerResult.level) {
-                                case 1:
-                                    scanResultsThisPage.level1HeadingsIndex = headerResult.newIndex;
-                                    break;
-                                case 2:
-                                    scanResultsThisPage.level2HeadingsIndex = headerResult.newIndex;
-                                    break;
-                                case 3:
-                                    scanResultsThisPage.level3HeadingsIndex = headerResult.newIndex;
-                                    break;
-                            }
-
-                            continue; // Headers are supposed to be alone in a paragraph
                         }
 
                         // Process paragraph text based on page metrics
                         const isFirstParagraph = processedParagraphs === 1;
+
                         const processedText = this.processParagraphText(
                             paragraph,
                             bookConfig,
-                            scanResultsThisPage,
                             pageMetrics,
                             isFirstParagraph,
                         );
@@ -784,10 +776,6 @@ export class GetTextAndStructureFromOcr {
                             processedText.paragraphText,
                             bookConfig.textRemovalPatterns,
                         );
-
-                        if (cleanedParagraphText.length !== processedText.paragraphText.length) {
-                            removedPatterns++;
-                        }
 
                         // Add processed paragraph text to results if not empty after cleaning
                         if (cleanedParagraphText.trim().length > 0) {
@@ -927,23 +915,13 @@ export class GetTextAndStructureFromOcr {
 
     /**
      * Detect and process headers from paragraph
+     * Handles multi-line headers by building headerText across consecutive lines
      */
-    private async detectAndProcessHeaders(
-        paragraph: OCRParagraph,
+    private detectAndProcessHeaders(
+        lineIndex: number,
+        lines: OCRLine[],
         bookConfig: BookTypeConfig,
-        scanResultsThisPage: ScanResults,
-    ): Promise<HeaderResult | null> {
-        // Check if paragraph is centered
-        if (!this.isTextCentered(paragraph)) {
-            return null;
-        }
-
-        // Normalize text for pattern matching (all whitespace and newlines become single spaces)
-        const normalizedText = paragraph.text.replace(/[\s\n\r\t]+/g, ' ').trim();
-
-        // For level 1 and 2 headers, ensure they start at the beginning of the text
-        const startsAtBeginning = this.checkHeaderStartsAtBeginning(paragraph.text, normalizedText);
-
+    ): HeaderResult | null {
         // Try to match against header patterns (level1 → level2 → level3)
         const headerLevels = [
             { level: 1, config: bookConfig.headerTypes?.level1 },
@@ -951,51 +929,50 @@ export class GetTextAndStructureFromOcr {
             { level: 3, config: bookConfig.headerTypes?.level3 },
         ];
 
+        let headerIndex: number | null = null;
+        let headerText = '';
+
         for (const { level, config } of headerLevels) {
             if (!config || !config.formats) {
                 continue;
             }
 
-            // For level 1 and 2 headers, require they start at the beginning of the paragraph
-            if ((level === 1 || level === 2) && !startsAtBeginning) {
-                continue;
-            }
+            for (let newLineindex = lineIndex; newLineindex < lines.length; newLineindex++) {
+                const line = lines[newLineindex];
 
-            for (const format of config.formats) {
-                // For level 1 and 2 headers, anchor pattern to start of string
-                const isStartAnchored = level === 1 || level === 2;
-                const patternMatch = this.matchHeaderPattern(
-                    normalizedText,
-                    format.pattern,
-                    isStartAnchored,
-                );
+                if (!line || !line.text) {
+                    break;
+                }
 
-                if (patternMatch && patternMatch.matched) {
-                    // Extract ordinal value for sequence validation
-                    const newIndex = this.extractOrdinalValue(patternMatch.extractedValues);
+                for (const format of config.formats) {
+                    // Check if the first line matches the header pattern
+                    const patternMatch = this.matchHeaderPattern(line.text, format.pattern);
 
-                    if (newIndex !== null) {
-                        // Validate header sequence
-                        if (this.validateHeaderSequence(level, newIndex, scanResultsThisPage)) {
-                            // Add header to results with double newlines before and after
-                            const markdownLevel = '#'.repeat(level);
-                            const headerText = `\n\n${markdownLevel} ${normalizedText}\n\n`;
+                    if (patternMatch.matched) {
+                        // Extract ordinal value for sequence validation
+                        headerIndex =
+                            headerIndex && this.extractOrdinalValue(patternMatch.extractedValues);
 
-                            this.logger.info(
-                                {
-                                    headerText,
-                                    level,
-                                    newIndex,
-                                },
-                                'Header successfully processed and added',
-                            );
+                        headerText = headerText.trim() + ' ' + patternMatch.fullMatch.trim();
+                    } else if (headerIndex !== null) {
+                        const trimmedHeaderText = '\n\n' + headerText.trim() + '\n\n';
 
-                            return {
-                                headerText,
+                        this.logger.info(
+                            {
+                                headerText: trimmedHeaderText,
                                 level,
-                                newIndex,
-                            };
-                        }
+                                newHeaderIndex: headerIndex,
+                                newLineIndex: newLineindex - 1,
+                            },
+                            'Multi-line header successfully processed and added',
+                        );
+
+                        return {
+                            headerText: trimmedHeaderText,
+                            level,
+                            newHeaderIndex: headerIndex,
+                            newLineIndex: newLineindex - 1,
+                        };
                     }
                 }
             }
@@ -1005,50 +982,11 @@ export class GetTextAndStructureFromOcr {
     }
 
     /**
-     * Check if paragraph is centered based on bounding box
-     */
-    private isTextCentered(paragraph: OCRParagraph): boolean {
-        const { bbox } = paragraph;
-        if (!bbox) {
-            return false;
-        }
-
-        const paragraphCenter = (bbox.x0 + bbox.x1) / 2;
-        const pageCenter = OCR_PAGE_WIDTH / 2;
-        const distance = Math.abs(paragraphCenter - pageCenter);
-
-        return distance <= this.CENTERING_TOLERANCE;
-    }
-
-    /**
-     * Check if header text starts at the beginning of the paragraph
-     * Level 1 and 2 headers must start at the very beginning
-     */
-    private checkHeaderStartsAtBeginning(originalText: string, normalizedText: string): boolean {
-        // Remove leading whitespace from original text
-        const trimmedOriginal = originalText.trimStart();
-
-        // Check if the normalized text matches the beginning of the trimmed original
-        // This ensures the header content appears at the start of the paragraph
-        return (
-            trimmedOriginal.startsWith(normalizedText) ||
-            trimmedOriginal
-                .replace(/[\s\n\r\t]+/g, ' ')
-                .trimStart()
-                .startsWith(normalizedText)
-        );
-    }
-
-    /**
      * Match text against header pattern with placeholder replacement
      */
-    private matchHeaderPattern(
-        text: string,
-        pattern: string,
-        isStartAnchored: boolean = false,
-    ): PatternMatch {
+    private matchHeaderPattern(text: string, pattern: string): PatternMatch {
         try {
-            const regex = this.buildPlaceholderRegex(pattern, isStartAnchored);
+            const regex = this.buildPlaceholderRegex(pattern);
             const match = text.match(new RegExp(regex, 'i'));
 
             if (match) {
@@ -1121,7 +1059,7 @@ export class GetTextAndStructureFromOcr {
                 // Match German date format: "12. September 1921"
                 return '(\\d{1,2}\\.\\s+(?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\\s+\\d{4})';
 
-            case 'no-paragraph-end-marker':
+            case 'no-paragraph-end-marker': {
                 // Match any characters for a title (non-greedy, stops before punctuation)
                 // This placeholder should not match any of the defined PARAGRAPH_END_MARKERS.
                 const escapedMarkers = PARAGRAPH_END_MARKERS.map((marker) =>
@@ -1129,6 +1067,7 @@ export class GetTextAndStructureFromOcr {
                 );
                 // Negative lookahead for all paragraph end markers at the end of the string
                 return `((?:(?!(${escapedMarkers.join('|')})$)[\\s\\S])+?)`;
+            }
 
             default:
                 throw new AppError(
@@ -1144,7 +1083,7 @@ export class GetTextAndStructureFromOcr {
     /**
      * Build regex pattern from placeholder pattern
      */
-    private buildPlaceholderRegex(pattern: string, isStartAnchored: boolean = false): string {
+    private buildPlaceholderRegex(pattern: string): string {
         let regex = pattern;
 
         // First, escape any literal regex characters in the original pattern
@@ -1171,10 +1110,7 @@ export class GetTextAndStructureFromOcr {
             }
         }
 
-        // Anchor to start of string for level 1 and 2 headers
-        if (isStartAnchored) {
-            regex = `^${regex}`;
-        }
+        regex = `^${regex}`;
 
         return regex;
     }
@@ -1211,8 +1147,8 @@ export class GetTextAndStructureFromOcr {
 
         // Check for decimal numbers
         if (extractedValues['decimal-number']) {
-            const decimalValue = parseInt(extractedValues['decimal-number'], 10);
-            if (!isNaN(decimalValue)) {
+            const decimalValue = Number.parseInt(extractedValues['decimal-number'], 10);
+            if (!Number.isNaN(decimalValue)) {
                 return decimalValue;
             }
         }
@@ -1227,81 +1163,6 @@ export class GetTextAndStructureFromOcr {
         }
 
         return null;
-    }
-
-    /**
-     * Validate header sequence and update counters
-     */
-    private validateHeaderSequence(
-        headerLevel: number,
-        extractedNumber: number,
-        scanResultsThisPage: ScanResults,
-    ): boolean {
-        let currentIndex: number;
-        let expectedNumber: number;
-
-        switch (headerLevel) {
-            case 1:
-                currentIndex = scanResultsThisPage.level1HeadingsIndex;
-                expectedNumber = currentIndex + 1;
-                break;
-            case 2:
-                currentIndex = scanResultsThisPage.level2HeadingsIndex;
-                expectedNumber = currentIndex + 1;
-                break;
-            case 3:
-                currentIndex = scanResultsThisPage.level3HeadingsIndex;
-                expectedNumber = currentIndex + 1;
-                break;
-            default:
-                this.logger.error(
-                    {
-                        headerLevel,
-                        extractedNumber,
-                        scanResultsThisPage,
-                    },
-                    'Invalid header level',
-                );
-                throw new AppError(
-                    ERROR_CODES.VALIDATION_ERROR,
-                    LOG_COMPONENTS.PIPELINE_MANAGER,
-                    'processHeader',
-                    `Invalid header level: ${headerLevel}`,
-                    { headerLevel },
-                );
-        }
-
-        if (extractedNumber !== expectedNumber) {
-            const errorMsg = `Header sequence validation failed: Level ${headerLevel} expected ${expectedNumber}, got ${extractedNumber}`;
-            this.logger.error(
-                {
-                    headerLevel,
-                    extractedNumber,
-                    expectedNumber,
-                    currentIndex,
-                    level1Index: scanResultsThisPage.level1HeadingsIndex,
-                    level2Index: scanResultsThisPage.level2HeadingsIndex,
-                    level3Index: scanResultsThisPage.level3HeadingsIndex,
-                },
-                errorMsg,
-            );
-
-            // Exit process as requested for sequence violations
-            throw new AppError(
-                ERROR_CODES.VALIDATION_ERROR,
-                LOG_COMPONENTS.PIPELINE_MANAGER,
-                'validateHeaderSequence',
-                errorMsg,
-                {
-                    headerLevel,
-                    extractedNumber,
-                    expectedNumber,
-                    scanResultsThisPage,
-                },
-            );
-        }
-
-        return true;
     }
 
     /**

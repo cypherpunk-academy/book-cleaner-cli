@@ -11,22 +11,22 @@
  */
 
 // Export the main text extractor class
-export { TextExtractor } from './TextExtractor';
+export { TextExtractor } from "./TextExtractor";
 
 // Export OCR service (now integrated into Step 2)
-export { OCRService } from './OCRService';
+export { OCRService } from "./OCRService";
 
 // Export step configuration and interfaces
-export { STEP_1_2_CONFIG } from './TextExtractor';
-export type { TextExtractionOptions, TextExtractionResult } from './TextExtractor';
-export type { Step1_2ExecutionSummary } from './ExecutionSummary';
+export { STEP_1_2_CONFIG } from "./TextExtractor";
+export type { TextExtractionOptions, TextExtractionResult } from "./TextExtractor";
+export type { Step1_2ExecutionSummary } from "./ExecutionSummary";
 
 // Export OCR interfaces
-export type { OCRResult, OCROptions } from './OCRService';
+export type { OCRResult, OCROptions } from "./OCRService";
 
 // Export utility functions
 export {
-    createStep1_2ExecutionSummary,
-    updateStep1_2ExecutionSummary,
-    updateStep1_2ExecutionSummaryWithError,
-} from './ExecutionSummary';
+  createStep1_2ExecutionSummary,
+  updateStep1_2ExecutionSummary,
+  updateStep1_2ExecutionSummaryWithError,
+} from "./ExecutionSummary";

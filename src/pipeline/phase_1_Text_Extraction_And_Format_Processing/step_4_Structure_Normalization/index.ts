@@ -11,19 +11,19 @@
  */
 
 // Export the main processing classes
-export { ChapterRecognizer } from './ChapterRecognizer';
+export { ChapterRecognizer } from "./ChapterRecognizer";
 
 // Export interfaces
 export type {
-    ChapterRecognitionResult,
-    Chapter,
-    ChapterRecognitionOptions,
-} from './ChapterRecognizer';
+  ChapterRecognitionResult,
+  Chapter,
+  ChapterRecognitionOptions,
+} from "./ChapterRecognizer";
 
 // Export execution summary types and functions
-export type { Step1_4ExecutionSummary } from './ExecutionSummary';
+export type { Step1_4ExecutionSummary } from "./ExecutionSummary";
 export {
-    createStep1_4ExecutionSummary,
-    updateStep1_4ExecutionSummary,
-    updateStep1_4ExecutionSummaryWithError,
-} from './ExecutionSummary';
+  createStep1_4ExecutionSummary,
+  updateStep1_4ExecutionSummary,
+  updateStep1_4ExecutionSummaryWithError,
+} from "./ExecutionSummary";

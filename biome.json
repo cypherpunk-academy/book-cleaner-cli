@@ -127,9 +127,9 @@
   "files": {
     "ignoreUnknown": false,
     "ignore": [
-      "node_modules", 
-      "dist", 
-      "coverage", 
+      "node_modules",
+      "dist",
+      "coverage",
       "*.d.ts",
       "*.md",
       "*.yaml",

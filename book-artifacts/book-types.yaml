@@ -10,6 +10,9 @@ rudolf-steiner-ga-werk:
   header-types:
     level1:
       formats:
+        - pattern: "{roman-number}"
+          alignment: "center"
+          example: "II"
         - pattern: "{roman-number} {title-in-capital-letters}{no-paragraph-end-marker}"
           alignment: "center"
           example: "II DIE ENTSTEHUNG DER METAMORPHOSENLEHRE"
