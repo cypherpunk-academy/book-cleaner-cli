@@ -931,54 +931,115 @@ export class GetTextAndStructureFromOcr {
 
         let headerIndex: number | null = null;
         let headerText = '';
+        let foundFormat: HeaderFormat | null = null;
+        let foundLevel: number | null = null;
+        let newLineIndex: number = lineIndex;
 
+        if (!lines[lineIndex] || !lines[lineIndex].text) {
+            return null;
+        }
+
+        let headerFound = false;
         for (const { level, config } of headerLevels) {
             if (!config || !config.formats) {
                 continue;
             }
 
-            for (let newLineindex = lineIndex; newLineindex < lines.length; newLineindex++) {
-                const line = lines[newLineindex];
+            for (const format of config.formats) {
+                const patternMatch = this.matchHeaderPattern(lines[lineIndex].text, format.pattern);
 
-                if (!line || !line.text) {
-                    break;
+                if (!patternMatch.matched) {
+                    continue;
                 }
 
-                for (const format of config.formats) {
-                    // Check if the first line matches the header pattern
-                    const patternMatch = this.matchHeaderPattern(line.text, format.pattern);
+                headerIndex = this.extractOrdinalValue(patternMatch.extractedValues);
+                headerText = patternMatch.fullMatch.trim();
+                foundFormat = format;
+                foundLevel = level;
 
-                    if (patternMatch.matched) {
-                        // Extract ordinal value for sequence validation
-                        headerIndex =
-                            headerIndex && this.extractOrdinalValue(patternMatch.extractedValues);
+                this.logger.info(
+                    {
+                        headerText,
+                        level,
+                        headerIndex,
+                        lineIndex,
+                    },
+                    'Header-Fragement found (1).',
+                );
 
-                        headerText = headerText.trim() + ' ' + patternMatch.fullMatch.trim();
-                    } else if (headerIndex !== null) {
-                        const trimmedHeaderText = '\n\n' + headerText.trim() + '\n\n';
+                headerFound = true;
+                break;
+            }
 
-                        this.logger.info(
-                            {
-                                headerText: trimmedHeaderText,
-                                level,
-                                newHeaderIndex: headerIndex,
-                                newLineIndex: newLineindex - 1,
-                            },
-                            'Multi-line header successfully processed and added',
-                        );
-
-                        return {
-                            headerText: trimmedHeaderText,
-                            level,
-                            newHeaderIndex: headerIndex,
-                            newLineIndex: newLineindex - 1,
-                        };
-                    }
-                }
+            if (headerFound) {
+                break;
             }
         }
 
-        return null;
+        if (!foundFormat) {
+            return null;
+        }
+
+        for (newLineIndex = lineIndex + 1; newLineIndex < lines.length; newLineIndex++) {
+            const line = lines[newLineIndex];
+
+            if (!line || !line.text) {
+                break;
+            }
+
+            const patternMatch = this.matchHeaderPattern(
+                `${headerText} ${line.text.trim()}`,
+                foundFormat.pattern,
+            );
+
+            this.logger.info(
+                {
+                    headerText: `${headerText} ${line.text.trim()}`,
+                    pattern: foundFormat.pattern,
+                    patternMatch,
+                },
+                'Header-Fragement found (2).',
+            );
+
+            if (patternMatch.matched) {
+                headerText = `${headerText} ${patternMatch.fullMatch.trim()}`;
+
+                this.logger.info(
+                    {
+                        headerText,
+                        foundLevel,
+                        headerIndex,
+                        newLineIndex,
+                    },
+                    'Header-Fragement found (3).',
+                );
+            } else {
+                break;
+            }
+        }
+
+        const hashes = '#'.repeat(foundLevel ?? 0);
+        const trimmedHeaderText = `\n\n${hashes} ${headerText.trim()}\n\n`;
+
+        this.logger.info(
+            {
+                trimmedHeaderText,
+                foundLevel,
+                headerIndex,
+            },
+            'Multi-line header successfully processed and added',
+        );
+
+        if (!foundLevel || !headerIndex) {
+            return null;
+        }
+
+        return {
+            headerText: trimmedHeaderText,
+            level: foundLevel,
+            newHeaderIndex: headerIndex,
+            newLineIndex: newLineIndex - 1,
+        };
     }
 
     /**
