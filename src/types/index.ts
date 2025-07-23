@@ -205,6 +205,7 @@ export interface BoundingBox {
 export interface PageMetrics {
   expectedX0: number;
   tolerance: number;
+  averageWidth?: number;
 }
 
 export interface PageMetricsConfig {

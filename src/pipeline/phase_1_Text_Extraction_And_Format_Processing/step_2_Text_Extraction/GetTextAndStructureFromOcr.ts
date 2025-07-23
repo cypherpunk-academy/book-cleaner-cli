@@ -1,7 +1,7 @@
 import {
+    CENTERING_TOLERANCE,
     ERROR_CODES,
     GERMAN_ORDINALS,
-    HEADER_MAX_LENGTH,
     LOG_COMPONENTS,
     OCR_PAGE_WIDTH,
     PAGE_METRICS_TYPES,
@@ -130,9 +130,6 @@ export class GetTextAndStructureFromOcr {
     private readonly configService: ConfigService;
     private bookTypeConfigCache: Map<string, BookTypeConfig> = new Map();
 
-    // Centering tolerance (pixels from center)
-    private readonly CENTERING_TOLERANCE = 100;
-
     constructor(logger: LoggerService, configService: ConfigService) {
         this.logger = logger.getTaggedLogger(
             LOG_COMPONENTS.PIPELINE_MANAGER,
@@ -147,14 +144,15 @@ export class GetTextAndStructureFromOcr {
     private analyzePageMetrics(
         pageOcrData: OCRData,
         bookConfig: BookTypeConfig,
-    ): Record<string, { min: number; max: number }> {
+    ): Record<string, { min: number; max: number; averageWidth?: number }> {
         if (!pageOcrData.paragraphs || pageOcrData.paragraphs.length === 0) {
             this.logger.warn('No paragraphs available for page metrics analysis');
             return {};
         }
 
-        // Collect all x0 values from lines within all paragraphs
+        // Collect all x0 values and widths from lines within all paragraphs
         const x0Values: number[] = [];
+        const lineWidths: number[] = [];
         let _totalLines = 0;
         let _linesWithBbox = 0;
 
@@ -165,6 +163,9 @@ export class GetTextAndStructureFromOcr {
                     if (line.bbox && typeof line.bbox.x0 === 'number') {
                         _linesWithBbox++;
                         x0Values.push(line.bbox.x0);
+                        // Calculate width (x1 - x0)
+                        const width = line.bbox.x1 - line.bbox.x0;
+                        lineWidths.push(width);
                     }
                 }
             }
@@ -179,7 +180,7 @@ export class GetTextAndStructureFromOcr {
         x0Values.sort((a, b) => a - b);
 
         // Group x0 values using clustering algorithm with ±7 tolerance
-        const groups = this.groupX0ValuesWithTolerance(x0Values, 7);
+        const groups = this.groupX0ValuesWithTolerance(x0Values, 7, lineWidths);
 
         // Load page metrics from book-types.yaml for the specific book-type
         const bookTypeMetrics = bookConfig.metrics;
@@ -206,15 +207,27 @@ export class GetTextAndStructureFromOcr {
     private groupX0ValuesWithTolerance(
         sortedX0Values: number[],
         tolerance: number,
-    ): Array<{ average: number; values: number[]; min: number; max: number }> {
+        lineWidths: number[],
+    ): Array<{
+        average: number;
+        values: number[];
+        min: number;
+        max: number;
+        averageWidth: number;
+    }> {
         const groups: Array<{
             average: number;
             values: number[];
             min: number;
             max: number;
+            widths: number[];
         }> = [];
 
-        for (const x0 of sortedX0Values) {
+        for (let i = 0; i < sortedX0Values.length; i++) {
+            const x0 = sortedX0Values[i];
+            if (x0 === undefined) continue;
+
+            const width = lineWidths[i] || 0;
             let foundGroup = false;
 
             // Try to find an existing group that fits within tolerance
@@ -226,6 +239,8 @@ export class GetTextAndStructureFromOcr {
                     // Recalculate average
                     group.average =
                         group.values.reduce((sum, val) => sum + val, 0) / group.values.length;
+                    // Add width to the group for later average calculation
+                    group.widths.push(width);
                     foundGroup = true;
                     break;
                 }
@@ -238,24 +253,43 @@ export class GetTextAndStructureFromOcr {
                     values: [x0],
                     min: x0,
                     max: x0,
+                    widths: [width],
                 });
             }
         }
 
-        // Sort groups by average x0 position
-        groups.sort((a, b) => a.average - b.average);
+        // Calculate averageWidth for each group
+        const groupsWithAverageWidth = groups.map((group) => ({
+            average: group.average,
+            values: group.values,
+            min: group.min,
+            max: group.max,
+            averageWidth:
+                group.widths.length > 0
+                    ? group.widths.reduce((sum, width) => sum + width, 0) / group.widths.length
+                    : 0,
+        }));
 
-        return groups;
+        // Sort groups by average x0 position
+        groupsWithAverageWidth.sort((a, b) => a.average - b.average);
+
+        return groupsWithAverageWidth;
     }
 
     /**
      * Build the structured page metrics result object
      */
     private buildPageMetricsResult(
-        groups: Array<{ average: number; values: number[]; min: number; max: number }>,
+        groups: Array<{
+            average: number;
+            values: number[];
+            min: number;
+            max: number;
+            averageWidth: number;
+        }>,
         bookTypeMetrics: PageMetricsConfig,
-    ): Record<string, { min: number; max: number }> {
-        const result: Record<string, { min: number; max: number }> = {};
+    ): Record<string, { min: number; max: number; averageWidth?: number }> {
+        const result: Record<string, { min: number; max: number; averageWidth?: number }> = {};
 
         if (groups.length === 0) {
             return result;
@@ -282,6 +316,7 @@ export class GetTextAndStructureFromOcr {
         result[PAGE_METRICS_TYPES.PARAGRAPH_TEXT] = {
             min: largestGroup.min,
             max: largestGroup.max,
+            averageWidth: largestGroup.averageWidth,
         };
 
         // Get the paragraph-text baseline for calculating relative positions
@@ -332,6 +367,7 @@ export class GetTextAndStructureFromOcr {
                         result[type] = {
                             min: bestGroup.min,
                             max: bestGroup.max,
+                            averageWidth: bestGroup.averageWidth,
                         };
                         usedGroups.add(bestMatchIndex);
                     }
@@ -348,6 +384,7 @@ export class GetTextAndStructureFromOcr {
                     result[`unknown-${unknownCounter}`] = {
                         min: group.min,
                         max: group.max,
+                        averageWidth: group.averageWidth,
                     };
                     unknownCounter++;
                 }
@@ -498,7 +535,7 @@ export class GetTextAndStructureFromOcr {
     private processParagraphText(
         paragraph: OCRParagraph,
         bookConfig: BookTypeConfig,
-        pageMetrics: Record<string, { min: number; max: number }>,
+        pageMetrics: Record<string, { min: number; max: number; averageWidth?: number }>,
         isFirstParagraph: boolean,
     ): { paragraphText: string; footnoteText: string } {
         let paragraphText = '';
@@ -516,7 +553,12 @@ export class GetTextAndStructureFromOcr {
             }
 
             // Check for headers starting from this line
-            const headerResult = this.detectAndProcessHeaders(lineIndex, lines, bookConfig);
+            const headerResult = this.detectAndProcessHeaders(
+                lineIndex,
+                lines,
+                bookConfig,
+                pageMetrics,
+            );
 
             if (headerResult) {
                 // Update processed line index to skip processed header lines
@@ -586,7 +628,7 @@ export class GetTextAndStructureFromOcr {
      */
     private determineLineType(
         lineX0: number,
-        pageMetrics: Record<string, { min: number; max: number }>,
+        pageMetrics: Record<string, { min: number; max: number; averageWidth?: number }>,
     ): string {
         for (const [type, range] of Object.entries(pageMetrics)) {
             if (lineX0 >= range.min && lineX0 <= range.max) {
@@ -921,6 +963,7 @@ export class GetTextAndStructureFromOcr {
         lineIndex: number,
         lines: OCRLine[],
         bookConfig: BookTypeConfig,
+        pageMetrics: Record<string, { min: number; max: number; averageWidth?: number }>,
     ): HeaderResult | null {
         // Try to match against header patterns (level1 → level2 → level3)
         const headerLevels = [
@@ -931,22 +974,28 @@ export class GetTextAndStructureFromOcr {
 
         let headerIndex: number | null = null;
         let headerText = '';
-        let foundFormat: HeaderFormat | null = null;
         let foundLevel: number | null = null;
         let newLineIndex: number = lineIndex;
+        const line = lines[lineIndex];
 
-        if (!lines[lineIndex] || !lines[lineIndex].text) {
+        if (!line || !line.text) {
             return null;
         }
 
         let headerFound = false;
+        let foundConfig: HeaderTypeDefinition | null = null;
         for (const { level, config } of headerLevels) {
             if (!config || !config.formats) {
                 continue;
             }
 
             for (const format of config.formats) {
-                const patternMatch = this.matchHeaderPattern(lines[lineIndex].text, format.pattern);
+                // Check if header is centered and has appropriate width
+                if (!this.isLineCentered(line, pageMetrics)) {
+                    continue;
+                }
+
+                const patternMatch = this.matchHeaderPattern(line.text, format.pattern);
 
                 if (!patternMatch.matched) {
                     continue;
@@ -954,8 +1003,9 @@ export class GetTextAndStructureFromOcr {
 
                 headerIndex = this.extractOrdinalValue(patternMatch.extractedValues);
                 headerText = patternMatch.fullMatch.trim();
-                foundFormat = format;
                 foundLevel = level;
+                foundConfig = config;
+                headerFound = true;
 
                 this.logger.info(
                     {
@@ -963,11 +1013,11 @@ export class GetTextAndStructureFromOcr {
                         level,
                         headerIndex,
                         lineIndex,
+                        alignment: format.alignment,
                     },
-                    'Header-Fragement found (1).',
+                    'Header-Fragment found (1)',
                 );
 
-                headerFound = true;
                 break;
             }
 
@@ -976,33 +1026,30 @@ export class GetTextAndStructureFromOcr {
             }
         }
 
-        if (!foundFormat) {
+        if (!foundConfig) {
             return null;
         }
 
         for (newLineIndex = lineIndex + 1; newLineIndex < lines.length; newLineIndex++) {
             const line = lines[newLineIndex];
 
-            if (!line || !line.text) {
+            if (!line || !line.text || !this.isLineCentered(line, pageMetrics)) {
                 break;
             }
 
-            const patternMatch = this.matchHeaderPattern(
-                `${headerText} ${line.text.trim()}`,
-                foundFormat.pattern,
-            );
+            const potentialHeaderText = `${headerText} ${line.text.trim()}`;
 
-            this.logger.info(
-                {
-                    headerText: `${headerText} ${line.text.trim()}`,
-                    pattern: foundFormat.pattern,
-                    patternMatch,
-                },
-                'Header-Fragement found (2).',
-            );
+            let patternMatch: PatternMatch | null = null;
+            for (const format of foundConfig.formats) {
+                patternMatch = this.matchHeaderPattern(potentialHeaderText, format.pattern);
 
-            if (patternMatch.matched) {
-                headerText = `${headerText} ${patternMatch.fullMatch.trim()}`;
+                if (patternMatch.matched) {
+                    break;
+                }
+            }
+
+            if (patternMatch?.matched) {
+                headerText = potentialHeaderText;
 
                 this.logger.info(
                     {
@@ -1011,7 +1058,7 @@ export class GetTextAndStructureFromOcr {
                         headerIndex,
                         newLineIndex,
                     },
-                    'Header-Fragement found (3).',
+                    'Header-Fragment found! (3)',
                 );
             } else {
                 break;
@@ -1027,7 +1074,7 @@ export class GetTextAndStructureFromOcr {
                 foundLevel,
                 headerIndex,
             },
-            'Multi-line header successfully processed and added',
+            'Header-Fragment found!!! (4)',
         );
 
         if (!foundLevel || !headerIndex) {
@@ -1048,7 +1095,16 @@ export class GetTextAndStructureFromOcr {
     private matchHeaderPattern(text: string, pattern: string): PatternMatch {
         try {
             const regex = this.buildPlaceholderRegex(pattern);
-            const match = text.match(new RegExp(regex, 'i'));
+            const match = text.trim().match(new RegExp(regex));
+
+            this.logger.info(
+                {
+                    text: text.trim(),
+                    pattern,
+                    match,
+                },
+                'Header-Pattern matching',
+            );
 
             if (match) {
                 // Extract named groups and values
@@ -1096,8 +1152,9 @@ export class GetTextAndStructureFromOcr {
 
             case 'title-in-capital-letters':
                 // Match title in capital letters: must be at least 3 chars, start with letter, may contain spaces
-                // Ensures meaningful title text, not single letters
-                return '([A-ZÄÖÜ][A-ZÄÖÜ ]{2,}?)';
+                // Must be ONLY capital letters and spaces, no mixed case or numbers
+                // Use word boundaries to ensure we don't match partial words
+                return '([A-ZÄÖÜ][A-ZÄÖÜ ]{2,})';
 
             case 'decimal-number':
                 // Match one or more digits
@@ -1123,11 +1180,13 @@ export class GetTextAndStructureFromOcr {
             case 'no-paragraph-end-marker': {
                 // Match any characters for a title (non-greedy, stops before punctuation)
                 // This placeholder should not match any of the defined PARAGRAPH_END_MARKERS.
+                // Also should not match if followed by numbers or lowercase letters (which indicate new content)
                 const escapedMarkers = PARAGRAPH_END_MARKERS.map((marker) =>
                     marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
                 );
                 // Negative lookahead for all paragraph end markers at the end of the string
-                return `((?:(?!(${escapedMarkers.join('|')})$)[\\s\\S])+?)`;
+                // Also negative lookahead for numbers or lowercase letters that would indicate new content
+                return `((?:(?!(${escapedMarkers.join('|')})$)(?![0-9a-z])[\\s\\S])+?)`;
             }
 
             default:
@@ -1171,7 +1230,7 @@ export class GetTextAndStructureFromOcr {
             }
         }
 
-        regex = `^${regex}`;
+        regex = `^${regex}$`;
 
         return regex;
     }
@@ -1253,5 +1312,59 @@ export class GetTextAndStructureFromOcr {
         }
 
         return cleanedText;
+    }
+
+    /**
+     * Check if text is centered on the page
+     * Uses OCR_PAGE_WIDTH and CENTERING_TOLERANCE to determine if text is centered
+     */
+    private isTextCentered(bbox: { x0: number; y0: number; x1: number; y1: number }): boolean {
+        if (!bbox || typeof bbox.x0 !== 'number' || typeof bbox.x1 !== 'number') {
+            return false;
+        }
+
+        // Calculate the center of the text element
+        const textCenter = (bbox.x0 + bbox.x1) / 2;
+
+        // Calculate the center of the page
+        const pageCenter = OCR_PAGE_WIDTH / 2;
+
+        // Check if the text center is within the centering tolerance of the page center
+        const distanceFromCenter = Math.abs(textCenter - pageCenter);
+
+        return distanceFromCenter <= CENTERING_TOLERANCE;
+    }
+
+    /**
+     * Check if a line is centered on the page and has appropriate width
+     * Convenience method for checking individual lines
+     */
+    private isLineCentered(
+        line: OCRLine,
+        pageMetrics: Record<string, { min: number; max: number; averageWidth?: number }>,
+    ): boolean {
+        if (!line?.bbox) {
+            return false;
+        }
+
+        // First check if the line is centered
+        if (!this.isTextCentered(line.bbox)) {
+            return false;
+        }
+
+        // Calculate line width
+        const lineWidth = line.bbox.x1 - line.bbox.x0;
+
+        // Get paragraph-text averageWidth from page metrics
+        const paragraphTextMetrics = pageMetrics[PAGE_METRICS_TYPES.PARAGRAPH_TEXT];
+        if (!paragraphTextMetrics?.averageWidth) {
+            // If no paragraph-text metrics available, just check centering
+            return true;
+        }
+
+        // Check if line width is 90% or less of paragraph-text averageWidth
+        const maxAllowedWidth = paragraphTextMetrics.averageWidth * 0.9;
+
+        return lineWidth <= maxAllowedWidth;
     }
 }
