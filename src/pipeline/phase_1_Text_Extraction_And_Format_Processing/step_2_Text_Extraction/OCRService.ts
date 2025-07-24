@@ -92,10 +92,7 @@ export class OCRService {
      * Check if the given text contains the boundary start marker
      * Uses the textBeforeFirstChapter from the book manifest
      */
-    private checkForBoundaryStartMarker(
-        text: string,
-        bookManifest?: BookManifestInfo,
-    ): boolean {
+    private checkForBoundaryStartMarker(text: string, bookManifest?: BookManifestInfo): boolean {
         if (!bookManifest?.textBeforeFirstChapter) {
             return false;
         }
@@ -107,16 +104,12 @@ export class OCRService {
 
         const found = normalizedText.includes(normalizedMarker);
 
-        this.logger.info(
-            LOG_COMPONENTS.PIPELINE_MANAGER,
-            'Boundary start marker check',
-            {
-                originalMarker: bookManifest.textBeforeFirstChapter,
-                normalizedMarker,
-                normalizedText: normalizedText.slice(-200),
-                found,
-            },
-        );
+        this.logger.info(LOG_COMPONENTS.PIPELINE_MANAGER, 'Boundary start marker check', {
+            originalMarker: bookManifest.textBeforeFirstChapter,
+            normalizedMarker,
+            normalizedText: normalizedText.slice(-200),
+            found,
+        });
 
         return found;
     }
@@ -125,35 +118,26 @@ export class OCRService {
      * Check if the given text contains the boundary end marker
      * Uses the textAfterLastChapter from the book manifest
      */
-    private checkForBoundaryEndMarker(
-        text: string,
-        bookManifest?: BookManifestInfo,
-    ): boolean {
+    private checkForBoundaryEndMarker(text: string, bookManifest?: BookManifestInfo): boolean {
         if (!bookManifest?.textAfterLastChapter) {
             return false;
         }
 
         const normalizedText = this.normalizeTextForComparison(text);
-        const normalizedMarker = this.normalizeTextForComparison(
-            bookManifest.textAfterLastChapter,
-        );
+        const normalizedMarker = this.normalizeTextForComparison(bookManifest.textAfterLastChapter);
 
         // Remove quotes from marker if present
         const cleanMarker = normalizedMarker.replace(/^["']|["']$/g, '');
 
         const found = normalizedText.includes(cleanMarker);
 
-        this.logger.debug(
-            LOG_COMPONENTS.PIPELINE_MANAGER,
-            'Boundary end marker check',
-            {
-                originalMarker: bookManifest.textAfterLastChapter,
-                normalizedMarker,
-                cleanMarker,
-                textSample: normalizedText.slice(-200),
-                found,
-            },
-        );
+        this.logger.debug(LOG_COMPONENTS.PIPELINE_MANAGER, 'Boundary end marker check', {
+            originalMarker: bookManifest.textAfterLastChapter,
+            normalizedMarker,
+            cleanMarker,
+            textSample: normalizedText.slice(-200),
+            found,
+        });
 
         return found;
     }
@@ -341,9 +325,7 @@ export class OCRService {
                 // Handle worker-specific errors (like PDF reading issues)
                 throw new Error(
                     `OCR processing failed: ${
-                        workerError instanceof Error
-                            ? workerError.message
-                            : String(workerError)
+                        workerError instanceof Error ? workerError.message : String(workerError)
                     }`,
                 );
             } finally {
@@ -427,10 +409,7 @@ export class OCRService {
         bookManifest?: BookManifestInfo,
         options?: OCROptions,
     ): Promise<OCRResult> {
-        const ocrLogger = this.logger.getTaggedLogger(
-            LOG_COMPONENTS.PIPELINE_MANAGER,
-            'pdf_ocr',
-        );
+        const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.PIPELINE_MANAGER, 'pdf_ocr');
 
         try {
             // Import pdf2pic dynamically
@@ -530,9 +509,7 @@ export class OCRService {
                             continue;
                         }
                     }
-                    if (this.checkForBoundaryEndMarker(data.text, bookManifest)) {
-                        break;
-                    }
+
                     // Convert Tesseract data to our OCRData format (handle null vs undefined)
                     const paragraphs = data.paragraphs;
 
@@ -607,22 +584,15 @@ export class OCRService {
                     }
                 } catch (pageError) {
                     const errorMsg = `Failed to process page ${pageNumber}: ${
-                        pageError instanceof Error
-                            ? pageError.message
-                            : String(pageError)
+                        pageError instanceof Error ? pageError.message : String(pageError)
                     }`;
                     errors.push(errorMsg);
                     console.log(
                         `❌ Page ${pageNumber} failed: ${
-                            pageError instanceof Error
-                                ? pageError.message
-                                : String(pageError)
+                            pageError instanceof Error ? pageError.message : String(pageError)
                         }`,
                     );
-                    ocrLogger.warn(
-                        { pageNumber, error: errorMsg },
-                        'Page processing failed',
-                    );
+                    ocrLogger.warn({ pageNumber, error: errorMsg }, 'Page processing failed');
                 }
             }
 
@@ -648,17 +618,13 @@ export class OCRService {
             );
 
             if (errors.length > 0) {
-                console.log(
-                    `⚠️  ${errors.length} pages had errors - check logs for details`,
-                );
+                console.log(`⚠️  ${errors.length} pages had errors - check logs for details`);
             }
 
             // Apply German umlaut corrections to structured text
             console.log('🔤 Applying German umlaut corrections...');
-            const fullStructuredText =
-                scanResults.textWithHeaders + scanResults.footnoteText;
-            const correctedStructuredText =
-                this.fixGermanUmlautErrors(fullStructuredText);
+            const fullStructuredText = scanResults.textWithHeaders + scanResults.footnoteText;
+            const correctedStructuredText = this.fixGermanUmlautErrors(fullStructuredText);
 
             ocrLogger.info(
                 {
@@ -728,10 +694,7 @@ export class OCRService {
         const firstCharOfSecond = secondText.charAt(0);
 
         // Check if last character is hyphen and first character is lowercase
-        if (
-            lastCharOfFirst === '-' &&
-            firstCharOfSecond === firstCharOfSecond.toLowerCase()
-        ) {
+        if (lastCharOfFirst === '-' && firstCharOfSecond === firstCharOfSecond.toLowerCase()) {
             // Remove hyphen and glue the texts together
             return trimmedFirstText.slice(0, -1) + secondText;
         }

@@ -9,10 +9,12 @@ original:
 text-before-first-chapter: müsse, um ihm erkennend beizukommen.
 text-after-last-chapter: Daten zur Herausgabe von Goethes
 ocr-misreadings:
-  - ocr: 'HI'
+  - ocr: '/HI/'
     correct: 'III'
-  - ocr: '1X'
+  - ocr: '/1X/'
     correct: 'IX'
+  - ocr: '/VIII\s+;/'
+    correct: 'VIII'
 structure:
   - type: chapter
     title: null

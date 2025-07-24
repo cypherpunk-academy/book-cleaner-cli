@@ -794,9 +794,6 @@ export class GetTextAndStructureFromOcr {
             // Analyze page metrics based on bbox.x0 values and classify text types
             const pageMetrics = this.analyzePageMetrics(ocrData, bookConfig);
 
-            // Debug: Log the page metrics result
-            this.logger.debug({ pageMetrics }, 'Page Metrics Result');
-
             let processedParagraphs = 0;
             const errors: string[] = [];
 
@@ -1012,9 +1009,20 @@ export class GetTextAndStructureFromOcr {
 
                 if (!patternMatch.matched) {
                     const replacedText = this.getReplacementText(line.text);
+
                     if (replacedText) {
                         patternMatch = this.matchHeaderPattern(replacedText, format.pattern);
                     }
+
+                    this.logger.info(
+                        {
+                            lineText: line.text,
+                            replacedText,
+                            patternMatch,
+                        },
+                        'Header-Fragment found (0)',
+                    );
+
                     if (!replacedText || !patternMatch.matched) {
                         continue;
                     }
@@ -1135,6 +1143,8 @@ export class GetTextAndStructureFromOcr {
 
     /**
      * Get replacement text from OCR misreadings
+     * Now handles regex patterns in misreading.ocr instead of simple strings
+     * Supports both delimited patterns (e.g., /pattern/) and raw patterns
      */
     private getReplacementText(text: string): string | null {
         if (!this.bookManifest?.ocrMisreadings || this.bookManifest.ocrMisreadings.length === 0) {
@@ -1142,11 +1152,42 @@ export class GetTextAndStructureFromOcr {
         }
 
         for (const misreading of this.bookManifest.ocrMisreadings) {
-            if (text.includes(misreading.ocr)) {
-                return text.replace(
-                    new RegExp(misreading.ocr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
-                    misreading.correct,
+            try {
+                let regexPattern = misreading.ocr;
+                let flags = 'g';
+
+                // Check if the pattern is delimited with forward slashes (e.g., /pattern/)
+                const delimitedMatch = regexPattern.match(/^\/(.*)\/([gimsuy]*)$/);
+                if (delimitedMatch) {
+                    regexPattern = delimitedMatch[1] || '';
+                    flags = delimitedMatch[2] || 'g';
+                    // Ensure 'g' flag is present for global replacement
+                    if (!flags.includes('g')) {
+                        flags += 'g';
+                    }
+                }
+
+                // Create regex from the pattern
+                const regex = new RegExp(regexPattern, flags);
+
+                // Test if the pattern matches the text
+                if (regex.test(text.trim())) {
+                    // Reset regex state for replacement
+                    regex.lastIndex = 0;
+                    return text.replace(regex, misreading.correct);
+                }
+            } catch (error) {
+                this.logger.warn(
+                    {
+                        ocrPattern: misreading.ocr,
+                        correctText: misreading.correct,
+                        error: error instanceof Error ? error.message : String(error),
+                    },
+                    'Invalid regex pattern in OCR misreading',
                 );
+
+                // Continue with next misreading instead of throwing
+                continue;
             }
         }
 
