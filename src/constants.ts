@@ -235,6 +235,12 @@ export const DEFAULT_CHAPTER_MARKERS = [
 
 export const DEFAULT_FOOTNOTE_MARKERS = ['\\d+\\)', '\\d+\\.', '\\*\\d+', '\\[\\d+\\]'] as const;
 
+// ==================== Footnote Format Constants ====================
+
+export const FOOTNOTE_FORMATS = {
+    MARKDOWN: '[^%d]', // [^1] format for markdown footnotes
+} as const;
+
 // ==================== AI Provider Constants ====================
 
 export const AI_PROVIDERS = {
@@ -838,6 +844,19 @@ export const GERMAN_ORDINALS = {
 export const OCR_MISREADINGS = {
     DEFAULT_TOLERANCE: 0.8, // Default confidence threshold for misreading detection
     MIN_CONFIDENCE: 0.6, // Minimum confidence for OCR misreading correction
+} as const;
+
+// ==================== OCR Character Constants ====================
+
+export const OCR_CHARACTERS = {
+    GUILLEMET_LEFT: '«', // Left-pointing double angle quotation mark
+    GUILLEMET_RIGHT: '»', // Right-pointing double angle quotation mark
+    EM_DASH: '—', // Em dash
+    EN_DASH: '–', // En dash
+    LEFT_DOUBLE_QUOTE: '"', // Left double quotation mark
+    RIGHT_DOUBLE_QUOTE: '"', // Right double quotation mark
+    LEFT_SINGLE_QUOTE: '\u2018', // Left single quotation mark
+    RIGHT_SINGLE_QUOTE: '\u2019', // Right single quotation mark
 } as const;
 
 // ==================== Text Layout Constants ====================

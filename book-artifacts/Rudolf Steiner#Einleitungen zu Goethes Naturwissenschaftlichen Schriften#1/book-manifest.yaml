@@ -9,12 +9,30 @@ original:
 text-before-first-chapter: müsse, um ihm erkennend beizukommen.
 text-after-last-chapter: Daten zur Herausgabe von Goethes
 ocr-misreadings:
-  - ocr: '/HI/'
+  - ocr: '/^HI$/'
     correct: 'III'
-  - ocr: '/1X/'
+  - ocr: '/^1X$/'
     correct: 'IX'
-  - ocr: '/VIII\s*;[\s\n]*/'
+  - ocr: '^/VIII\s*;[\s\n]*$/'
     correct: 'VIII'
+  - ocr: '/^I\s+XI$/'
+    correct: 'XI'
+  - ocr: 'II DIE ENISTEHUNG DER METAMORPHOSENLEHRE'
+    correct: 'II DIE ENTSTEHUNG DER METAMORPHOSENLEHRE'
+  - ocr: 'X WISSEN UND HANDELN IM LICHTE DER GOETHESCHEN DENKVWEISE'
+    correct: 'X WISSEN UND HANDELN IM LICHTE DER GOETHESCHEN DENKWEISE'
+  - ocr: 'XI DAS GEOLOGISCHE GRUNDPRINZIP GOETHES'
+    correct: 'XIII DAS GEOLOGISCHE GRUNDPRINZIP GOETHES'
+  - ocr: 'XVII GOETHES WELTANSCHAUUNG IN SEINEN «SPRÜCHEN IN PROSA»'
+    correct: 'XVIII GOETHES WELTANSCHAUUNG IN SEINEN «SPRÜCHEN IN PROSA»'
+  - ocr: '/\[WA 8\, 2501\]/'
+    correct: '1'
+  - ocr: 'hat er dargelegt.?'
+    correct: 'hat er dargelegt.2'
+  - ocr: 'ausgesprochen worden ist\?'
+    correct: 'ausgesprochen worden ist3,'
+  - ocr: '\(Im folgenden mit Natw\. Schr\. abgekürzt\.\]'
+    correct: '[Im folgenden mit Natw. Schr. abgekürzt.]'
 structure:
   - type: chapter
     title: null

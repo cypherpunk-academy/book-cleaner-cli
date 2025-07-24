@@ -16,7 +16,7 @@ async function testGraphicsExclusion(): Promise<void> {
         await worker.setParameters({
             // Text recognition settings
             tessedit_char_whitelist:
-                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüßÄÖÜ0123456789.,;:!?()[]{}"-— \n\r\t',
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüßÄÖÜ0123456789.,;:!?()[]{}"-—«» \n\r\t',
             preserve_interword_spaces: '1',
 
             // Graphics exclusion settings

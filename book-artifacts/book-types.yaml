@@ -30,7 +30,7 @@ rudolf-steiner-ga-werk:
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
     - "/Buch\\s?:\\s*\\d*\\s*\\d{0,3}\\s+Seite\\s?:\\s*\\d+[ \\t]*\\d{0,4}/"
-    - "/\\d{0,3}\\s?\\[[\\s\\S]+?\\]/"
+    - "/\\d{0,3}\\s?\\[(?!\\^)[\\s\\S]+?\\]/"
 
 rudolf-steiner-ga-vortrag:
   description: "Rudolf Steiner Gesamtausgabe (GA) Vortrag"
@@ -43,7 +43,7 @@ rudolf-steiner-ga-vortrag:
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
     - "/Buch\\s?:\\s*\\d*\\s*\\d{0,3}\\s+Seite\\s?:\\s*\\d+[ \\t]*\\d{0,4}/"
-    - "/\\d{0,3}\\s?\\[[\\s\\S]+?\\]/"
+    - "/\\d{0,3}\\s?\\[(?!\\^)[\\s\\S]+?\\]/"
 
 google-play-ebook:
   description: "Google Play E-Book"

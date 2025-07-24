@@ -1,6 +1,7 @@
 import {
     CENTERING_TOLERANCE,
     ERROR_CODES,
+    FOOTNOTE_FORMATS,
     GERMAN_ORDINALS,
     LOG_COMPONENTS,
     OCR_PAGE_WIDTH,
@@ -253,13 +254,6 @@ export class GetTextAndStructureFromOcr {
             return { textWithHeaders, footnoteText };
         }
 
-        this.logger.info(
-            {
-                totalLines: allLines.length,
-            },
-            'Starting line-based processing',
-        );
-
         for (let lineIndex = 0; lineIndex < allLines.length; lineIndex++) {
             const line = allLines[lineIndex];
             if (!line || !line.bbox) {
@@ -314,7 +308,7 @@ export class GetTextAndStructureFromOcr {
                         textWithHeaders,
                         footnoteText,
                     );
-                    textWithHeaders = footnoteResult.paragraphText;
+                    textWithHeaders = footnoteResult.textWithHeaders;
                     footnoteText = footnoteResult.footnoteText;
                     break;
                 }
@@ -333,15 +327,6 @@ export class GetTextAndStructureFromOcr {
                     break;
             }
         }
-
-        this.logger.info(
-            {
-                processedLines: allLines.length,
-                textLength: textWithHeaders.length,
-                footnoteLength: footnoteText.length,
-            },
-            'Line-based processing completed successfully',
-        );
 
         return { textWithHeaders, footnoteText };
     }
@@ -677,104 +662,6 @@ export class GetTextAndStructureFromOcr {
     }
 
     /**
-     * Classify grouped x0 values into text types based on page metrics
-     */
-
-    /**
-     * Process paragraph text based on page metrics and line positioning
-     */
-    private processParagraphText(
-        paragraph: OCRParagraph,
-        bookConfig: BookTypeConfig,
-        pageMetrics: Record<string, PageMetricsData>,
-        isFirstParagraph: boolean,
-    ): { paragraphText: string; footnoteText: string } {
-        let paragraphText = '';
-        let footnoteText = '';
-
-        if (!paragraph.lines || paragraph.lines.length === 0) {
-            return { paragraphText, footnoteText };
-        }
-
-        const lines = paragraph.lines;
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            if (!line || !line.bbox) {
-                continue;
-            }
-
-            // Check for headers starting from this line
-            const headerResult = this.detectAndProcessHeaders(
-                lineIndex,
-                lines,
-                bookConfig,
-                pageMetrics,
-            );
-
-            if (headerResult) {
-                // Update processed line index to skip processed header lines
-                lineIndex = headerResult.newLineIndex;
-                paragraphText += headerResult.headerText;
-
-                continue;
-            }
-
-            const lineX0 = line.bbox.x0;
-            const lineText = line.text.trim();
-
-            if (lineText.length === 0) {
-                continue;
-            }
-
-            // Determine line type based on page metrics
-            const lineType = this.determineLineType(lineX0, pageMetrics);
-
-            // Handle first paragraph on page
-            if (isFirstParagraph && lineIndex === 0) {
-                if (lineType === PAGE_METRICS_TYPES.PARAGRAPH_TEXT) {
-                    paragraphText += lineText;
-                } else {
-                    paragraphText += `\n\n${lineText}`;
-                }
-                continue;
-            }
-
-            // Handle subsequent lines and paragraphs
-            switch (lineType) {
-                case PAGE_METRICS_TYPES.PARAGRAPH_START:
-                    paragraphText += `\n\n${lineText}`;
-                    break;
-
-                case PAGE_METRICS_TYPES.FOOTNOTE_START: {
-                    const footnoteResult = this.processFootnoteStart(
-                        lineText,
-                        paragraphText,
-                        footnoteText,
-                    );
-                    paragraphText = footnoteResult.paragraphText;
-                    footnoteText = footnoteResult.footnoteText;
-                    break;
-                }
-
-                case PAGE_METRICS_TYPES.PARAGRAPH_TEXT:
-                    paragraphText = this.processParagraphTextLine(lineText, paragraphText);
-                    break;
-
-                case PAGE_METRICS_TYPES.FOOTNOTE_TEXT:
-                    footnoteText = this.processFootnoteTextLine(lineText, footnoteText);
-                    break;
-
-                default:
-                    // Unknown type - treat as paragraph text
-                    paragraphText = this.processParagraphTextLine(lineText, paragraphText);
-                    break;
-            }
-        }
-
-        return { paragraphText, footnoteText };
-    }
-
-    /**
      * Determine line type based on x0 position and page metrics
      */
     private determineLineType(
@@ -794,35 +681,36 @@ export class GetTextAndStructureFromOcr {
      */
     private processFootnoteStart(
         lineText: string,
-        paragraphText: string,
+        textWithHeaders: string,
         footnoteText: string,
-    ): { paragraphText: string; footnoteText: string } {
+    ): { textWithHeaders: string; footnoteText: string } {
         // Extract footnote number or asterisks from line start
-        const footnoteMatch = lineText.match(/^(\d+|[*]+)\s*(.+)$/);
+        const correctedLineText = this.getReplacementText(lineText) ?? lineText;
+        const footnoteMatch = correctedLineText.match(/^(\d+|[*]+)\s*(.+)$/);
         if (!footnoteMatch) {
             // If no match, treat as regular text
             return {
-                paragraphText: this.processParagraphTextLine(lineText, paragraphText),
+                textWithHeaders: this.processParagraphTextLine(lineText, textWithHeaders),
                 footnoteText,
             };
         }
 
         const footnoteRef = footnoteMatch[1] || '';
         const footnoteContent = footnoteMatch[2] || '';
-        const footnoteMarker = `[${footnoteRef}]`;
+        const footnoteMarker = FOOTNOTE_FORMATS.MARKDOWN.replace('%d', footnoteRef);
 
         // Search for footnote reference in paragraph text from back to front
-        const updatedParagraphText = this.replaceFootnoteReference(
-            paragraphText,
+        const updatedTextWithHeaders = this.replaceFootnoteReference(
+            textWithHeaders,
             footnoteRef,
             footnoteMarker,
         );
 
         // Add footnote content to footnote text
-        const updatedFootnoteText = `${footnoteText}\n\n${footnoteMarker} ${footnoteContent}`;
+        const updatedFootnoteText = `${footnoteText}\n\n${footnoteMarker}: ${footnoteContent}`;
 
         return {
-            paragraphText: updatedParagraphText,
+            textWithHeaders: updatedTextWithHeaders,
             footnoteText: updatedFootnoteText,
         };
     }
@@ -845,15 +733,27 @@ export class GetTextAndStructureFromOcr {
             pattern = /\*\*\*/g;
         } else {
             // Numeric reference
-            pattern = new RegExp(`\\b${footnoteRef}\\b`, 'g');
+            pattern = new RegExp(`${footnoteRef}`, 'g');
         }
+
+        const correctedText = this.getReplacementText(text) ?? text;
 
         // Find all matches
         const matches: RegExpExecArray[] = [];
         let match: RegExpExecArray | null;
-        while ((match = pattern.exec(text)) !== null) {
+        while ((match = pattern.exec(correctedText)) !== null) {
             matches.push(match);
         }
+
+        this.logger.info(
+            {
+                matches,
+                correctedText,
+                footnoteRef,
+                footnoteMarker,
+            },
+            'FOOTNOTE REFERENCE:replaceFootnoteReference',
+        );
 
         // Replace the last occurrence (from back to front)
         if (matches.length > 0) {
@@ -950,20 +850,14 @@ export class GetTextAndStructureFromOcr {
             // Phase 2: Process all lines sequentially using line-based approach
             const processedText = this.processLinesOfPage(allLines, bookConfig, pageMetrics);
 
-            // Apply text removal patterns to the entire processed text
-            const cleanedTextWithHeaders = this.applyTextRemovalPatterns(
-                processedText.textWithHeaders,
-                bookConfig.textRemovalPatterns,
-            );
-
             // Update scan results with processed text
-            scanResultsThisPage.textWithHeaders = cleanedTextWithHeaders;
+            scanResultsThisPage.textWithHeaders = processedText.textWithHeaders;
             scanResultsThisPage.footnoteText = processedText.footnoteText;
 
             this.logger.info(
                 {
                     totalLines: allLines.length,
-                    textLength: cleanedTextWithHeaders.length,
+                    textLength: processedText.textWithHeaders.length,
                     footnoteLength: processedText.footnoteText.length,
                 },
                 'Line-based OCR processing completed successfully',
@@ -1113,40 +1007,42 @@ export class GetTextAndStructureFromOcr {
             }
 
             for (const format of config.formats) {
-                // Check if header is centered and has appropriate width
-                if (!this.isLineCentered(line, pageMetrics)) {
-                    continue;
-                }
-
-                this.logger.info(
-                    {
-                        lineText: line.text,
-                        pattern: format.pattern,
-                    },
-                    'Header-Fragment found! (0a)',
-                );
-
                 let patternMatch = this.matchHeaderPattern(line.text, format.pattern);
+                let replacedText: string | null = null;
 
                 if (!patternMatch.matched) {
-                    const replacedText = this.getReplacementText(line.text);
+                    replacedText = this.getReplacementText(line.text);
 
                     if (replacedText) {
                         patternMatch = this.matchHeaderPattern(replacedText, format.pattern);
-                    }
 
-                    this.logger.info(
-                        {
-                            lineText: line.text,
-                            replacedText,
-                            patternMatch,
-                        },
-                        'Header-Fragment found (0b)',
-                    );
+                        this.logger.debug(
+                            {
+                                lineText: line.text,
+                                replacedText,
+                                patternMatch,
+                                pattern: format.pattern,
+                            },
+                            'Header-Fragment found (0b)',
+                        );
+                    }
 
                     if (!replacedText || !patternMatch.matched) {
                         continue;
                     }
+                } else {
+                    this.logger.debug(
+                        {
+                            lineText: line.text,
+                            pattern: format.pattern,
+                        },
+                        'Header-Fragment found! (0a)',
+                    );
+                }
+
+                // Check if header is centered and has appropriate width
+                if (!this.isLineCentered(line, pageMetrics) && !replacedText) {
+                    continue;
                 }
 
                 headerIndex = this.extractOrdinalValue(patternMatch.extractedValues);
@@ -1155,7 +1051,7 @@ export class GetTextAndStructureFromOcr {
                 foundConfig = config;
                 headerFound = true;
 
-                this.logger.info(
+                this.logger.debug(
                     {
                         headerText,
                         level,
@@ -1187,12 +1083,10 @@ export class GetTextAndStructureFromOcr {
 
             const isCentered = this.isLineCentered(line, pageMetrics);
 
-            this.logger.info(
+            this.logger.debug(
                 {
                     lineText: line.text,
                     isCentered,
-                    bbox: line.bbox,
-                    pageMetrics,
                 },
                 'Header-Fragment found! (2a)',
             );
@@ -1212,7 +1106,7 @@ export class GetTextAndStructureFromOcr {
                 }
             }
 
-            this.logger.info(
+            this.logger.debug(
                 {
                     potentialHeaderText,
                     patternMatch,
@@ -1223,7 +1117,7 @@ export class GetTextAndStructureFromOcr {
             if (patternMatch?.matched) {
                 headerText = potentialHeaderText;
 
-                this.logger.info(
+                this.logger.debug(
                     {
                         headerText,
                         foundLevel,
@@ -1239,11 +1133,12 @@ export class GetTextAndStructureFromOcr {
         }
 
         const hashes = '#'.repeat(foundLevel ?? 0);
-        const trimmedHeaderText = `\n\n${hashes} ${headerText.trim()}\n\n`;
+        const correctedHeaderText = this.getReplacementText(headerText);
+        const headerTextWithNewlines = `\n\n${hashes} ${correctedHeaderText ?? headerText}\n\n`;
 
-        this.logger.info(
+        this.logger.debug(
             {
-                trimmedHeaderText,
+                headerTextWithNewlines,
                 foundLevel,
                 headerIndex,
             },
@@ -1255,7 +1150,7 @@ export class GetTextAndStructureFromOcr {
         }
 
         return {
-            headerText: trimmedHeaderText,
+            headerText: headerTextWithNewlines,
             level: foundLevel,
             newHeaderIndex: headerIndex,
             newLineIndex: newLineIndex - 1,
@@ -1272,16 +1167,7 @@ export class GetTextAndStructureFromOcr {
             return null;
         }
 
-        this.logger.debug(
-            {
-                originalText: text,
-                textLength: text.length,
-                hasNewlines: text.includes('\n'),
-                hasSemicolon: text.includes(';'),
-                ocrMisreadingsCount: this.bookManifest.ocrMisreadings.length,
-            },
-            'getReplacementText called',
-        );
+        const trimmedText = text.trim();
 
         for (const misreading of this.bookManifest.ocrMisreadings) {
             try {
@@ -1290,6 +1176,7 @@ export class GetTextAndStructureFromOcr {
 
                 // Check if the pattern is delimited with forward slashes (e.g., /pattern/)
                 const delimitedMatch = regexPattern.match(/^\/(.*)\/([gimsuy]*)$/);
+
                 if (delimitedMatch) {
                     regexPattern = delimitedMatch[1] || '';
                     flags = delimitedMatch[2] || 'g';
@@ -1302,22 +1189,11 @@ export class GetTextAndStructureFromOcr {
                 // Create regex from the pattern
                 const regex = new RegExp(regexPattern, flags);
 
-                this.logger.debug(
-                    {
-                        ocrPattern: misreading.ocr,
-                        regexPattern,
-                        flags,
-                        correctText: misreading.correct,
-                        textToTest: text.trim(),
-                    },
-                    'Testing OCR misreading pattern',
-                );
-
-                // Test if the pattern matches the text
-                if (regex.test(text.trim())) {
+                // Test if the pattern matches anywhere in the text (partial match)
+                if (regex.test(trimmedText)) {
                     // Reset regex state for replacement
                     regex.lastIndex = 0;
-                    const replacedText = text.replace(regex, misreading.correct);
+                    const replacedText = text.replace(regex, misreading.correct).trim();
 
                     this.logger.info(
                         {
@@ -1345,14 +1221,6 @@ export class GetTextAndStructureFromOcr {
                 continue;
             }
         }
-
-        this.logger.debug(
-            {
-                text,
-                noReplacementFound: true,
-            },
-            'No OCR misreading replacement found',
-        );
 
         return null;
     }
@@ -1413,7 +1281,7 @@ export class GetTextAndStructureFromOcr {
                 // Match title in capital letters: must be at least 3 chars, start with letter, may contain spaces
                 // Must be ONLY capital letters and spaces, no mixed case or numbers
                 // Use word boundaries to ensure we don't match partial words
-                return '([A-ZÄÖÜ][A-ZÄÖÜ -]{2,})';
+                return '([A-ZÄÖÜ][A-ZÄÖÜ «»-]{2,})';
 
             case 'decimal-number':
                 // Match one or more digits
@@ -1422,7 +1290,7 @@ export class GetTextAndStructureFromOcr {
             case 'title':
                 // Match title text: must start with capital letter, be at least 3 characters long
                 // Non-greedy, stops at common punctuation or end patterns
-                return '([A-ZÄÖÜ][^.]{2,}?)';
+                return '([A-ZÄÖÜ«»-][^.]{2,}?)';
 
             case 'german-ordinal':
                 // Match German ordinals from constants
@@ -1542,35 +1410,6 @@ export class GetTextAndStructureFromOcr {
         }
 
         return null;
-    }
-
-    /**
-     * Apply text removal patterns to clean text
-     */
-    private applyTextRemovalPatterns(text: string, patterns: string[]): string {
-        let cleanedText = text;
-
-        for (const pattern of patterns) {
-            try {
-                // Handle both string patterns and regex patterns
-                const regexPattern =
-                    pattern.startsWith('/') && pattern.endsWith('/')
-                        ? new RegExp(pattern.slice(1, -1), 'g')
-                        : new RegExp(pattern, 'g');
-
-                cleanedText = cleanedText.replace(regexPattern, '');
-            } catch (error) {
-                this.logger.warn(
-                    {
-                        pattern,
-                        error: error instanceof Error ? error.message : String(error),
-                    },
-                    'Failed to apply text removal pattern',
-                );
-            }
-        }
-
-        return cleanedText;
     }
 
     /**

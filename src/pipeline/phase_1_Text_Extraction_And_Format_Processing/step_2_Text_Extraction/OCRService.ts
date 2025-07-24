@@ -1,48 +1,14 @@
 import type { Worker } from 'tesseract.js';
-import { LOG_COMPONENTS, OCR_PAGE_HEIGHT, OCR_PAGE_WIDTH } from '../../../constants';
+import {
+    LOG_COMPONENTS,
+    OCR_PAGE_HEIGHT,
+    OCR_PAGE_WIDTH,
+    OCR_CHARACTERS,
+} from '../../../constants';
 import type { ConfigService } from '../../../services/ConfigService';
 import type { LoggerService } from '../../../services/LoggerService';
 import type { BookManifestInfo, FileInfo } from '../../../types';
 import { GetTextAndStructureFromOcr } from './GetTextAndStructureFromOcr';
-
-/**
- * OCR Block structure for visual layout analysis
- */
-interface OCRBlock {
-    text: string;
-    confidence: number;
-    bbox: { x0: number; y0: number; x1: number; y1: number };
-    paragraphs?: OCRParagraph[];
-}
-
-/**
- * OCR Paragraph structure
- */
-interface OCRParagraph {
-    text: string;
-    confidence: number;
-    bbox: { x0: number; y0: number; x1: number; y1: number };
-    lines?: OCRLine[];
-}
-
-/**
- * OCR Line structure
- */
-interface OCRLine {
-    text: string;
-    confidence: number;
-    bbox: { x0: number; y0: number; x1: number; y1: number };
-    words?: OCRWord[];
-}
-
-/**
- * OCR Word structure
- */
-interface OCRWord {
-    text: string;
-    confidence: number;
-    bbox: { x0: number; y0: number; x1: number; y1: number };
-}
 
 /**
  * OCR result interface with structured text recognition
@@ -108,34 +74,6 @@ export class OCRService {
             originalMarker: bookManifest.textBeforeFirstChapter,
             normalizedMarker,
             normalizedText: normalizedText.slice(-200),
-            found,
-        });
-
-        return found;
-    }
-
-    /**
-     * Check if the given text contains the boundary end marker
-     * Uses the textAfterLastChapter from the book manifest
-     */
-    private checkForBoundaryEndMarker(text: string, bookManifest?: BookManifestInfo): boolean {
-        if (!bookManifest?.textAfterLastChapter) {
-            return false;
-        }
-
-        const normalizedText = this.normalizeTextForComparison(text);
-        const normalizedMarker = this.normalizeTextForComparison(bookManifest.textAfterLastChapter);
-
-        // Remove quotes from marker if present
-        const cleanMarker = normalizedMarker.replace(/^["']|["']$/g, '');
-
-        const found = normalizedText.includes(cleanMarker);
-
-        this.logger.debug(LOG_COMPONENTS.PIPELINE_MANAGER, 'Boundary end marker check', {
-            originalMarker: bookManifest.textAfterLastChapter,
-            normalizedMarker,
-            cleanMarker,
-            textSample: normalizedText.slice(-200),
             found,
         });
 
@@ -214,6 +152,7 @@ export class OCRService {
 
             // Z/I OCR confusion corrections
             [/\bZdee\b/gi, 'Idee'], // Idee (Zdee is OCR error for Z/I confusion)
+            [/\bSiche\b/gi, 'Siehe'], // Siehe (Siche is OCR error for Z/I confusion)
 
             // Conservative generic patterns - only obvious OCR patterns
             [/\b([a-zA-Z]+)iii([a-zA-Z]+)\b/g, '$1üi$2'], // Triple i likely OCR error
@@ -295,8 +234,7 @@ export class OCRService {
 
             // Configure worker for better German text recognition
             await worker.setParameters({
-                tessedit_char_whitelist:
-                    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüßÄÖÜ0123456789.,;:!?()[]{}"-— \n\r\t',
+                tessedit_char_whitelist: `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüßÄÖÜ0123456789.,;:!?()[]{}"-—${OCR_CHARACTERS.GUILLEMET_LEFT}${OCR_CHARACTERS.GUILLEMET_RIGHT} \n\r\t`,
                 preserve_interword_spaces: '1',
             });
 
@@ -449,7 +387,7 @@ export class OCRService {
                 level3HeadingsIndex: number;
             } = {
                 textWithHeaders: '',
-                footnoteText: '',
+                footnoteText: '\n\n# FUSSNOTEN',
                 level1HeadingsIndex: 0,
                 level2HeadingsIndex: 0,
                 level3HeadingsIndex: 0,
@@ -499,14 +437,22 @@ export class OCRService {
                                 '⏭️  Skipping start marker check (--skip-start-marker enabled)',
                             );
                         } else {
-                            firstContentPageFound = this.checkForBoundaryStartMarker(
+                            const boundaryFound = this.checkForBoundaryStartMarker(
                                 data.text,
                                 bookManifest,
                             );
-                        }
 
-                        if (!firstContentPageFound) {
-                            continue;
+                            if (boundaryFound) {
+                                // Found the boundary marker - skip this page and start processing from next page
+                                firstContentPageFound = true;
+                                console.log(
+                                    `📍 Found boundary start marker on page ${pageNumber} - skipping this page and starting content processing from next page`,
+                                );
+                                continue; // Skip this page entirely
+                            } else {
+                                // Boundary not found yet - continue searching
+                                continue;
+                            }
                         }
                     }
 
@@ -547,7 +493,7 @@ export class OCRService {
 
                         await fs.writeFile(
                             paragraphsJsonPath,
-                            JSON.stringify(paragraphsPurged ?? [], null, 2),
+                            JSON.stringify(paragraphs ?? [], null, 2),
                             'utf-8',
                         );
                     } catch (writeErr) {
@@ -626,6 +572,12 @@ export class OCRService {
             const fullStructuredText = scanResults.textWithHeaders + scanResults.footnoteText;
             const correctedStructuredText = this.fixGermanUmlautErrors(fullStructuredText);
 
+            // Apply text removal patterns to clean text
+            const cleanedStructuredText = await this.applyTextRemovalPatterns(
+                correctedStructuredText,
+                bookType,
+            );
+
             ocrLogger.info(
                 {
                     totalPages: results.length,
@@ -638,7 +590,7 @@ export class OCRService {
             );
 
             return {
-                structuredText: correctedStructuredText,
+                structuredText: cleanedStructuredText,
                 pageCount: results.length,
             };
         } catch (error) {
@@ -700,5 +652,68 @@ export class OCRService {
         }
         // Add space between texts
         return `${trimmedFirstText} ${secondText}`;
+    }
+
+    /**
+     * Apply text removal patterns to clean text
+     */
+    private async applyTextRemovalPatterns(text: string, bookType: string): Promise<string> {
+        try {
+            // Load book type configuration to get text removal patterns
+            const bookTypesConfig = await this.configService.loadBookTypesConfig();
+
+            if (!bookTypesConfig || typeof bookTypesConfig !== 'object') {
+                return text;
+            }
+
+            const config = bookTypesConfig[bookType] as Record<string, unknown>;
+            if (!config) {
+                return text;
+            }
+
+            const textRemovalPatterns =
+                (config.textRemovalPatterns as string[]) ||
+                (config['text-removal-patterns'] as string[]) ||
+                [];
+
+            if (textRemovalPatterns.length === 0) {
+                return text;
+            }
+
+            let cleanedText = text;
+
+            for (const pattern of textRemovalPatterns) {
+                try {
+                    // Handle both string patterns and regex patterns
+                    const regexPattern =
+                        pattern.startsWith('/') && pattern.endsWith('/')
+                            ? new RegExp(pattern.slice(1, -1), 'g')
+                            : new RegExp(pattern, 'g');
+
+                    cleanedText = cleanedText.replace(regexPattern, '');
+                } catch (error) {
+                    this.logger.warn(
+                        LOG_COMPONENTS.PIPELINE_MANAGER,
+                        'Failed to apply text removal pattern',
+                        {
+                            pattern,
+                            error: error instanceof Error ? error.message : String(error),
+                        },
+                    );
+                }
+            }
+
+            return cleanedText;
+        } catch (error) {
+            this.logger.warn(
+                LOG_COMPONENTS.PIPELINE_MANAGER,
+                'Failed to load text removal patterns',
+                {
+                    bookType,
+                    error: error instanceof Error ? error.message : String(error),
+                },
+            );
+            return text;
+        }
     }
 }
