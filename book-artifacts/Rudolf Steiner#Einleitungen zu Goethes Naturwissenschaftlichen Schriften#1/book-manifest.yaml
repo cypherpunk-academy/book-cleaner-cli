@@ -13,7 +13,7 @@ ocr-misreadings:
     correct: 'III'
   - ocr: '/1X/'
     correct: 'IX'
-  - ocr: '/VIII\s+;/'
+  - ocr: '/VIII\s*;[\s\n]*/'
     correct: 'VIII'
 structure:
   - type: chapter

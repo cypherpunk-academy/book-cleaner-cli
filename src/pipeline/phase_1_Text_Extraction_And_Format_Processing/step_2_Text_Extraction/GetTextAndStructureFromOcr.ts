@@ -209,6 +209,144 @@ export class GetTextAndStructureFromOcr {
     }
 
     /**
+     * Flatten all lines from all paragraphs into a single array
+     * Phase 1 of the refactor: Data structure preparation
+     */
+    private flattenParagraphLines(ocrData: OCRData): OCRLine[] {
+        const allLines: OCRLine[] = [];
+
+        if (!ocrData.paragraphs || ocrData.paragraphs.length === 0) {
+            this.logger.warn('No paragraphs available for line flattening');
+            return allLines;
+        }
+
+        let totalLines = 0;
+        let processedParagraphs = 0;
+
+        for (const paragraph of ocrData.paragraphs) {
+            if (paragraph.lines && paragraph.lines.length > 0) {
+                for (const line of paragraph.lines) {
+                    allLines.push(line);
+                    totalLines++;
+                }
+                processedParagraphs++;
+            }
+        }
+
+        return allLines;
+    }
+
+    /**
+     * Process all lines of a page sequentially
+     * Phase 2 of the refactor: Core line-based processing logic
+     */
+    private processLinesOfPage(
+        allLines: OCRLine[],
+        bookConfig: BookTypeConfig,
+        pageMetrics: Record<string, PageMetricsData>,
+    ): { textWithHeaders: string; footnoteText: string } {
+        let textWithHeaders = '';
+        let footnoteText = '';
+
+        if (allLines.length === 0) {
+            this.logger.warn('No lines available for processing');
+            return { textWithHeaders, footnoteText };
+        }
+
+        this.logger.info(
+            {
+                totalLines: allLines.length,
+            },
+            'Starting line-based processing',
+        );
+
+        for (let lineIndex = 0; lineIndex < allLines.length; lineIndex++) {
+            const line = allLines[lineIndex];
+            if (!line || !line.bbox) {
+                continue;
+            }
+
+            // Check for headers starting from this line
+            const headerResult = this.detectAndProcessHeaders(
+                lineIndex,
+                allLines,
+                bookConfig,
+                pageMetrics,
+            );
+
+            if (headerResult) {
+                // Update processed line index to skip processed header lines
+                lineIndex = headerResult.newLineIndex;
+                textWithHeaders += headerResult.headerText;
+
+                continue;
+            }
+
+            const lineX0 = line.bbox.x0;
+            const lineText = line.text.trim();
+
+            if (lineText.length === 0) {
+                continue;
+            }
+
+            // Determine line type based on page metrics
+            const lineType = this.determineLineType(lineX0, pageMetrics);
+
+            // Handle first line of page
+            if (lineIndex === 0) {
+                if (lineType === PAGE_METRICS_TYPES.PARAGRAPH_TEXT) {
+                    textWithHeaders += lineText;
+                } else {
+                    textWithHeaders += `\n\n${lineText}`;
+                }
+                continue;
+            }
+
+            // Handle subsequent lines
+            switch (lineType) {
+                case PAGE_METRICS_TYPES.PARAGRAPH_START:
+                    textWithHeaders += `\n\n${lineText}`;
+                    break;
+
+                case PAGE_METRICS_TYPES.FOOTNOTE_START: {
+                    const footnoteResult = this.processFootnoteStart(
+                        lineText,
+                        textWithHeaders,
+                        footnoteText,
+                    );
+                    textWithHeaders = footnoteResult.paragraphText;
+                    footnoteText = footnoteResult.footnoteText;
+                    break;
+                }
+
+                case PAGE_METRICS_TYPES.PARAGRAPH_TEXT:
+                    textWithHeaders = this.processParagraphTextLine(lineText, textWithHeaders);
+                    break;
+
+                case PAGE_METRICS_TYPES.FOOTNOTE_TEXT:
+                    footnoteText = this.processFootnoteTextLine(lineText, footnoteText);
+                    break;
+
+                default:
+                    // Unknown type - treat as paragraph text
+                    textWithHeaders = this.processParagraphTextLine(lineText, textWithHeaders);
+                    break;
+            }
+        }
+
+        this.logger.info(
+            {
+                processedLines: allLines.length,
+                textLength: textWithHeaders.length,
+                footnoteLength: footnoteText.length,
+            },
+            'Line-based processing completed successfully',
+        );
+
+        return { textWithHeaders, footnoteText };
+    }
+
+    /**
      * Group x0 values with tolerance-based clustering algorithm
      */
     private groupX0ValuesWithTolerance(
@@ -794,70 +932,45 @@ export class GetTextAndStructureFromOcr {
             // Analyze page metrics based on bbox.x0 values and classify text types
             const pageMetrics = this.analyzePageMetrics(ocrData, bookConfig);
 
-            let processedParagraphs = 0;
-            const errors: string[] = [];
+            // Phase 1: Flatten all lines from all paragraphs into a single array
+            const allLines = this.flattenParagraphLines(ocrData);
 
-            // Process each paragraph
-            if (ocrData.paragraphs && ocrData.paragraphs.length > 0) {
-                for (const paragraph of ocrData.paragraphs) {
-                    try {
-                        processedParagraphs++;
-
-                        // Skip empty paragraphs
-                        if (
-                            !paragraph.text ||
-                            paragraph.text.trim().length === 0 ||
-                            paragraph.lines?.length === 0 ||
-                            paragraph.lines?.length === undefined
-                        ) {
-                            continue;
-                        }
-
-                        // Process paragraph text based on page metrics
-                        const isFirstParagraph = processedParagraphs === 1;
-
-                        const processedText = this.processParagraphText(
-                            paragraph,
-                            bookConfig,
-                            pageMetrics,
-                            isFirstParagraph,
-                        );
-
-                        // Apply text removal patterns to paragraph text
-                        const cleanedParagraphText = this.applyTextRemovalPatterns(
-                            processedText.paragraphText,
-                            bookConfig.textRemovalPatterns,
-                        );
-
-                        // Add processed paragraph text to results if not empty after cleaning
-                        if (cleanedParagraphText.trim().length > 0) {
-                            scanResultsThisPage.textWithHeaders += cleanedParagraphText;
-                        }
-
-                        // Add footnote text to scan results
-                        if (processedText.footnoteText.trim().length > 0) {
-                            scanResultsThisPage.footnoteText += processedText.footnoteText;
-                        }
-                    } catch (paragraphError) {
-                        const errorMsg = `Failed to process paragraph: ${
-                            paragraphError instanceof Error
-                                ? paragraphError.message
-                                : String(paragraphError)
-                        }`;
-                        errors.push(errorMsg);
-                        this.logger.warn(
-                            {
-                                paragraphText: paragraph.text?.substring(0, 100),
-                                error: errorMsg,
-                            },
-                            'Error processing individual paragraph',
-                        );
-                    }
-                }
+            if (allLines.length === 0) {
+                this.logger.warn('No lines available for processing');
+                return {
+                    success: true,
+                    textWithHeaders: '',
+                    footnoteText: '',
+                    level1HeadingsIndex: scanResultsThisPage.level1HeadingsIndex,
+                    level2HeadingsIndex: scanResultsThisPage.level2HeadingsIndex,
+                    level3HeadingsIndex: scanResultsThisPage.level3HeadingsIndex,
+                };
             }
 
+            // Phase 2: Process all lines sequentially using line-based approach
+            const processedText = this.processLinesOfPage(allLines, bookConfig, pageMetrics);
+
+            // Apply text removal patterns to the entire processed text
+            const cleanedTextWithHeaders = this.applyTextRemovalPatterns(
+                processedText.textWithHeaders,
+                bookConfig.textRemovalPatterns,
+            );
+
+            // Update scan results with processed text
+            scanResultsThisPage.textWithHeaders = cleanedTextWithHeaders;
+            scanResultsThisPage.footnoteText = processedText.footnoteText;
+
+            this.logger.info(
+                {
+                    totalLines: allLines.length,
+                    textLength: cleanedTextWithHeaders.length,
+                    footnoteLength: processedText.footnoteText.length,
+                },
+                'Line-based OCR processing completed successfully',
+            );
+
             return {
-                success: errors.length === 0,
+                success: true,
                 textWithHeaders: scanResultsThisPage.textWithHeaders,
                 footnoteText: scanResultsThisPage.footnoteText,
                 level1HeadingsIndex: scanResultsThisPage.level1HeadingsIndex,
@@ -1005,6 +1118,14 @@ export class GetTextAndStructureFromOcr {
                     continue;
                 }
 
+                this.logger.info(
+                    {
+                        lineText: line.text,
+                        pattern: format.pattern,
+                    },
+                    'Header-Fragment found! (0a)',
+                );
+
                 let patternMatch = this.matchHeaderPattern(line.text, format.pattern);
 
                 if (!patternMatch.matched) {
@@ -1020,7 +1141,7 @@ export class GetTextAndStructureFromOcr {
                             replacedText,
                             patternMatch,
                         },
-                        'Header-Fragment found (0)',
+                        'Header-Fragment found (0b)',
                     );
 
                     if (!replacedText || !patternMatch.matched) {
@@ -1151,6 +1272,17 @@ export class GetTextAndStructureFromOcr {
             return null;
         }
 
+        this.logger.debug(
+            {
+                originalText: text,
+                textLength: text.length,
+                hasNewlines: text.includes('\n'),
+                hasSemicolon: text.includes(';'),
+                ocrMisreadingsCount: this.bookManifest.ocrMisreadings.length,
+            },
+            'getReplacementText called',
+        );
+
         for (const misreading of this.bookManifest.ocrMisreadings) {
             try {
                 let regexPattern = misreading.ocr;
@@ -1170,11 +1302,34 @@ export class GetTextAndStructureFromOcr {
                 // Create regex from the pattern
                 const regex = new RegExp(regexPattern, flags);
 
+                this.logger.debug(
+                    {
+                        ocrPattern: misreading.ocr,
+                        regexPattern,
+                        flags,
+                        correctText: misreading.correct,
+                        textToTest: text.trim(),
+                    },
+                    'Testing OCR misreading pattern',
+                );
+
                 // Test if the pattern matches the text
                 if (regex.test(text.trim())) {
                     // Reset regex state for replacement
                     regex.lastIndex = 0;
-                    return text.replace(regex, misreading.correct);
+                    const replacedText = text.replace(regex, misreading.correct);
+
+                    this.logger.info(
+                        {
+                            originalText: text,
+                            replacedText,
+                            pattern: misreading.ocr,
+                            correct: misreading.correct,
+                        },
+                        'OCR misreading replacement applied',
+                    );
+
+                    return replacedText;
                 }
             } catch (error) {
                 this.logger.warn(
@@ -1190,6 +1345,14 @@ export class GetTextAndStructureFromOcr {
                 continue;
             }
         }
+
+        this.logger.debug(
+            {
+                text,
+                noReplacementFound: true,
+            },
+            'No OCR misreading replacement found',
+        );
 
         return null;
     }
