@@ -5,7 +5,7 @@
 // - Applying dictionary-based and contextual corrections
 // - Validating text quality improvements
 
-export { OCRQualityEnhancementExecutionSummary } from "./ExecutionSummary";
+export { OCRQualityEnhancementExecutionSummary } from './ExecutionSummary';
 
 // Type exports
-export type { OCRQualityEnhancementSummary } from "./ExecutionSummary";
+export type { OCRQualityEnhancementSummary } from './ExecutionSummary';

@@ -5,7 +5,7 @@
 // - Collecting all footnotes and placing them as endnotes at the end
 // - Maintaining reference integrity and formatting
 
-export { FootnoteConversionExecutionSummary } from "./ExecutionSummary";
+export { FootnoteConversionExecutionSummary } from './ExecutionSummary';
 
 // Type exports
-export type { FootnoteConversionSummary } from "./ExecutionSummary";
+export type { FootnoteConversionSummary } from './ExecutionSummary';

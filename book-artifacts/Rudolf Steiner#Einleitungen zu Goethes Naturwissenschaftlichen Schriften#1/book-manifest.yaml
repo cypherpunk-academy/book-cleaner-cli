@@ -8,6 +8,11 @@ original:
   book-type: rudolf-steiner-ga-werk
 text-before-first-chapter: müsse, um ihm erkennend beizukommen.
 text-after-last-chapter: Daten zur Herausgabe von Goethes
+ocr-misreadings:
+  - ocr: 'HI'
+    correct: 'III'
+  - ocr: '1X'
+    correct: 'IX'
 structure:
   - type: chapter
     title: null

@@ -87,10 +87,15 @@ async function testWidthCondition() {
         console.log('=====================================');
 
         for (const [type, metrics] of Object.entries(pageMetrics)) {
-            const typedMetrics = metrics as { min: number; max: number; averageWidth?: number };
+            const typedMetrics = metrics as {
+                minX0: number;
+                maxX0: number;
+                averageWidth?: number;
+                maxWidth?: number;
+            };
             console.log(`${type}:`);
-            console.log(`  min: ${typedMetrics.min}`);
-            console.log(`  max: ${typedMetrics.max}`);
+            console.log(`  minX0: ${typedMetrics.minX0}`);
+            console.log(`  maxX0: ${typedMetrics.maxX0}`);
             console.log(`  averageWidth: ${typedMetrics.averageWidth?.toFixed(2) || 'N/A'}`);
             console.log('');
         }
