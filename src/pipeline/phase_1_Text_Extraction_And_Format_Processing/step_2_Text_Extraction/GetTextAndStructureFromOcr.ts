@@ -15,6 +15,7 @@ import type { LoggerService } from '@/services/LoggerService';
 import type { BookManifestInfo, PageMetricsConfig, PageMetricsData } from '@/types';
 import { AppError } from '@/utils/AppError';
 import type pino from 'pino';
+import { DetectFootnotesFromOcr } from './detectFootnotesFromOcr';
 
 /**
  * OCR Paragraph structure from Tesseract
@@ -54,6 +55,14 @@ interface OCRData {
     paragraphs?: OCRParagraph[];
     lines?: OCRLine[];
     words?: OCRWord[];
+    symbols?: Array<{
+        text: string;
+        confidence: number;
+        bbox: { x0: number; y0: number; x1: number; y1: number };
+        is_superscript: boolean;
+        is_subscript: boolean;
+        is_dropcap: boolean;
+    }>;
 }
 
 /**
@@ -132,6 +141,7 @@ export class GetTextAndStructureFromOcr {
     private readonly configService: ConfigService;
     private readonly bookManifest?: BookManifestInfo;
     private bookTypeConfigCache: Map<string, BookTypeConfig> = new Map();
+    private readonly footnoteDetector: DetectFootnotesFromOcr;
 
     constructor(
         logger: LoggerService,
@@ -144,6 +154,7 @@ export class GetTextAndStructureFromOcr {
         );
         this.configService = configService;
         this.bookManifest = bookManifest;
+        this.footnoteDetector = new DetectFootnotesFromOcr(logger);
     }
 
     /**
@@ -254,6 +265,9 @@ export class GetTextAndStructureFromOcr {
             return { textWithHeaders, footnoteText };
         }
 
+        // NEW: Detect footnotes at the beginning using original OCR data with symbols
+        const footnoteCandidates = this.footnoteDetector.detectFootnotes(allLines);
+
         for (let lineIndex = 0; lineIndex < allLines.length; lineIndex++) {
             const line = allLines[lineIndex];
             if (!line || !line.bbox) {
@@ -283,8 +297,13 @@ export class GetTextAndStructureFromOcr {
                 continue;
             }
 
-            // Determine line type based on page metrics
-            const lineType = this.determineLineType(lineX0, pageMetrics);
+            // Determine line type based on page metrics and footnote detection
+            const lineType = this.determineLineType(
+                lineX0,
+                pageMetrics,
+                lineIndex,
+                footnoteCandidates,
+            );
 
             // Handle first line of page
             if (lineIndex === 0) {
@@ -307,6 +326,8 @@ export class GetTextAndStructureFromOcr {
                         lineText,
                         textWithHeaders,
                         footnoteText,
+                        footnoteCandidates,
+                        lineIndex,
                     );
                     textWithHeaders = footnoteResult.textWithHeaders;
                     footnoteText = footnoteResult.footnoteText;
@@ -662,12 +683,28 @@ export class GetTextAndStructureFromOcr {
     }
 
     /**
-     * Determine line type based on x0 position and page metrics
+     * Determine line type based on x0 position, page metrics, and footnote detection
      */
     private determineLineType(
         lineX0: number,
         pageMetrics: Record<string, PageMetricsData>,
+        lineIndex: number,
+        footnoteCandidates: Array<{
+            type: string;
+            lineIndex?: number;
+            bbox: { x0: number; y0: number; x1: number; y1: number };
+        }>,
     ): string {
+        // Check if this line is a footnote start based on footnote detection
+        const isFootnoteStart = footnoteCandidates.some(
+            (candidate) => candidate.type === 'footnote' && candidate.lineIndex === lineIndex,
+        );
+
+        if (isFootnoteStart) {
+            return PAGE_METRICS_TYPES.FOOTNOTE_START;
+        }
+
+        // Fall back to page metrics-based detection
         for (const [type, range] of Object.entries(pageMetrics)) {
             if (lineX0 >= range.minX0 && lineX0 <= range.maxX0) {
                 return type;
@@ -678,11 +715,18 @@ export class GetTextAndStructureFromOcr {
 
     /**
      * Process footnote start line - find and replace reference in text
+     * Enhanced with footnote detection results
      */
     private processFootnoteStart(
         lineText: string,
         textWithHeaders: string,
         footnoteText: string,
+        footnoteCandidates: Array<{
+            type: string;
+            referenceNumber?: string;
+            bbox: { x0: number; y0: number; x1: number; y1: number };
+        }>,
+        currentLineIndex: number,
     ): { textWithHeaders: string; footnoteText: string } {
         // Extract footnote number or asterisks from line start
         const correctedLineText = this.getReplacementText(lineText) ?? lineText;
@@ -699,11 +743,12 @@ export class GetTextAndStructureFromOcr {
         const footnoteContent = footnoteMatch[2] || '';
         const footnoteMarker = FOOTNOTE_FORMATS.MARKDOWN.replace('%d', footnoteRef);
 
-        // Search for footnote reference in paragraph text from back to front
-        const updatedTextWithHeaders = this.replaceFootnoteReference(
+        // Find the exact superscript reference position using enhanced detection
+        const updatedTextWithHeaders = this.replaceFootnoteReferenceWithDetection(
             textWithHeaders,
             footnoteRef,
             footnoteMarker,
+            footnoteCandidates,
         );
 
         // Add footnote content to footnote text
@@ -766,6 +811,53 @@ export class GetTextAndStructureFromOcr {
         }
 
         return text;
+    }
+
+    /**
+     * Replace footnote reference using footnote detection results
+     */
+    private replaceFootnoteReferenceWithDetection(
+        text: string,
+        footnoteRef: string,
+        footnoteMarker: string,
+        footnoteCandidates: Array<{
+            type: string;
+            referenceNumber?: string;
+            bbox: { x0: number; y0: number; x1: number; y1: number };
+        }>,
+    ): string {
+        // Find the most recent reference for this footnote number
+        const matchingReferences = footnoteCandidates
+            .filter(
+                (candidate) =>
+                    candidate.type === 'footnote-reference' &&
+                    candidate.referenceNumber === footnoteRef,
+            )
+            .sort((a, b) => b.bbox.y0 - a.bbox.y0); // Most recent first (lower y0 = higher on page)
+
+        if (matchingReferences.length === 0) {
+            // Fallback to original method if no superscript reference found
+            return this.replaceFootnoteReference(text, footnoteRef, footnoteMarker);
+        }
+
+        const mostRecentReference = matchingReferences[0];
+        if (!mostRecentReference) {
+            return this.replaceFootnoteReference(text, footnoteRef, footnoteMarker);
+        }
+
+        this.logger.info(
+            {
+                footnoteRef,
+                footnoteMarker,
+                referenceBbox: mostRecentReference.bbox,
+                totalReferences: matchingReferences.length,
+            },
+            'Replacing footnote reference using detection results',
+        );
+
+        // For now, fall back to the original method but with better logging
+        // TODO: Implement precise position-based replacement using bbox information
+        return this.replaceFootnoteReference(text, footnoteRef, footnoteMarker);
     }
 
     /**
@@ -848,7 +940,12 @@ export class GetTextAndStructureFromOcr {
             }
 
             // Phase 2: Process all lines sequentially using line-based approach
-            const processedText = this.processLinesOfPage(allLines, bookConfig, pageMetrics);
+            const processedText = this.processLinesOfPage(
+                allLines,
+                bookConfig,
+                pageMetrics,
+                ocrData,
+            );
 
             // Update scan results with processed text
             scanResultsThisPage.textWithHeaders = processedText.textWithHeaders;

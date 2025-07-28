@@ -339,6 +339,9 @@ export const CLI_OPTIONS = {
     LOG_LEVEL: 'log-level',
     CONFIG: 'config',
     SKIP_START_MARKER: 'skip-start-marker',
+    ERROR_LOG_FILE: 'error-log-file',
+    ERROR_OUTPUT_FORMAT: 'error-output-format',
+    LOG_ERRORS_TO_STDERR: 'log-errors-to-stderr',
 } as const;
 
 export const CLI_ALIASES = {
@@ -349,6 +352,9 @@ export const CLI_ALIASES = {
     [CLI_OPTIONS.LOG_LEVEL]: 'l',
     [CLI_OPTIONS.CONFIG]: 'c',
     [CLI_OPTIONS.SKIP_START_MARKER]: 's',
+    [CLI_OPTIONS.ERROR_LOG_FILE]: 'e',
+    [CLI_OPTIONS.ERROR_OUTPUT_FORMAT]: 'f',
+    [CLI_OPTIONS.LOG_ERRORS_TO_STDERR]: 'E',
 } as const;
 
 // Valid book types
@@ -359,6 +365,15 @@ export const BOOK_TYPES = {
 } as const;
 
 export const VALID_BOOK_TYPES = Object.values(BOOK_TYPES) as readonly string[];
+
+// Error output formats
+export const ERROR_OUTPUT_FORMATS = {
+    JSON: 'json',
+    TEXT: 'text',
+    COMPACT: 'compact',
+} as const;
+
+export const VALID_ERROR_OUTPUT_FORMATS = Object.values(ERROR_OUTPUT_FORMATS) as readonly string[];
 
 // ==================== File System Constants ====================
 
@@ -863,4 +878,83 @@ export const OCR_CHARACTERS = {
 
 export const TEXT_LAYOUT_TOLERANCES = {
     CENTERED_LINE_WIDTH_FACTOR: 0.99, // Factor for determining if a line is centered (99% of paragraph text width)
+} as const;
+
+// ==================== Superscript Detection Constants ====================
+
+export const SUPERSCRIPT_DETECTION = {
+    // Size thresholds for custom detection
+    HEIGHT_RATIO_THRESHOLD: 0.7, // Symbol height < 70% of line average
+    MIN_HEIGHT_DIFFERENCE: 0.2, // At least 20% height reduction
+    OUTLIER_EXCLUSION_FACTOR: 1.5, // Exclude symbols > 150% of median height
+
+    // Position thresholds
+    VERTICAL_OFFSET_THRESHOLD: 5, // At least 3px higher than baseline
+    LINE_GROUPING_TOLERANCE: 10, // 10px tolerance for same line grouping
+
+    // Confidence scoring
+    MIN_DETECTION_CONFIDENCE: 0.6,
+    HIGH_CONFIDENCE_THRESHOLD: 0.8,
+
+    // Footnote reference patterns
+    FOOTNOTE_REFERENCE_PATTERNS: [
+        /^\d+$/, // Numeric references (1, 2, 3, etc.)
+        /^[a-z]$/i, // Alphabetic references (a, b, c, etc.)
+        /^[ivxlcdm]+$/i, // Roman numerals
+    ],
+
+    // Common superscript characters
+    SUPERSCRIPT_CHARS: [
+        '¹',
+        '²',
+        '³',
+        '⁴',
+        '⁵',
+        '⁶',
+        '⁷',
+        '⁸',
+        '⁹',
+        '⁰',
+        'ᵃ',
+        'ᵇ',
+        'ᶜ',
+        'ᵈ',
+        'ᵉ',
+        'ᶠ',
+        'ᵍ',
+        'ʰ',
+        'ⁱ',
+        'ʲ',
+        'ᵏ',
+        'ˡ',
+        'ᵐ',
+        'ⁿ',
+        'ᵒ',
+        'ᵖ',
+        'ʳ',
+        'ˢ',
+        'ᵗ',
+        'ᵘ',
+        'ᵛ',
+        'ʷ',
+        'ˣ',
+        'ʸ',
+        'ᶻ',
+    ],
+} as const;
+
+export const FOOTNOTE_DETECTION = {
+    // Footnote start patterns
+    START_PATTERNS: [
+        /^(\d+)\s*(.+)$/, // "1 Some footnote text"
+        /^([a-z])\s*(.+)$/i, // "a Some footnote text"
+        /^([ivxlcdm]+)\s*(.+)$/i, // "i Some footnote text"
+        /^(\*+)\s*(.+)$/, // "*** Some footnote text"
+    ],
+
+    // Minimum confidence for footnote detection
+    MIN_CONFIDENCE: 0.7,
+
+    // Position validation
+    MAX_X0_OFFSET: 50, // Maximum x0 difference for valid footnote start
 } as const;
