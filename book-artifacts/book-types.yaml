@@ -12,17 +12,21 @@ rudolf-steiner-ga-werk:
       formats:
         - pattern: "{title-in-capital-letters}"
           alignment: "center"
+          multipleLines: true
           example: "II DIE ENTSTEHUNG DER METAMORPHOSENLEHRE"
         - pattern: "{roman-number}"
           alignment: "center"
+          multipleLines: false
           example: "II"
     level2:
       formats:
         - pattern: "{title-with-decimal-number}"
           alignment: "center"
           example: "5. Ethische und historische Wissenschaften"
+          multipleLines: false
         - pattern: "{decimal-number}."
           alignment: "center"
+          multipleLines: false
           example: "5."
 
   metrics: 

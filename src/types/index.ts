@@ -62,12 +62,7 @@ export interface PipelineState {
     results: PhaseResult[];
 }
 
-export type PipelineStatus =
-    | 'pending'
-    | 'running'
-    | 'completed'
-    | 'failed'
-    | 'cancelled';
+export type PipelineStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface PhaseResult {
     phase: number;
@@ -245,6 +240,7 @@ export type HeaderFormat = {
     pattern: string;
     alignment?: string;
     example?: string;
+    multipleLines?: boolean;
 };
 
 /**
@@ -322,10 +318,7 @@ export interface EPUBData {
         href: string;
     }>;
     on: (event: string, callback: (error?: Error) => void) => void;
-    getChapter: (
-        chapterId: string,
-        callback: (error: Error | null, text?: string) => void,
-    ) => void;
+    getChapter: (chapterId: string, callback: (error: Error | null, text?: string) => void) => void;
     parse: () => void;
 }
 

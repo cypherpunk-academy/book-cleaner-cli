@@ -220,7 +220,11 @@ export const QUALITY_SEVERITIES = {
 
 // ==================== Default Text Boundaries ====================
 
-export const DEFAULT_PARAGRAPH_MARKERS = ['\\n\\n', '\\r\\n\\r\\n', '\\n\\r\\n\\r'] as const;
+export const DEFAULT_PARAGRAPH_MARKERS = [
+    '\\n\\n',
+    '\\r\\n\\r\\n',
+    '\\n\\r\\n\\r',
+] as const;
 
 export const DEFAULT_SECTION_MARKERS = ['***', '---', '===', '~~~'] as const;
 
@@ -233,7 +237,12 @@ export const DEFAULT_CHAPTER_MARKERS = [
     'Section',
 ] as const;
 
-export const DEFAULT_FOOTNOTE_MARKERS = ['\\d+\\)', '\\d+\\.', '\\*\\d+', '\\[\\d+\\]'] as const;
+export const DEFAULT_FOOTNOTE_MARKERS = [
+    '\\d+\\)',
+    '\\d+\\.',
+    '\\*\\d+',
+    '\\[\\d+\\]',
+] as const;
 
 // ==================== Footnote Format Constants ====================
 
@@ -373,7 +382,9 @@ export const ERROR_OUTPUT_FORMATS = {
     COMPACT: 'compact',
 } as const;
 
-export const VALID_ERROR_OUTPUT_FORMATS = Object.values(ERROR_OUTPUT_FORMATS) as readonly string[];
+export const VALID_ERROR_OUTPUT_FORMATS = Object.values(
+    ERROR_OUTPUT_FORMATS,
+) as readonly string[];
 
 // ==================== File System Constants ====================
 
@@ -466,7 +477,13 @@ export const STRUCTURE_ANALYSIS_PATTERNS = {
         /^(\d+)\.(\d+)\s+(.+)$/i,
         /^[A-Z][a-z]*\s+[A-Z][a-z]*$/,
     ],
-    FOOTNOTE_PATTERNS: [/\[(\d+)\]/g, /\((\d+)\)/g, /(\d+)\)/g, /\*(\d+)/g, /¹|²|³|⁴|⁵|⁶|⁷|⁸|⁹|⁰/g],
+    FOOTNOTE_PATTERNS: [
+        /\[(\d+)\]/g,
+        /\((\d+)\)/g,
+        /(\d+)\)/g,
+        /\*(\d+)/g,
+        /¹|²|³|⁴|⁵|⁶|⁷|⁸|⁹|⁰/g,
+    ],
     FOOTNOTE_MARKERS: [
         /^(\d+)\s*[\)\.]?\s*(.+)$/,
         /^\[(\d+)\]\s*(.+)$/,
@@ -477,7 +494,13 @@ export const STRUCTURE_ANALYSIS_PATTERNS = {
         /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*[:]\s*(.+)$/,
         /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*\((.+?)\)\s*[:]\s*(.+)$/,
     ],
-    PARAGRAPH_INDICATORS: [/^\s*\d+\.\s+/, /^\s*[a-z]\)\s+/, /^\s*\*\s+/, /^\s*-\s+/, /^\s*•\s+/],
+    PARAGRAPH_INDICATORS: [
+        /^\s*\d+\.\s+/,
+        /^\s*[a-z]\)\s+/,
+        /^\s*\*\s+/,
+        /^\s*-\s+/,
+        /^\s*•\s+/,
+    ],
 } as const;
 
 export const STRUCTURE_ANALYSIS_TYPES = {
@@ -855,6 +878,25 @@ export const GERMAN_ORDINALS = {
     neunundvierzigster: 49,
     fünfzigster: 50,
 } as const;
+
+/**
+ * German month names for date detection and exclusion patterns.
+ * Used for recognizing and excluding date patterns in header detection.
+ */
+export const GERMAN_MONTHS = [
+    'Januar',
+    'Februar',
+    'März',
+    'April',
+    'Mai',
+    'Juni',
+    'Juli',
+    'August',
+    'September',
+    'Oktober',
+    'November',
+    'Dezember',
+] as const;
 
 export const OCR_MISREADINGS = {
     DEFAULT_TOLERANCE: 0.8, // Default confidence threshold for misreading detection

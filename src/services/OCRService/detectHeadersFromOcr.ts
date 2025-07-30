@@ -1,6 +1,7 @@
 import {
     CENTERING_TOLERANCE,
     ERROR_CODES,
+    GERMAN_MONTHS,
     GERMAN_ORDINALS,
     LOG_COMPONENTS,
     OCR_PAGE_WIDTH,
@@ -11,6 +12,7 @@ import {
 } from '@/constants';
 import type {
     BookTypeConfig,
+    HeaderFormat,
     HeaderResult,
     HeaderTypeDefinition,
     OCRLine,
@@ -49,8 +51,9 @@ function getPlaceholderRegex(placeholderType: string): string {
         case 'title-with-decimal-number':
             // Match title text: must start with capital letter, be at least 3 characters long
             // Non-greedy, stops at common punctuation or end patterns
+            // Exclude German month names after the decimal number
 
-            return '(\\d+\\.\\s+[A-ZÄÖÜ«»-])';
+            return `(\\d+\\.\\s+(?!(?:${GERMAN_MONTHS.join('|')})\\b)[A-ZÄÖÜ«»-][^.]{2,}?)`;
 
         case 'german-ordinal':
             // Match German ordinals from constants
@@ -62,7 +65,7 @@ function getPlaceholderRegex(placeholderType: string): string {
 
         case 'long-date':
             // Match German date format: "12. September 1921"
-            return '(\\d{1,2}\\.\\s+(?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\\s+\\d{4})';
+            return `(\\d{1,2}\\.\\s+(?:${GERMAN_MONTHS.join('|')})\\s+\\d{4})`;
 
         case 'no-paragraph-end-marker': {
             // Match any characters for a title (non-greedy, stops before punctuation)
@@ -103,6 +106,7 @@ function buildPlaceholderRegex(pattern: string): string {
         'title-in-capital-letters',
         'decimal-number',
         'title',
+        'title-with-decimal-number',
         'german-ordinal',
         'place',
         'long-date',
@@ -314,6 +318,7 @@ export function detectAndProcessHeaders(
 
     let headerFound = false;
     let foundConfig: HeaderTypeDefinition | null = null;
+    let matchedFormat: HeaderFormat | null = null;
     const cleanedLineText = removeOcrGarbage(line.text);
 
     for (const { level, config } of headerLevels) {
@@ -322,7 +327,7 @@ export function detectAndProcessHeaders(
         }
 
         for (const format of config.formats) {
-            let patternMatch = matchHeaderPattern(cleanedLineText, format.pattern, logger);
+            const patternMatch = matchHeaderPattern(cleanedLineText, format.pattern, logger);
 
             if (!patternMatch.matched) {
                 logger?.info(
@@ -346,6 +351,7 @@ export function detectAndProcessHeaders(
             headerText = patternMatch.fullMatch.trim();
             foundLevel = level;
             foundConfig = config;
+            matchedFormat = format;
             headerFound = true;
 
             logger?.info(
@@ -353,6 +359,7 @@ export function detectAndProcessHeaders(
                     headerText,
                     level,
                     lineIndex,
+                    multipleLines: format.multipleLines,
                 },
                 'Header-Fragment found (1)',
             );
@@ -365,65 +372,71 @@ export function detectAndProcessHeaders(
         }
     }
 
-    if (!foundConfig) {
+    if (!foundConfig || !matchedFormat) {
         return null;
     }
 
-    for (newLineIndex = lineIndex + 1; newLineIndex < lines.length; newLineIndex++) {
-        const line = lines[newLineIndex];
+    // Only process multiple lines if the matched format has multipleLines enabled
+    if (matchedFormat.multipleLines === true) {
+        for (newLineIndex = lineIndex + 1; newLineIndex < lines.length; newLineIndex++) {
+            const line = lines[newLineIndex];
 
-        if (!line || !line.text) {
-            break;
-        }
-
-        const isCentered = isLineCentered(line, pageMetrics);
-
-        logger?.info(
-            {
-                lineText: line.text,
-                isCentered,
-            },
-            'Header-Fragment found! (2a)',
-        );
-
-        if (!isCentered) {
-            break;
-        }
-
-        const potentialHeaderText = `${headerText} ${line.text.trim()}`;
-
-        let patternMatch: PatternMatch | null = null;
-        for (const format of foundConfig.formats) {
-            patternMatch = matchHeaderPattern(potentialHeaderText, format.pattern, logger);
-
-            if (patternMatch.matched) {
+            if (!line || !line.text) {
                 break;
             }
-        }
 
-        logger?.info(
-            {
-                potentialHeaderText,
-                patternMatch,
-            },
-            'Header-Fragment found! (2b)',
-        );
-
-        if (patternMatch?.matched) {
-            headerText = potentialHeaderText;
+            const isCentered = isLineCentered(line, pageMetrics);
 
             logger?.info(
                 {
-                    headerText,
-                    foundLevel,
-                    newLineIndex,
+                    lineText: line.text,
                     isCentered,
                 },
-                'Header-Fragment found! (3)',
+                'Header-Fragment found! (2a)',
             );
-        } else {
-            break;
+
+            if (!isCentered) {
+                break;
+            }
+
+            const potentialHeaderText = `${headerText} ${line.text.trim()}`;
+
+            let patternMatch: PatternMatch | null = null;
+            for (const format of foundConfig.formats) {
+                patternMatch = matchHeaderPattern(potentialHeaderText, format.pattern, logger);
+
+                if (patternMatch.matched) {
+                    break;
+                }
+            }
+
+            logger?.info(
+                {
+                    potentialHeaderText,
+                    patternMatch,
+                },
+                'Header-Fragment found! (2b)',
+            );
+
+            if (patternMatch?.matched) {
+                headerText = potentialHeaderText;
+
+                logger?.info(
+                    {
+                        headerText,
+                        foundLevel,
+                        newLineIndex,
+                        isCentered,
+                    },
+                    'Header-Fragment found! (3)',
+                );
+            } else {
+                break;
+            }
         }
+    } else {
+        // If multiple-lines is disabled, advance to the next line
+        newLineIndex = lineIndex + 1;
     }
 
     const hashes = '#'.repeat(foundLevel ?? 0);
