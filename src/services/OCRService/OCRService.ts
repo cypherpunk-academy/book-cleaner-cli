@@ -1,14 +1,16 @@
-import type { Worker } from 'tesseract.js';
 import {
     LOG_COMPONENTS,
     OCR_PAGE_HEIGHT,
     OCR_PAGE_WIDTH,
-    OCR_CHARACTERS,
-} from '../../../constants';
-import type { ConfigService } from '../../../services/ConfigService';
-import type { LoggerService } from '../../../services/LoggerService';
-import type { BookManifestInfo, FileInfo } from '../../../types';
+    OCR_WHITELIST,
+} from '@/constants';
+import type { ConfigService } from '@/services/ConfigService';
+import type { LoggerService } from '@/services/LoggerService';
+import type { BookManifestInfo, FileInfo } from '@/types';
+import { fixGermanUmlautErrors } from '@/utils/TextUtils';
+import type { Worker } from 'tesseract.js';
 import { GetTextAndStructureFromOcr } from './GetTextAndStructureFromOcr';
+import { checkForBookTextStartMarker } from './checkForBookTextStartMarker';
 
 /**
  * OCR result interface with structured text recognition
@@ -55,141 +57,6 @@ export class OCRService {
     }
 
     /**
-     * Check if the given text contains the boundary start marker
-     * Uses the textBeforeFirstChapter from the book manifest
-     */
-    private checkForBoundaryStartMarker(text: string, bookManifest?: BookManifestInfo): boolean {
-        if (!bookManifest?.textBeforeFirstChapter) {
-            return false;
-        }
-
-        const normalizedText = this.normalizeTextForComparison(text);
-        const normalizedMarker = this.normalizeTextForComparison(
-            bookManifest.textBeforeFirstChapter,
-        );
-
-        const found = normalizedText.includes(normalizedMarker);
-
-        this.logger.info(LOG_COMPONENTS.PIPELINE_MANAGER, 'Boundary start marker check', {
-            originalMarker: bookManifest.textBeforeFirstChapter,
-            normalizedMarker,
-            normalizedText: normalizedText.slice(-200),
-            found,
-        });
-
-        return found;
-    }
-
-    /**
-     * Normalize text for comparison by removing extra whitespace, normalizing line endings,
-     * and standardizing German umlauts with Unicode normalization
-     */
-    private normalizeTextForComparison(text: string): string {
-        return (
-            text
-                // Unicode normalization (NFD -> NFC) to handle different umlaut representations
-                .normalize('NFC')
-                .replace(/\r\n/g, '\n')
-                .replace(/\r/g, '\n')
-                .replace(/\s+/g, ' ')
-                // Handle different umlaut representations (composed vs decomposed)
-                .replace(/a\u0308/g, 'ä') // a + combining diaeresis -> ä
-                .replace(/o\u0308/g, 'ö') // o + combining diaeresis -> ö
-                .replace(/u\u0308/g, 'ü') // u + combining diaeresis -> ü
-                .replace(/A\u0308/g, 'Ä') // A + combining diaeresis -> Ä
-                .replace(/O\u0308/g, 'Ö') // O + combining diaeresis -> Ö
-                .replace(/U\u0308/g, 'Ü') // U + combining diaeresis -> Ü
-                .replace(/s\u0323/g, 'ß') // s + combining dot below -> ß (less common)
-                .trim()
-        );
-    }
-
-    /**
-     * Post-process OCR text to fix common German umlaut recognition errors
-     * Only targets clear OCR errors, not valid German words
-     */
-    private fixGermanUmlautErrors(text: string): string {
-        // Conservative corrections for clear OCR misrecognitions only
-        const umlautCorrections: Array<[RegExp, string]> = [
-            // ö corrections - only clear OCR errors
-            [/\bEr[o0]ffn/gi, 'Eröffn'], // Eröffnen (Eroffnen is not a word)
-            [/\bk[o0]nnen\b/gi, 'können'], // können (konnen is not a word)
-            [/\bm[o0]glich/gi, 'möglich'], // möglich (moglich is not a word)
-            [/\bf[o0]rder/gi, 'förder'], // fördern (forder is not common)
-            [/\bg[o0]ttlich/gi, 'göttlich'], // göttlich (gottlich is not a word)
-
-            // ü corrections - target obvious OCR double-letter errors
-            [/\bHinzufligungen\b/gi, 'Hinzufügungen'], // Specific OCR error from example
-            [/\bVerfligungen\b/gi, 'Verfügungen'], // Similar pattern
-            [/\biiber\b/gi, 'über'], // über (iiber is clearly OCR error)
-            [/\bfiir\b/gi, 'für'], // für (fiir is clearly OCR error)
-            [/\bnatiirlich/gi, 'natürlich'], // natürlich (natiirlich is OCR error)
-            [/\bspriiren\b/gi, 'spüren'], // spüren (spriiren is OCR error)
-            [/\bmiissen\b/gi, 'müssen'], // müssen (miissen is OCR error)
-            [/\bwiirde\b/gi, 'würde'], // würde (wiirde is OCR error)
-            [/\bkiinstler/gi, 'künstler'], // künstlerisch (kiinstler is OCR error)
-            [/\bzuriick/gi, 'zurück'], // zurück (zuriick is OCR error)
-            [/\bRiickzug/gi, 'Rückzug'], // Rückzug (Riickzug is OCR error)
-            [/\bverfafit\b/gi, 'verfaßt'], // verfaßt (verfafit is a common OCR error for verfaßt)
-            [/\bverfaflen\b/gi, 'verfaßten'], // verfaßten (verfaflen is a common OCR error for verfaßten)
-            [/\bverfafler\b/gi, 'verfaßter'], // verfaßter (verfafler is a common OCR error for verfaßter)
-
-            // ä corrections - only clear non-words
-            [/\berklaren\b/gi, 'erklären'], // erklären (erklaren is not a word)
-            [/\bandern\b/gi, 'ändern'], // ändern (andern is not common as verb)
-            [/\bregelmaBig\b/gi, 'regelmäßig'], // regelmäßig (regelmaBig is OCR error)
-            [/\blanger\b(?=\s+(als|werden|machen))/gi, 'länger'], // länger only in comparative context
-
-            // ß corrections - target clear B/ss OCR errors
-            [/\bgroBe\b/gi, 'große'], // große (groBe with capital B is OCR error)
-            [/\bweiB\b/gi, 'weiß'], // weiß (weiB with capital B is OCR error)
-            [/\bmuBte\b/gi, 'mußte'], // musste (muBte with capital B is OCR error)
-            [/\bdaB\b/gi, 'daß'], // dass (daB with capital B is OCR error)
-            [/\bschlieBlich\b/gi, 'schließlich'], // schließlich (schlieBlich is OCR error)
-            [/\bgroBer\b/gi, 'größer'], // größer (groBer with capital B is OCR error)
-            [/\bgroBte\b/gi, 'größte'], // größte (groBte with capital B is OCR error)
-            [/\bheiBt\b/gi, 'heißt'], // heißt (heiBt with capital B is OCR error)
-
-            // Z/I OCR confusion corrections
-            [/\bZdee\b/gi, 'Idee'], // Idee (Zdee is OCR error for Z/I confusion)
-            [/\bSiche\b/gi, 'Siehe'], // Siehe (Siche is OCR error for Z/I confusion)
-
-            // Conservative generic patterns - only obvious OCR patterns
-            [/\b([a-zA-Z]+)iii([a-zA-Z]+)\b/g, '$1üi$2'], // Triple i likely OCR error
-            [/\b([a-zA-Z]+)iie([a-zA-Z]+)\b/g, '$1üe$2'], // ii+e likely OCR error
-            [/\b([a-zA-Z]+)iien\b/g, '$1üen'], // ii+en ending likely OCR error
-        ];
-
-        let correctedText = text;
-        let corrections = 0;
-
-        for (const [pattern, replacement] of umlautCorrections) {
-            correctedText = correctedText.replace(pattern, replacement);
-
-            // Count actual replacements (not just length change)
-            const matches = text.match(pattern);
-            if (matches) {
-                corrections += matches.length;
-            }
-        }
-
-        if (corrections > 0) {
-            this.logger.info(
-                LOG_COMPONENTS.PIPELINE_MANAGER,
-                `Applied ${corrections} German umlaut corrections`,
-                {
-                    corrections,
-                    beforeLength: text.length,
-                    afterLength: correctedText.length,
-                },
-            );
-            console.log(`🔤 Fixed ${corrections} German umlaut recognition errors`);
-        }
-
-        return correctedText;
-    }
-
-    /**
      * Perform structured OCR on the given file
      *
      * @param fileInfo - File information
@@ -232,38 +99,61 @@ export class OCRService {
             const language = options.language || this.defaultLanguage;
             const worker = await createWorker(language);
 
-            // Configure worker for better German text recognition
+            // Configure worker for better German text recognition with superscript support
             await worker.setParameters({
-                tessedit_char_whitelist: `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüßÄÖÜ0123456789.,;:!?()[]{}"-—${OCR_CHARACTERS.GUILLEMET_LEFT}${OCR_CHARACTERS.GUILLEMET_RIGHT} \n\r\t`,
+                tessedit_char_whitelist: OCR_WHITELIST,
                 preserve_interword_spaces: '1',
             });
 
             console.log('🇩🇪 OCR optimized for German text with umlaut recognition');
 
             try {
-                // Perform OCR with structured text recognition
-                const result = await this.processWithStructuredRecognition(
-                    worker,
-                    fileInfo,
-                    ocrLogger,
-                    bookType,
-                    bookManifest,
-                    options,
-                );
+                // Check file path
+                const filePath = fileInfo.path;
+                if (!filePath) {
+                    return {
+                        structuredText: '',
+                        pageCount: 0,
+                        errors: ['No file path provided'],
+                    };
+                }
 
-                ocrLogger.info(
-                    {
-                        filename: fileInfo.name,
-                    },
-                    'Structured OCR processing completed successfully',
-                );
+                // Handle PDF files by converting to images first
+                if (fileInfo.format === 'pdf') {
+                    const result = await this.processPDFWithOCR(
+                        filePath,
+                        worker,
+                        bookType,
+                        bookManifest,
+                        options,
+                    );
 
-                return result;
+                    ocrLogger.info(
+                        {
+                            filename: fileInfo.name,
+                        },
+                        'Structured OCR processing completed successfully',
+                    );
+
+                    return result;
+                }
+
+                // For non-PDF files, return simple fallback
+                // This code path is rarely used in our current workflow
+                return {
+                    structuredText: '',
+                    pageCount: 0,
+                    errors: [
+                        'Non-PDF files not fully supported in current implementation',
+                    ],
+                };
             } catch (workerError) {
                 // Handle worker-specific errors (like PDF reading issues)
                 throw new Error(
                     `OCR processing failed: ${
-                        workerError instanceof Error ? workerError.message : String(workerError)
+                        workerError instanceof Error
+                            ? workerError.message
+                            : String(workerError)
                     }`,
                 );
             } finally {
@@ -295,49 +185,6 @@ export class OCRService {
     }
 
     /**
-     * Process file with structured text recognition
-     * Simplified to focus on PDF processing which is our primary use case
-     */
-    private async processWithStructuredRecognition(
-        worker: Worker,
-        fileInfo: FileInfo,
-        _logger: unknown,
-        bookType: string,
-        bookManifest?: BookManifestInfo,
-        options?: OCROptions,
-    ): Promise<OCRResult> {
-        const filePath = fileInfo.path;
-        if (!filePath) {
-            return {
-                structuredText: '',
-                pageCount: 0,
-                errors: ['No file path provided'],
-            };
-        }
-
-        // Handle PDF files by converting to images first
-        if (fileInfo.format === 'pdf') {
-            const pdfResults = await this.processPDFWithOCR(
-                filePath,
-                worker,
-                bookType,
-                bookManifest,
-                options,
-            );
-
-            return pdfResults;
-        }
-
-        // For non-PDF files, return simple fallback
-        // This code path is rarely used in our current workflow
-        return {
-            structuredText: '',
-            pageCount: 0,
-            errors: ['Non-PDF files not fully supported in current implementation'],
-        };
-    }
-
-    /**
      * Process PDF by converting to images and running OCR
      */
     private async processPDFWithOCR(
@@ -347,7 +194,10 @@ export class OCRService {
         bookManifest?: BookManifestInfo,
         options?: OCROptions,
     ): Promise<OCRResult> {
-        const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.PIPELINE_MANAGER, 'pdf_ocr');
+        const ocrLogger = this.logger.getTaggedLogger(
+            LOG_COMPONENTS.PIPELINE_MANAGER,
+            'pdf_ocr',
+        );
 
         try {
             // Import pdf2pic dynamically
@@ -437,9 +287,10 @@ export class OCRService {
                                 '⏭️  Skipping start marker check (--skip-start-marker enabled)',
                             );
                         } else {
-                            const boundaryFound = this.checkForBoundaryStartMarker(
+                            const boundaryFound = checkForBookTextStartMarker(
                                 data.text,
                                 bookManifest,
+                                this.logger,
                             );
 
                             if (boundaryFound) {
@@ -449,10 +300,9 @@ export class OCRService {
                                     `📍 Found boundary start marker on page ${pageNumber} - skipping this page and starting content processing from next page`,
                                 );
                                 continue; // Skip this page entirely
-                            } else {
-                                // Boundary not found yet - continue searching
-                                continue;
                             }
+                            // Boundary not found yet - continue searching
+                            continue;
                         }
                     }
 
@@ -489,7 +339,7 @@ export class OCRService {
                             return obj;
                         }
 
-                        const paragraphsPurged = purgeWords(paragraphs);
+                        const _paragraphsPurged = purgeWords(paragraphs);
 
                         await fs.writeFile(
                             paragraphsJsonPath,
@@ -530,15 +380,22 @@ export class OCRService {
                     }
                 } catch (pageError) {
                     const errorMsg = `Failed to process page ${pageNumber}: ${
-                        pageError instanceof Error ? pageError.message : String(pageError)
+                        pageError instanceof Error
+                            ? pageError.message
+                            : String(pageError)
                     }`;
                     errors.push(errorMsg);
                     console.log(
                         `❌ Page ${pageNumber} failed: ${
-                            pageError instanceof Error ? pageError.message : String(pageError)
+                            pageError instanceof Error
+                                ? pageError.message
+                                : String(pageError)
                         }`,
                     );
-                    ocrLogger.warn({ pageNumber, error: errorMsg }, 'Page processing failed');
+                    ocrLogger.warn(
+                        { pageNumber, error: errorMsg },
+                        'Page processing failed',
+                    );
                 }
             }
 
@@ -564,15 +421,21 @@ export class OCRService {
             );
 
             if (errors.length > 0) {
-                console.log(`⚠️  ${errors.length} pages had errors - check logs for details`);
+                console.log(
+                    `⚠️  ${errors.length} pages had errors - check logs for details`,
+                );
             }
 
             // Apply German umlaut corrections to structured text
             console.log('🔤 Applying German umlaut corrections...');
-            const fullStructuredText = scanResults.textWithHeaders + scanResults.footnoteText;
-            const correctedStructuredText = this.fixGermanUmlautErrors(fullStructuredText);
+            const fullStructuredText =
+                scanResults.textWithHeaders + scanResults.footnoteText;
+            const { correctedText: correctedStructuredText } = fixGermanUmlautErrors(
+                fullStructuredText,
+                this.logger,
+            );
 
-            // Apply text removal patterns to clean text
+            // Apply text removal patterns to clean text (not for now because it seems to be dangerous)
             const cleanedStructuredText = await this.applyTextRemovalPatterns(
                 correctedStructuredText,
                 bookType,
@@ -646,7 +509,10 @@ export class OCRService {
         const firstCharOfSecond = secondText.charAt(0);
 
         // Check if last character is hyphen and first character is lowercase
-        if (lastCharOfFirst === '-' && firstCharOfSecond === firstCharOfSecond.toLowerCase()) {
+        if (
+            lastCharOfFirst === '-' &&
+            firstCharOfSecond === firstCharOfSecond.toLowerCase()
+        ) {
             // Remove hyphen and glue the texts together
             return trimmedFirstText.slice(0, -1) + secondText;
         }
@@ -657,7 +523,10 @@ export class OCRService {
     /**
      * Apply text removal patterns to clean text
      */
-    private async applyTextRemovalPatterns(text: string, bookType: string): Promise<string> {
+    private async applyTextRemovalPatterns(
+        text: string,
+        bookType: string,
+    ): Promise<string> {
         try {
             // Load book type configuration to get text removal patterns
             const bookTypesConfig = await this.configService.loadBookTypesConfig();
@@ -697,7 +566,8 @@ export class OCRService {
                         'Failed to apply text removal pattern',
                         {
                             pattern,
-                            error: error instanceof Error ? error.message : String(error),
+                            error:
+                                error instanceof Error ? error.message : String(error),
                         },
                     );
                 }

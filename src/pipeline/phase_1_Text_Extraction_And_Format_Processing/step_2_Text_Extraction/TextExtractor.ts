@@ -4,9 +4,9 @@ import { ARTIFACTS_STRUCTURE, ERROR_CODES, LOG_COMPONENTS } from '@/constants';
 import type { BookStructureService } from '@/services/BookStructureService';
 import type { ConfigService } from '@/services/ConfigService';
 import type { LoggerService } from '@/services/LoggerService';
+import { OCRService } from '@/services/OCRService';
 import type { FileInfo, FilenameMetadata } from '@/types';
 import { AppError } from '@/utils/AppError';
-import { OCRService } from './OCRService';
 
 /**
  * Text extraction options

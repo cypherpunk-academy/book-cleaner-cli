@@ -689,16 +689,18 @@ export class GetTextAndStructureFromOcr {
         lineX0: number,
         pageMetrics: Record<string, PageMetricsData>,
         lineIndex: number,
-        footnoteCandidates: Array<{
+        footnoteCandidates?: Array<{
             type: string;
             lineIndex?: number;
             bbox: { x0: number; y0: number; x1: number; y1: number };
         }>,
     ): string {
         // Check if this line is a footnote start based on footnote detection
-        const isFootnoteStart = footnoteCandidates.some(
-            (candidate) => candidate.type === 'footnote' && candidate.lineIndex === lineIndex,
-        );
+        const isFootnoteStart =
+            Array.isArray(footnoteCandidates) &&
+            footnoteCandidates.some(
+                (candidate) => candidate.type === 'footnote' && candidate.lineIndex === lineIndex,
+            );
 
         if (isFootnoteStart) {
             return PAGE_METRICS_TYPES.FOOTNOTE_START;
@@ -726,11 +728,9 @@ export class GetTextAndStructureFromOcr {
             referenceNumber?: string;
             bbox: { x0: number; y0: number; x1: number; y1: number };
         }>,
-        currentLineIndex: number,
     ): { textWithHeaders: string; footnoteText: string } {
         // Extract footnote number or asterisks from line start
-        const correctedLineText = this.getReplacementText(lineText) ?? lineText;
-        const footnoteMatch = correctedLineText.match(/^(\d+|[*]+)\s*(.+)$/);
+        const footnoteMatch = lineText.match(/^(\d+|[*]+)\s*(.+)$/);
         if (!footnoteMatch) {
             // If no match, treat as regular text
             return {
@@ -781,19 +781,17 @@ export class GetTextAndStructureFromOcr {
             pattern = new RegExp(`${footnoteRef}`, 'g');
         }
 
-        const correctedText = this.getReplacementText(text) ?? text;
-
         // Find all matches
         const matches: RegExpExecArray[] = [];
         let match: RegExpExecArray | null;
-        while ((match = pattern.exec(correctedText)) !== null) {
+        while ((match = pattern.exec(text)) !== null) {
             matches.push(match);
         }
 
         this.logger.info(
             {
                 matches,
-                correctedText,
+                text,
                 footnoteRef,
                 footnoteMarker,
             },
@@ -940,12 +938,7 @@ export class GetTextAndStructureFromOcr {
             }
 
             // Phase 2: Process all lines sequentially using line-based approach
-            const processedText = this.processLinesOfPage(
-                allLines,
-                bookConfig,
-                pageMetrics,
-                ocrData,
-            );
+            const processedText = await this.processLinesOfPage(allLines, bookConfig, pageMetrics);
 
             // Update scan results with processed text
             scanResultsThisPage.textWithHeaders = processedText.textWithHeaders;
@@ -1105,18 +1098,14 @@ export class GetTextAndStructureFromOcr {
 
             for (const format of config.formats) {
                 let patternMatch = this.matchHeaderPattern(line.text, format.pattern);
-                let replacedText: string | null = null;
 
                 if (!patternMatch.matched) {
-                    replacedText = this.getReplacementText(line.text);
-
-                    if (replacedText) {
-                        patternMatch = this.matchHeaderPattern(replacedText, format.pattern);
+                    if (line.text) {
+                        patternMatch = this.matchHeaderPattern(line.text, format.pattern);
 
                         this.logger.debug(
                             {
                                 lineText: line.text,
-                                replacedText,
                                 patternMatch,
                                 pattern: format.pattern,
                             },
@@ -1124,7 +1113,7 @@ export class GetTextAndStructureFromOcr {
                         );
                     }
 
-                    if (!replacedText || !patternMatch.matched) {
+                    if (!line.text || !patternMatch.matched) {
                         continue;
                     }
                 } else {
@@ -1138,7 +1127,7 @@ export class GetTextAndStructureFromOcr {
                 }
 
                 // Check if header is centered and has appropriate width
-                if (!this.isLineCentered(line, pageMetrics) && !replacedText) {
+                if (!this.isLineCentered(line, pageMetrics) && !line.text) {
                     continue;
                 }
 
@@ -1230,8 +1219,7 @@ export class GetTextAndStructureFromOcr {
         }
 
         const hashes = '#'.repeat(foundLevel ?? 0);
-        const correctedHeaderText = this.getReplacementText(headerText);
-        const headerTextWithNewlines = `\n\n${hashes} ${correctedHeaderText ?? headerText}\n\n`;
+        const headerTextWithNewlines = `\n\n${hashes} ${headerText}\n\n`;
 
         this.logger.debug(
             {
@@ -1252,74 +1240,6 @@ export class GetTextAndStructureFromOcr {
             newHeaderIndex: headerIndex,
             newLineIndex: newLineIndex - 1,
         };
-    }
-
-    /**
-     * Get replacement text from OCR misreadings
-     * Now handles regex patterns in misreading.ocr instead of simple strings
-     * Supports both delimited patterns (e.g., /pattern/) and raw patterns
-     */
-    private getReplacementText(text: string): string | null {
-        if (!this.bookManifest?.ocrMisreadings || this.bookManifest.ocrMisreadings.length === 0) {
-            return null;
-        }
-
-        const trimmedText = text.trim();
-
-        for (const misreading of this.bookManifest.ocrMisreadings) {
-            try {
-                let regexPattern = misreading.ocr;
-                let flags = 'g';
-
-                // Check if the pattern is delimited with forward slashes (e.g., /pattern/)
-                const delimitedMatch = regexPattern.match(/^\/(.*)\/([gimsuy]*)$/);
-
-                if (delimitedMatch) {
-                    regexPattern = delimitedMatch[1] || '';
-                    flags = delimitedMatch[2] || 'g';
-                    // Ensure 'g' flag is present for global replacement
-                    if (!flags.includes('g')) {
-                        flags += 'g';
-                    }
-                }
-
-                // Create regex from the pattern
-                const regex = new RegExp(regexPattern, flags);
-
-                // Test if the pattern matches anywhere in the text (partial match)
-                if (regex.test(trimmedText)) {
-                    // Reset regex state for replacement
-                    regex.lastIndex = 0;
-                    const replacedText = text.replace(regex, misreading.correct).trim();
-
-                    this.logger.info(
-                        {
-                            originalText: text,
-                            replacedText,
-                            pattern: misreading.ocr,
-                            correct: misreading.correct,
-                        },
-                        'OCR misreading replacement applied',
-                    );
-
-                    return replacedText;
-                }
-            } catch (error) {
-                this.logger.warn(
-                    {
-                        ocrPattern: misreading.ocr,
-                        correctText: misreading.correct,
-                        error: error instanceof Error ? error.message : String(error),
-                    },
-                    'Invalid regex pattern in OCR misreading',
-                );
-
-                // Continue with next misreading instead of throwing
-                continue;
-            }
-        }
-
-        return null;
     }
 
     /**

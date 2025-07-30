@@ -62,7 +62,12 @@ export interface PipelineState {
     results: PhaseResult[];
 }
 
-export type PipelineStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+export type PipelineStatus =
+    | 'pending'
+    | 'running'
+    | 'completed'
+    | 'failed'
+    | 'cancelled';
 
 export interface PhaseResult {
     phase: number;
@@ -184,18 +189,81 @@ export interface OCRParagraph {
     words: OCRWord[];
 }
 
-export interface OCRWord {
-    text: string;
-    confidence: number;
-    boundingBox: BoundingBox;
-}
-
 export interface BoundingBox {
     x: number;
     y: number;
     width: number;
     height: number;
 }
+
+// ==================== OCR Header Detection Types ====================
+
+/**
+ * OCR Line structure from Tesseract
+ */
+export type OCRLine = {
+    text: string;
+    confidence: number;
+    bbox: { x0: number; y0: number; x1: number; y1: number };
+    words?: OCRWord[];
+};
+
+/**
+ * OCR Word structure from Tesseract (for header detection)
+ */
+export type OCRWord = {
+    text: string;
+    confidence: number;
+    bbox: { x0: number; y0: number; x1: number; y1: number };
+};
+
+/**
+ * Book type configuration structure
+ */
+export type BookTypeConfig = {
+    description: string;
+    headerTypes?: {
+        level1?: HeaderTypeDefinition;
+        level2?: HeaderTypeDefinition;
+        level3?: HeaderTypeDefinition;
+    };
+    textRemovalPatterns: string[];
+    metrics?: PageMetricsConfig;
+};
+
+/**
+ * Header type definition
+ */
+export type HeaderTypeDefinition = {
+    formats: HeaderFormat[];
+};
+
+/**
+ * Header format
+ */
+export type HeaderFormat = {
+    pattern: string;
+    alignment?: string;
+    example?: string;
+};
+
+/**
+ * Pattern match result
+ */
+export type PatternMatch = {
+    matched: boolean;
+    extractedValues: Record<string, string>;
+    fullMatch: string;
+};
+
+/**
+ * Header detection result
+ */
+export type HeaderResult = {
+    headerText: string;
+    level: number;
+    newLineIndex: number;
+};
 
 // ==================== Page Metrics Types ====================
 
@@ -254,7 +322,10 @@ export interface EPUBData {
         href: string;
     }>;
     on: (event: string, callback: (error?: Error) => void) => void;
-    getChapter: (chapterId: string, callback: (error: Error | null, text?: string) => void) => void;
+    getChapter: (
+        chapterId: string,
+        callback: (error: Error | null, text?: string) => void,
+    ) => void;
     parse: () => void;
 }
 
@@ -270,14 +341,6 @@ export interface BookManifest {
     'text-before-first-chapter'?: string;
     'text-after-last-chapter'?: string;
     [key: string]: unknown;
-}
-
-/**
- * OCR misreading correction entry
- */
-export interface OCRMisreading {
-    ocr: string;
-    correct: string;
 }
 
 /**
@@ -301,9 +364,6 @@ export interface BookManifestInfo {
         pages?: number;
         'book-type'?: string;
     };
-
-    // OCR misreadings for correction
-    ocrMisreadings?: OCRMisreading[];
 
     // Book structure information
     structure?: BookStructureItem[];

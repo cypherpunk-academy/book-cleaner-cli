@@ -943,6 +943,8 @@ export const SUPERSCRIPT_DETECTION = {
     ],
 } as const;
 
+export const OCR_WHITELIST = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüßÄÖÜ0123456789.,;:!?()[]{}"-—${OCR_CHARACTERS.GUILLEMET_LEFT}${OCR_CHARACTERS.GUILLEMET_RIGHT}${SUPERSCRIPT_DETECTION.SUPERSCRIPT_CHARS.join('')} \n\r\t`;
+
 export const FOOTNOTE_DETECTION = {
     // Footnote start patterns
     START_PATTERNS: [

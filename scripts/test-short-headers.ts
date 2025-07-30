@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { GetTextAndStructureFromOcr } from '../src/pipeline/phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/GetTextAndStructureFromOcr';
+import { GetTextAndStructureFromOcr } from '../src/services/OCRService';
+import { matchHeaderPattern } from '../src/services/OCRService';
 import { LoggerService, createDefaultLoggerService } from '../src/services/LoggerService';
 import { ConfigService } from '../src/services/ConfigService';
 
@@ -23,8 +24,7 @@ async function testShortHeaders() {
             throw new Error('Failed to load book type config');
         }
 
-        // Use reflection to access the private method for testing
-        const matchHeaderPattern = (textProcessor as any).matchHeaderPattern.bind(textProcessor);
+        // Use the imported function directly
 
         console.log('🔍 Testing short uppercase headers...\n');
 
@@ -42,7 +42,7 @@ async function testShortHeaders() {
 
             let matched = false;
             for (const pattern of level1Patterns) {
-                const result = matchHeaderPattern(testText, pattern);
+                const result = matchHeaderPattern(testText, pattern, logger.getOCRLogger('test'));
                 if (result.matched) {
                     console.log(`  ✅ MATCH with pattern: "${pattern}"`);
                     console.log(`     Extracted values:`);

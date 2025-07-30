@@ -10,7 +10,7 @@ rudolf-steiner-ga-werk:
   header-types:
     level1:
       formats:
-        - pattern: "{roman-number} {title-in-capital-letters}"
+        - pattern: "{title-in-capital-letters}"
           alignment: "center"
           example: "II DIE ENTSTEHUNG DER METAMORPHOSENLEHRE"
         - pattern: "{roman-number}"
@@ -18,9 +18,13 @@ rudolf-steiner-ga-werk:
           example: "II"
     level2:
       formats:
-        - pattern: "{decimal-number}. {title}"
+        - pattern: "{title-with-decimal-number}"
           alignment: "center"
           example: "5. Ethische und historische Wissenschaften"
+        - pattern: "{decimal-number}."
+          alignment: "center"
+          example: "5."
+
   metrics: 
     paragraph-text: 0
     footnote-start: 25
@@ -30,7 +34,7 @@ rudolf-steiner-ga-werk:
   text-removal-patterns:
     - "/[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/"
     - "/Buch\\s?:\\s*\\d*\\s*\\d{0,3}\\s+Seite\\s?:\\s*\\d+[ \\t]*\\d{0,4}/"
-    - "/\\d{0,3}\\s?\\[(?!\\^)[\\s\\S]+?\\]/"
+    # - "/\\d{0,3}\\s?\\[(?!\\^)[\\s\\S]+?\\]/"
 
 rudolf-steiner-ga-vortrag:
   description: "Rudolf Steiner Gesamtausgabe (GA) Vortrag"

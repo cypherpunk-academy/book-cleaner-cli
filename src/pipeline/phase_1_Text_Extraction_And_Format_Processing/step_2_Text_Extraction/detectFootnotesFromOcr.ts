@@ -96,10 +96,10 @@ export class DetectFootnotesFromOcr {
      * @param ocrData - The OCR data from Tesseract
      * @returns Array of footnote candidates
      */
-    async detectFootnotes(allLines: OCRLine[]): Promise<FootnoteCandidate[]> {
+    detectFootnotes(allLines: OCRLine[]): FootnoteCandidate[] {
         try {
             // Step 1: Detect superscripts using custom algorithm
-            const superscriptResults = await this.detectSuperscriptsByBoundingBox(allLines);
+            const superscriptResults = this.detectSuperscriptsByBoundingBox(allLines);
 
             this.logger.info(
                 {
@@ -129,9 +129,9 @@ export class DetectFootnotesFromOcr {
      * Detect superscript symbols using custom bounding box analysis
      * Falls back to custom detection when Tesseract's built-in detection fails
      */
-    private async detectSuperscriptsByBoundingBox(
+    private detectSuperscriptsByBoundingBox(
         allLines: OCRLine[],
-    ): Promise<SuperscriptDetectionResult[]> {
+    ): SuperscriptDetectionResult[] {
         const results: SuperscriptDetectionResult[] = [];
 
         for (let lineIndex = 0; lineIndex < allLines.length; lineIndex++) {
@@ -147,24 +147,34 @@ export class DetectFootnotesFromOcr {
                 if (!word || !word.symbols) continue;
 
                 // Process each symbol in the word
-                for (let symbolIndex = 0; symbolIndex < word.symbols.length; symbolIndex++) {
+                for (
+                    let symbolIndex = 0;
+                    symbolIndex < word.symbols.length;
+                    symbolIndex++
+                ) {
                     const symbol = word.symbols[symbolIndex];
                     if (!symbol) continue;
 
                     // Check if this symbol meets superscript criteria
                     const symbolHeight = symbol.bbox.y1 - symbol.bbox.y0;
                     const isSmaller =
-                        symbolHeight < lineHeight * SUPERSCRIPT_DETECTION.HEIGHT_RATIO_THRESHOLD;
+                        symbolHeight <
+                        lineHeight * SUPERSCRIPT_DETECTION.HEIGHT_RATIO_THRESHOLD;
                     // Use symbol's own baseline if available, otherwise fall back to line baseline
                     const isHigher =
                         symbol.baseline &&
+                        symbol.baseline.y1 &&
                         symbol.bbox.y1 <
-                            symbol.baseline?.y1 - SUPERSCRIPT_DETECTION.VERTICAL_OFFSET_THRESHOLD;
+                            symbol.baseline.y1 -
+                                SUPERSCRIPT_DETECTION.VERTICAL_OFFSET_THRESHOLD;
                     const isNumberOrAsterisk = this.isNumberOrAsterisk(symbol.text);
 
                     if (isSmaller && isHigher && isNumberOrAsterisk) {
                         // Get four words before this word (including the current word)
-                        const fourWordsBefore = this.getFourWordsBefore(line, wordIndex);
+                        const fourWordsBefore = this.getFourWordsBefore(
+                            line,
+                            wordIndex,
+                        );
 
                         results.push({
                             symbol,
@@ -227,10 +237,27 @@ export class DetectFootnotesFromOcr {
         const starts: FootnoteCandidate[] = [];
 
         for (const candidate of superscriptResults) {
-            if (candidate.wordIndex === 0 && candidate.text === candidate.fourWordsBefore[0]) {
-                references.push(candidate);
+            // Convert SuperscriptDetectionResult to FootnoteCandidate
+            const footnoteCandidate: FootnoteCandidate = {
+                footnoteText: candidate.text,
+                bbox: candidate.symbol.bbox,
+                type: 'footnote-reference', // Default to reference
+                confidence: candidate.symbol.confidence,
+                referenceNumber: candidate.text,
+                lineIndex: candidate.lineIndex,
+                symbolIndex: candidate.wordIndex, // Use wordIndex as symbolIndex
+            };
+
+            if (
+                candidate.wordIndex === 0 &&
+                candidate.text === candidate.fourWordsBefore[0]
+            ) {
+                // This is a footnote start (appears at the beginning of a line)
+                footnoteCandidate.type = 'footnote';
+                starts.push(footnoteCandidate);
             } else {
-                starts.push(candidate);
+                // This is a footnote reference (appears within text)
+                references.push(footnoteCandidate);
             }
         }
 

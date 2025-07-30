@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { GetTextAndStructureFromOcr } from '../src/pipeline/phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/GetTextAndStructureFromOcr';
+import { GetTextAndStructureFromOcr } from '../src/services/OCRService';
 import { LoggerService, createDefaultLoggerService } from '../src/services/LoggerService';
 import { ConfigService } from '../src/services/ConfigService';
 import { readFileSync } from 'node:fs';

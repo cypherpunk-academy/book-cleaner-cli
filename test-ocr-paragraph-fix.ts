@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { OCRService } from './src/pipeline/phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/OCRService';
 import { LoggerService } from './src/services/LoggerService';
+import { OCRService } from './src/services/OCRService';
 import type { FileInfo } from './src/types';
 
 async function testOCRParagraphFix() {
