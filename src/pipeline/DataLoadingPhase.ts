@@ -13,7 +13,7 @@ import { FileUtils } from '../utils/FileUtils';
 import { AbstractPhase } from './AbstractPhase';
 import { FileFormatDetector } from './phase_1_Text_Extraction_And_Format_Processing/step_1_File_Format_Detection_And_Validation/FileFormatDetector';
 import { TextExtractor } from './phase_1_Text_Extraction_And_Format_Processing/step_2_Text_Extraction/TextExtractor';
-import { TextEnhancer } from './phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Auto_Correction/TextEnhancer';
+import { BookStructureAnalyzer } from './phase_1_Text_Extraction_And_Format_Processing/step_3_Book_Structure_Inference/BookStructureAnalyzer';
 
 /**
  * Phase 1: Data Loading & Format Detection
@@ -21,12 +21,12 @@ import { TextEnhancer } from './phase_1_Text_Extraction_And_Format_Processing/st
  * This phase handles:
  * - Step 1: File format detection and validation
  * - Step 2: Text extraction based on book structure
- * - Step 3: Text quality enhancement
+ * - Step 3: Book structure inference and correction
  */
 export class DataLoadingPhase extends AbstractPhase {
     private formatDetector: FileFormatDetector;
     private textExtractor: TextExtractor;
-    private textEnhancer: TextEnhancer;
+    private bookStructureAnalyzer: BookStructureAnalyzer;
     private fileUtils: FileUtils;
     private bookStructureService: BookStructureService;
 
@@ -43,7 +43,7 @@ export class DataLoadingPhase extends AbstractPhase {
             './book-artifacts',
             bookStructureService,
         );
-        this.textEnhancer = new TextEnhancer(logger, configService);
+        this.bookStructureAnalyzer = new BookStructureAnalyzer(logger);
         this.fileUtils = new FileUtils(logger);
         this.bookStructureService = bookStructureService;
     }
@@ -53,7 +53,7 @@ export class DataLoadingPhase extends AbstractPhase {
     }
 
     public override getDescription(): string {
-        return 'Detects file format, validates structure, and extracts text based on book structure';
+        return 'Detects file format, validates structure, extracts text, and infers book structure corrections';
     }
 
     public override async execute(
@@ -222,61 +222,56 @@ export class DataLoadingPhase extends AbstractPhase {
                 );
             }
 
-            // Process text with Text Quality Enhancement
-            let enhancedTextResult:
-                | import(
-                      './phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Auto_Correction/TextEnhancer',
-                  ).TextPreprocessingResult
-                | null = null;
-            let enhancedOcrResult:
-                | import(
-                      './phase_1_Text_Extraction_And_Format_Processing/step_3_Text_Auto_Correction/TextEnhancer',
-                  ).TextPreprocessingResult
-                | null = null;
+            // Process text with Book Structure Inference
+            let structureInferenceResult: import('@/services/BookStructureService/BookStructureService').StructureInferenceResult | null = null;
 
-            if (txtContent) {
-                enhancedTextResult = await this.textEnhancer.preprocessText(
-                    txtContent,
-                    manifestPath,
-                );
-
-                // Save enhanced text
-                const step3TxtPath = `${phase1Dir}/step3.txt`;
-                await fs.writeFile(
-                    step3TxtPath,
-                    enhancedTextResult.processedText,
-                    'utf-8',
-                );
+            // Determine text source for structure inference
+            let inferenceTextSource: string | null = null;
+            if (ocrContent) {
+                inferenceTextSource = ocrContent;
                 pipelineLogger.info(
-                    {
-                        pipelineId: state.id,
-                        path: step3TxtPath,
-                        length: enhancedTextResult.processedText.length,
-                    },
-                    'Saved enhanced text to step3.txt',
+                    { pipelineId: state.id },
+                    'Using OCR content for structure inference',
+                );
+            } else if (txtContent) {
+                inferenceTextSource = txtContent;
+                pipelineLogger.info(
+                    { pipelineId: state.id },
+                    'Using extracted text for structure inference',
                 );
             }
 
-            if (ocrContent) {
-                enhancedOcrResult = await this.textEnhancer.preprocessText(
-                    ocrContent,
-                    manifestPath,
+            if (inferenceTextSource) {
+                // Perform book structure inference
+                structureInferenceResult = await this.bookStructureAnalyzer.inferBookStructure(
+                    metadata,
+                    inferenceTextSource,
+                    {
+                        chunkSize: 5000,
+                        overlapPercentage: 20,
+                        maxRetries: 3,
+                        confidenceThreshold: 0.7,
+                        enableNewEntries: true,
+                        enableCorrections: true,
+                    },
                 );
 
-                // Save enhanced OCR
-                const step3OcrPath = `${phase1Dir}/step3.ocr`;
-                await fs.writeFile(
-                    step3OcrPath,
-                    enhancedOcrResult.processedText,
-                    'utf-8',
-                );
                 pipelineLogger.info(
                     {
                         pipelineId: state.id,
-                        path: step3OcrPath,
-                        length: enhancedOcrResult.processedText.length,
+                        originalEntries: structureInferenceResult.originalStructure.length,
+                        correctedEntries: structureInferenceResult.correctedStructure.length,
+                        newEntries: structureInferenceResult.newEntries.length,
+                        corrections: structureInferenceResult.corrections.length,
+                        confidence: structureInferenceResult.confidence,
+                        processingTime: structureInferenceResult.processingTime,
                     },
-                    'Saved enhanced OCR to step3.ocr',
+                    'Book structure inference completed successfully',
+                );
+            } else {
+                pipelineLogger.warn(
+                    { pipelineId: state.id },
+                    'No text source available for structure inference',
                 );
             }
 
@@ -284,21 +279,21 @@ export class DataLoadingPhase extends AbstractPhase {
             if (progressCallback) {
                 progressCallback({
                     phase: this.getName(),
-                    step: 'step-3-text-quality-enhancement',
+                    step: 'step-3-book-structure-inference',
                     current: 100,
                     total: 100,
                     percentage: 100,
-                    message: 'Step 3: Text quality enhancement completed successfully',
+                    message: 'Step 3: Book structure inference completed successfully',
                 });
             }
 
             pipelineLogger.info(
                 {
                     pipelineId: state.id,
-                    txtEnhanced: !!enhancedTextResult,
-                    ocrEnhanced: !!enhancedOcrResult,
+                    structureInferred: !!structureInferenceResult,
+                    success: structureInferenceResult?.success || false,
                 },
-                'Step 3: Text Quality Enhancement completed successfully',
+                'Step 3: Book Structure Inference completed successfully',
             );
 
             // Store processing results in pipeline state
@@ -308,10 +303,7 @@ export class DataLoadingPhase extends AbstractPhase {
                 data: {
                     formatResult,
                     textExtractionResult,
-                    textEnhancementResult: {
-                        txtEnhanced: enhancedTextResult || null,
-                        ocrEnhanced: enhancedOcrResult || null,
-                    },
+                                    structureInferenceResult: structureInferenceResult || null,
                     metadata,
                 },
                 timestamp: new Date(),
