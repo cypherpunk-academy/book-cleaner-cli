@@ -37,10 +37,8 @@ book-cleaner-cli/
 │   │   │   │   ├── index.ts                # Step entry point
 │   │   │   │   └── README.md               # Step documentation
 │   │   │   ├── step_2_Text_Extraction/
-│   │   │   │   ├── TextExtractor.ts        # Main text extraction logic
-│   │   │   │   ├── PDFProcessor.ts         # PDF text extraction
-│   │   │   │   ├── EPUBProcessor.ts        # EPUB text extraction
-│   │   │   │   ├── TextProcessor.ts        # Plain text processing
+│   │   │   │   ├── TextExtractor.ts        # OCR structure retrieval & text extraction
+│   │   │   │   ├── detectFootnotesFromOcr.ts # Footnote detection from OCR
 │   │   │   │   ├── ExecutionSummary.ts     # Step execution tracking
 │   │   │   │   ├── index.ts                # Step entry point
 │   │   │   │   └── README.md               # Step documentation
@@ -312,12 +310,16 @@ npx clean-book "Rudolf_Steiner#Goethes_Naturwissenschaftliche_Schriften#GA_1.pdf
     - Load appropriate processor
     - Validate file integrity
 
-2. **Text Extraction**
+2. **Text Extraction & Structure Retrieval**
 
+    - **NEW APPROACH**: Check if book-manifest.yaml exists in book-artifacts
+    - **If NO manifest exists**: Perform OCR to retrieve initial structure, extract text, detect footnotes, then EXIT with clear message for user to review and update book-manifest
+    - **If manifest exists**: Skip OCR and use existing structure for text extraction
     - PDF: Extract embedded text using Scribe.js
-    - PDF: Perform OCR on images and perform a comparison with embedded text
+    - PDF: Perform OCR on images when needed for structure discovery
     - TXT: Read and normalize encoding
     - EPUB: Extract from XHTML content
+    - **User Review Required**: When no manifest exists, user must review extracted structure and update book-manifest.yaml before re-running
 
 3. **Patch Application**
 
@@ -354,6 +356,20 @@ npx clean-book "Rudolf_Steiner#Goethes_Naturwissenschaftliche_Schriften#GA_1.pdf
 -   `footnotes.yaml`: Extracted footnotes with references
 -   `paragraphs.txt`: Paragraph index with first lines
 -   `structure.json`: Document structure metadata
+-   **NEW**: `book-manifest.yaml`: Book structure configuration (created on first run)
+
+#### User Interaction Flow:
+
+**First Run (No book-manifest.yaml):**
+1. Step 1.2 performs OCR to discover structure
+2. Extracts text and detects footnotes
+3. Creates initial book-manifest.yaml with discovered structure
+4. **EXITS** with clear message: "Structure discovered. Please review and update book-manifest.yaml, then re-run the command."
+
+**Subsequent Runs (book-manifest.yaml exists):**
+1. Step 1.2 skips OCR and uses existing structure
+2. Proceeds with normal text extraction
+3. Continues through remaining pipeline steps
 
 ### Phase 2: Text Normalization & AI Cleaning
 

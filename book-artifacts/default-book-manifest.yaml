@@ -8,40 +8,5 @@ original:
   book-type: default | rudolf-steiner-ga-werk | rudolf-steiner-ga-vortrag | google-play-ebook
 text-before-first-chapter:
 text-after-last-chapter:
-
-text-removal-patterns:
-  - /[Cc]opyr.{0,20}Nachla(ß|ss).{0,10}erwaltung/
-  - /Buch\s?:\s{0,3}\d+\s*\d{0,3}\s+Seite\s?:\s?\d+[ \t]*\d{0,4}/
-  - /––– \[GA\d{1,3}, S\.\d{1,4}\] –––/
-
-structure:
-  type: chapter
-  title: 
-  number: 
-  content:
-    - type: paragraph
-      first-five-words: 
-    - type: sub-chapter
-      title:
-      number:
-      content:
-        - type: paragraph
-          first-five-words:
-        - type: paragraph
-          first-five-words:
-    - type: sub-chapter
-      title:
-      number:
-      content:
-        - type: paragraph
-          first-five-words:
-        - type: paragraph
-          first-five-words:
-
+book-structure:
 footnotes:
-  - index:
-    original-index:
-    marker:
-    footnote:
-      - text first page
-      - text next page

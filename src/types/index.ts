@@ -358,14 +358,22 @@ export interface BookManifestInfo {
         'book-type'?: string;
     };
 
-    // Book structure information
-    structure?: BookStructureItem[];
+    // Book structure information (simple array format)
+    'book-structure'?: string[];
 
     // Footnotes information
-    footnotes?: BookFootnote[];
+    footnotes?: string[];
 
     // Additional metadata (for extensibility)
     [key: string]: unknown;
+}
+
+/**
+ * Book structure section (header with paragraphs)
+ */
+export interface BookStructureSection {
+    header: string; // The header text (e.g., "# I EINLEITUNG", "## Metamorphose")
+    paragraphs: string[]; // Array of first 5 words of each paragraph
 }
 
 /**

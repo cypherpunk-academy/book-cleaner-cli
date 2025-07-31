@@ -1,101 +1,349 @@
 author: Rudolf Steiner
 title: Einleitungen zu Goethes Naturwissenschaftlichen Schriften
-book-index: '1'
 original:
   format: pdf-text-ocr
   size: 15916374
   pages: 350
-  book-type: rudolf-steiner-ga-werk
+  book-type: >-
+    default | rudolf-steiner-ga-werk | rudolf-steiner-ga-vortrag |
+    google-play-ebook
+footnotes:
+  - >-
+    [^1]: [Alle Stellen aus von Goethe verfaßten Briefen sind zitiert nach der
+    sog. Weimarer Ausgabe (- WA) oder Sophien-Ausgabe von Goethes Werken,
+    Abteilung IV: Briefe, 50 Bde., Weimar 1887-1912; die beiden Ziffern beziehen
+    sich auf Band und Seitenzahl dieser Abteilung. — Hinzufügungen des
+    Herausgebers sind in eckige Klammern gesetzt. ]
+  - >-
+    [^2]: ? Wer ein solches Ziel von vornherein für unerreichbar erklärt, der
+    wird zum Verständnis Goethescher Naturanschauungen nie kommen; wer dagegen
+    vorurteilslos, diese Frage offenlassend, an das Studium derselben geht, der
+    wird sie nach Beendigung desselben gewiß bejahend beantworten. Es könnten
+    wohl manchem durch einige Bemerkungen Goethes selbst Bedenken aufsteigen,
+    wie z. B. folgende ist: «Wir hätten... ohne Anmaßung, die ersten Triebfedern
+    der Naturwirkungen entdecken zu wollen, auf Äußerung der Kräfte, durch
+    welche die Pflanze ein und dasselbe Organ nach und nach umbildet, unsere
+    Aufmerksamkeit gerichtet.» Allein solche Aussprüche richten sich bei Goethe
+    nie gegen die prinzipielle Möglichkeit, die Wesenheit der Dinge zu erkennen,
+    sondern er ist nur vorsichtig genug über die physikalisch-mechanischen
+    Bedingungen, welche dem Organismus zugrunde liegen, nicht vorschnell
+    abzuurteilen, da er wohl wußte, daß solche Fragen nur im Laufe der Zeit
+    gelöst werden können.
+  - >-
+    [^3]: Damit wollen wir keineswegs sagen, Goethe sei in dieser Hinsicht
+    überhaupt nie verstanden worden. Im Gegenteil: Wir nehmen in dieser Ausgabe
+    selbst wiederholt Anlaß, auf eine Reihe von Männern hinzuweisen, die uns als
+    Fortsetzer und Ausarbeiter Goethescher Ideen erscheinen. Namen wie Voigt,
+    Nees von Esenbeck, dAlton (der ältere und der jüngere), Schelver, C. G.
+    Carus, Martius u. a. gehören in diese Reihe. Aber diese bauten eben auf der
+    Grundlage der in den Goetheschen Schriften niedergelegten Anschauungen ihre
+    Systeme auf, und man kann gerade von ihnen nicht sagen, daß sie auch ohne
+    Goethe zu ihren Begriffen gelangt wären, wogegen allerdings Zeitgenossen des
+    letzteren — z. B. Josephi von Göttingen — selbständig auf den
+    Zwischenknochen, oder Oken auf die Wirbeltheorie gekommen sind.
+  - '[^4]: (Im folgenden mit Natw. Schr. abgekürzt.]'
+  - '[^5]: Siehe «Dichtung und Wahrheit», II. Teil, 6. Buch.'
+  - '[^7]: ? «Dichtung und Wahrheit», III. Teil, 11. Buch.'
+  - >-
+    [^8]: [Natw. Schr., 2. Bd., S. 5ff.; bezüglich dieses Aufsatzes vgl. man
+    auch die Ausführungen Rudolf Steiners in «Grundlinien einer
+    Erkenntnistheorie der Goetheschen Weltanschauung», Gesamtausgabe Dornach
+    1960, S. 138 (Anm. zu S. 28) und «Methodische Grundlagen der Anthroposophie
+    1884-1901», Gesamtausgabe Dornach 1961, S. 320 ff.]
+  - >-
+    [^9]: Siehe über die Autorschaft dieses Aufsatzes Anmerkung 1 am Schlusse
+    dieser Schrift. [Rudolf Steiner hatte die Absicht, für die Sonderausgabe
+    sämtlicher Einleitungen zu Goethes «Naturwissenschaftlichen Schriften», 1.5.
+    Aufl., Dornach 1926, an dieser und weiteren 35 bereits von ihm bezeichneten
+    Stellen — diese Stellen tragen im vorliegenden Text sämtlich einen  —
+    Anmerkungen zu schreiben. Er konnte diese Absicht nicht mehr verwirklichen.]
+  - '[^10]: Vgl, Natw. Schr., 1. Bd. [S. 68].'
+  - >-
+    [^1]: Gerne schickte ich dir eine kleine botanische Lektion, wenn sie nur
+    schon geschrieben wäre.» [Brief an Knebel vom] 2. April 1785. [WA 7, 36]
+  - '[^12]: [«Deutsche Rundschau» (Berlin etc.) Bd. XXVIII (Juli-Sept.) 1881,'
+  - '[^13]: Kal on Linne, «Philosophia botanica», Stockholm 1751.]'
+  - '[^1]: Italienische Reise, 8. Sept. 1786.'
+  - '[^15]: Italienische Reise, 8. Okt. 1786.'
+  - >-
+    [^1]: Unnötig wohl ist es zu sagen, daß die moderne Deszendenztheorie damit
+    durchaus nicht bezweifelt werden soll, oder daß ihre Behauptungen damit
+    eingeschränkt werden sollen; im Gegenteil, es wird ihnen erst eine sichere
+    Basis geschaffen.
+  - '[^17]: Italienische Reise,'
+  - >-
+    [^13]: Wir haben hier weniger die Entwicklungslehre derjenigen
+    Naturforscher, die auf dem Boden der sinnenfälligen Empirie stehen, vor
+    Augen, als vielmehr die theoretischen Grundlagen, die Prinzipien, die dem
+    Darwinismus zugrunde gelegt werden. Vor allem natürlich die Jenaische Schule
+    mit Haeckel an der Spitze; in diesem Geiste ersten Ranges hat wohl die
+    Darwinsche Lehre mit aller ihrer Einseitigkeit ihre konsequente
+    Ausgestaltung gefunden.
+  - '[^19]: Italienische Reise.'
+  - '[^20]: Italienische Reise.'
+  - >-
+    [^21]: In welchem Sinne diese Einzelheiten zum Ganzen stehen, werden wir an
+    verschiedenen Stellen Gelegenheit haben auszuführen. Wollten wir einen
+    Begriff der heutigen Wissenschaft für ein solches Zusammenwirken von
+    belebten Teilwesen zu einem Ganzen entlehnen, so wäre es etwa der eines
+    «Stockes» in der Zoologie. Es ist dies eine Art Staat von Lebewesen, ein
+    Individuum, das wieder aus selbständigen Individuen besteht, ein Individuum
+    höherer Art.
+  - '[^2]: Italienische Reise. [WA Abr. I, 31, 75]'
+  - >-
+    [^23]: [Italienische Reise  Störende Naturbetrachtungen; vgl. auch den Brief
+    Goethes an Knebel vom 18. Aug. 1787 (WA 8, 251).]
+  - '[^24]: [Italienische Reise, 28. Sept. 1787.]'
+  - '[^2]: Vgl. Natw. Schr., 2. Bd., 5. 68 ff.'
+  - '[^27]: Vgl. Natw. Schr., 2. Bd., 5.68 [Eingang].'
+  - '[^28]: Ebenda.'
+  - '[^29]: Siehe Natw. Schr., 1. Bd., 5. 247.'
+  - '[^30]: Siehe Natw. Schr., 2. Bd. [S. 68 f.].'
+  - '[^31]: Ebenda [S. 69].'
+  - '[^32]: Lavaters Fragmente II, 143.'
+  - '[^33]: Siehe Natw. Schr., 2. Bd. [S. 691.'
+  - >-
+    [^35]: «Ein beschwerlicher Liebesdienst, den ich übernommen habe, führt mich
+    meiner Liebhaberei näher. Loder erklärt mir alle Beine und Muskeln, und ich
+    werde in wenig Tagen vieles fassen.» [WA 5, 207]
+  - >-
+    [^3]: Mir hat er (Loder) in diesen acht Tagen, die wir, freilich soviel als
+    meine Wächterschaft litt, fast ganz dazu anwandten, Osteologie und Myologie
+    durchdemonstriert.» [WA 5, 211]
+  - >-
+    [^3]: [Herder, Ideen zur Philosophie der Geschichte der Menschheit, I. Teil,
+    5. Buch; in: Herders Sämtliche Werke, hg. v. B. Suphan; Berlin 1877-1913,
+    13. Bd., 5. 167.]
+  - '[^38]: Oken, Lehrbuch der Naturphilosophie. 2. Aufl., Jena 1831, S. 389.'
+  - '[^3]: Herder, a. a. O. I. Teil, 5. Buch, bzw. I. Teil, 2. Buch.'
+  - '[^4]: Briefe an J. H. Merck, Darmstadt 1835 [S. 354 f.].'
+  - >-
+    [^41]: In: «Natuurkundige verhandelingen over den orang Outang...».
+    Amsterdam 1782, p. 75, 6 2.
+  - '[^4]: [WA 6,75]'
+  - >-
+    [^43]: Es ist mir ein köstliches Vergnügen geworden, ich habe eine
+    anatomische Entdeckung gemacht, die wichtig und schön ist.» [WA
+  - >-
+    [^4]: ich habe gefunden — weder Gold noch Silber, aber was mir eine
+    unsägliche Freude macht — das os intermaxillare am Menschen!»
+  - >-
+    [^45]: Wir führten ihre Worte schon oben [S. 26] in anderem Zusammenhange
+    an.
+  - '[^46]: [Italienische Reise.]'
+  - '[^47]: Briefe an J. H. Merck, 5. 438.'
+  - >-
+    [^48]: Ebenda S. 448. habe. Sie kam ihm auf einem Umwege zu: Goethe schickte
+    sie erst an Sömmerring, dieser an Merck und der letztere sollte sie an
+    Camper gelangen lassen. Nun befindet sich aber unter den Briefen Mercks an
+    Camper, die noch ungedruckt sind, und die sich im Originale in der
+    «Bibliotheque de la societe nEerlandaise pour les progres de la medecine» zu
+    Amsterdam befinden, ein Brief vom 17. Januar 1785 mit folgender Stelle (wir
+    zitieren buchstäblich): «Monsieur de Goethe, Potte celebre, conseiller
+    intime du Duc de Weimar, vient de menvoier un specimen osteologicum, que
+    doit vous Etre envoie apres que Mr. Sömring laura vü... Cest un petit traite
+    sur los intermaxillaire, qui nous apprend entre autres la verite, que Ile
+    Triche(chus) a 4 dents incisives et que le Chameau a en deux.» Ein Brief vom
+    10. März 1785 zeigt an, daß Merck die Abhandlung demnächst an Camper
+    schicken wird, wobei wieder der Name Goethe ausdrücklich vorkommt: «]aurai
+    lhonneur de vous envoier le specimen osteolog. de Mr. de Goethe, mon ami,
+    par une voie, qui ne sera pas conteuse un de ces jours.» Am 28. April 1785
+    spricht Merck die Hoffnung aus, daß Camper die Sache erhalten habe, wobei
+    wieder «Goethe» vorkommt. Es ist somit wohl kein Zweifel, daß Camper den
+    Verfasser kannte.
+  - '[^50]: Briefe an J. H. Merck, S. 466.'
+  - '[^51]: Ebenda, 5. 469.'
+  - '[^52]: Ebenda S. 481.'
+  - '[^58]: Goethes Annalen zu 1790.'
+  - >-
+    [^54]: Knebels Literarischer Nachlaß ertc., hg. v. Varnhagen v. Ense u. Th.
+    Mundt, Leipzig 1835, II. Bd., S. 236.
+  - >-
+    [^55]: [Rudolf Wagner, Samuel Thomas von Sömmerrings Leben und Verkehr mit
+    seinen Zeitgenossen, 1. Abt.:] Briefe berühmter Zeitgenossen an Sömmerring
+    [Leipzig 1844] S. 293.
+  - '[^5]: Ebenda — s. Anm. 55-5. 22.'
+  - '[^57]: Natw. Schr., 1. Bd., S. 405.'
+  - '[^58]: Gespräche mit Eckermann, 2. Aug. 1830.'
+  - >-
+    [^5]: Goethes Naturwissenschaftliche Korrespondenz (1812-1832), hg. v. F.
+    Th. Bratranek, I. Bd., S. 51.
+  - >-
+    [^60]: [Froriep, Notizen aus dem Gebiet der Natur- und Heilkunde, Bd. 19,
+    1828, S. 283.]
+  - '[^1]: Briefe an J. H. Merck, S. 476.'
+  - '[^62]: [Italienische Reise.]'
+  - >-
+    [^63]: Vgl. Nartw. Schr., 1. Bd., S. 344 ff., wo einzelnes noch in
+    Anmerkungen gesagt ist.
+  - >-
+    [^54]: Einige Philosophen behaupten, daß wir die Erscheinungen der
+    Sinnenwelt wohl auf ihre ursprünglichen Elemente (Kräfte) zurückführen
+    können, daß wir aber diese ebensowenig wie das Wesen des Lebens erklären
+    können. Demgegenüber ist zu bemerken, daß jene Elemente einfach sind, d. i.
+    sich nicht weiter aus einfacheren Elementen zusammensetzen lassen. In ihrer
+    Einfachheit sie abzuleiten, zu erklären, ist aber eine Unmöglichkeit, nicht
+    weil unser Erkenntnisvermögen begrenzt ist, sondern weil sie au} sich selbst
+    beruhen; sie sind uns in ihrer Unmittelbarkeit gegenwärtig, sie sind in sich
+    abgeschlossen, aus nichts weiterem ableitbar.
+  - '[^65]: Dies ist eben der Gegensatz des Organismus zur Maschine. Bei der'
+  - '[^65]: Kant, Kritik der Urteilskraft; Ausgabe von Kehrbach, S. 294.'
+  - '[^67]: ]IL. Teil, 14. Buch.'
+  - '[^58]: [Dichtung und Wahrheit, III. Teil, 14. Buch.]'
+  - '[^69]: Italienische Reise, 5. Okt. 1787.'
+  - '[^70]: Einiger Attribute Gottes in denselben.'
+  - '[^7]: IV, Teil, 16. Buch.'
+  - '[^2]: Tag- und Jahres-Hefte 1811.'
+  - '[^73]: Masse, Richtung und Geschwindigkeit einer bewegten elastischen Kugel.'
+  - '[^74]: [Italienische Reise, 17. Mai 1787.]'
+  - >-
+    [^75]: Die Frucht entsteht durch Auswachsung des unteren Teiles des Stempels
+    (Fruchtknotens 1); sie stellt ein späteres Stadium desselben dar, kann also
+    nur getrennt gezeichnet werden. In der Fruchtbildung tritt die letzte
+    Ausdehnung ein. Das Pflanzenleben differenziert sich in ein abschließendes
+    Organ, eigentliche Frucht, und in den Samen; in der ersteren sind gleichsam
+    alle Momente der Erscheinung vereinigt, sie ist bloße Erscheinung, sie
+    entfremdet sich dem Leben, wird totes Produkt. Im Samen sind alle inneren,
+    wesentlichen Momente des Pflanzenlebens konzentriert. Aus ihm entsteht eine
+    neue Pflanze. Er ist fast ganz ideell geworden, die Erscheinung ist bei ihm
+    auf ein Minimum reduziert.
+  - '[^76]: Italienische Reise, 2. Dez. 1786.'
+  - '[^77]: {«Metamorphose der Tiere»]; vgl. Natw. Schr., 1. Bd., S. 344.'
+  - '[^78]: [Metamorphose der Tiere, a. a. O. S. 345.]'
+  - >-
+    [^79]: In der modernen Naturlehre versteht man unter Urorganismus gewöhnlich
+    eine Urzelle (Urzytode), d. h. ein einfaches Wesen, welches auf der
+    untersten Stufe der organischen Entwicklung steht. Man hat hier ein ganz
+    bestimmtes, reales, sinnenfällig wirkliches Wesen im Auge. Wenn man im
+    Goetheschen Sinne von Urorganismus spricht, so ist nicht dieses ins Auge zu
+    fassen, sondern jene Essenz (Wesenheit), jenes gestaltende, entelechische
+    Prinzip, welches bewirkt, daß jene Urzelle ein Organismus ist. Dieses
+    Prinzip kommt im einfachsten Organismus ebenso wie im vollendetsten zur
+    Erscheinung, nur in verschiedener Ausbildung. Es ist die Tierheit im Tiere,
+    das, wodurch ein Wesen ein Organismus ist. Darwin setzt es von Anfang an
+    voraus; es ist da, wird eingeführt und dann sagt er von ihm, daß es auf die
+    Einflüsse der Außenwelt in dieser oder jener Weise reagierte. Es ist bei ihm
+    ein unbestimmtes X, dieses unbestimmte X sucht Goethe zu erklären.
+  - >-
+    [^80]: Goethes Naturwissenschaftliche Korrespondenz (1812-1823), hg. v. F.
+    Th. Bratranek, 1. Bd., [Leipzig 1874,] S. 28.
+  - '[^81]: Ebenda, 2. Bd., [Leipzig 1874] S. 19.'
+  - '[^82]: Ebenda, 2. Bd., 5. 366.'
+  - >-
+    [^83]: Goethe empfand dies sein unbewußtes Handeln oft als Dumpfheit. Siehe
+    K. J. Schröer, Faust von Goethe, 6. Aufl., Stuttgart 1926, Bd. II, 5. XXXIV
+    ff.
+  - '[^84]: Natw. Schr., 1. Bd., S. 108 ff.'
+  - '[^1798]: -1799) sowie Steffens «Grundzüge der philosophi'
+  - '[^85]: Nartw. Schr., 1. Bd., S. 217 ff.'
+  - >-
+    [^8]: Rudolf Steiner, Grundlinien einer Erkenntnistheorie der Goetheschen
+    Weltanschauung mit besonderer Rücksicht auf Schiller, Berlin u. Stuttgart
+    1886, 6. Aufl. Gesamtausgabe Dornach 1960.
+  - '[^2]: . und die physikalischen Schriften im 3. Bande zu bringen.'
+  - '[^857]: («Sprüche in Prosa»; Natw. Schr., 4. Bd., 2. Abt., S. 535.]'
+  - '[^88]: [Ebenda S. 378.]'
+  - >-
+    [^89]: («Sprüche in Prosa», Natw. Schr., 4. Bd., 2. Abt., S. 379.] Kunst
+    1788-1800.] Der vollständig von allem Gedankeninhalt entblößten
+  - >-
+    [^91]: Diese Trennung ist durch die absondernden ganz ausgezogenen Linien
+    charakterisiert.
+  - '[^9]: Dieselbe ist durch die punktierten Linien versinnlicht,'
+  - >-
+    [^93]: Vgl. Nazw. Schr., 4. Bd., 2. Abt., S. 593, Anm.: «In meiner
+    Einleitung S. XXXVIII zum 34. Bande dieser Goethe-Ausgabe sagte ich: Leider
+    scheint der Aufsatz verlorengegangen zu sein, der den Ansichten Goethes über
+    Erfahrung, Versuch und wissenschaftliches Erkennen zur besten Stütze dienen
+    könnte. Er ist aber nicht verlorengegangen, sondern hat sich in der obigen
+    Form im Goethe-Archiv gefunden. (Vgl. Weim. Goethe-Ausgabe II. Abt. Band 11,
+    S. 38 ff.) Er trägt das Datum 15. Januar 1798 und ist am 17. an Schiller
+    gesandt worden. Er stellt sich als Fortsetzung des Aufsatzes: «Der Versuch
+    als Vermittler von Subjekt und Objekt» dar. Ich habe den Gedankengang des
+    Aufsatzes aus dem Goethe-Schillerschen Briefwechsel entnommen und in
+    genannter Einleitung S. XXXIX f. genau in der Weise angegeben, die sich
+    jetzt vorgefunden hat. Inhaltlich wird durch den Aufsatz zu meinen
+    Ausführungen nichts hinzugefügt; wohl aber wird meine aus Goethes übrigen
+    Arbeiten gewonnene Ansicht über seine Methode und Erkenntnisweise in allen
+    Punkten bestätigt.»
+  - >-
+    [^9]: [Schelling, Erster Entwurf eines Systems der Naturphilosophie; Jena u.
+    Leipzig 1799, S. 6.]
+  - >-
+    [^9]: Sehr lesenswert ist Dr. Adolf Harpfs Aufsatz «Schopenhauer und Goethe»
+    (Philos. Monatshefte 1885). Harpf, der auch schon eine treffliche Abhandlung
+    über «Goethes Erkenntnisprinzip» (Philos. Monatshefte 1884) geschrieben hat,
+    zeigt die Übereinstimmung des «immanenten Dogmatismus» Schopenhauers mit dem
+    gegenständlichen Wissen Goethes. Den prinzipiellen Unterschied zwischen
+    Goethe und Schopenhauer, wie wir ihn oben charakterisierten, findet Harpf,
+    der selbst Schopenhauerianer ist, nicht heraus. Dennoch verdienen die
+    Ausführungen Harpfs alle Aufmerksamkeit.
+  - >-
+    [^8]: penhauer legt einen inhaltsleeren, einförmigen Drang der Begriff der
+    Liebe nicht seine Berücksichtigung finde. H. hat denselben in phänomenaler
+    und metaphysischer Beziehung behandelt (siehe «Das sittliche Bewußtsein» 2.
+    Aufl., S. 223-247, 629-631, 641, 638-641). Nur läßt er die Liebe nicht als
+    das letzte Wort der Ethik gelten. Die opferwillige, liebevolle Hingabe an
+    den Weltprozeß scheint ihm kein Letztes zu sein, sondern nur das Mittel zur
+    Erlösung von der Unruhe des Daseins und zur Wiedergewinnung der verlorenen
+    seligen Ruhe.
+  - >-
+    [^97]: Siehe den Aufsatz: «Bedeutende Fördernis durch ein einziges
+    geistreiches Wort», Nartw. Schr., 2. Bd., S. 31 ff.
+  - '[^3]: [Ebenda S. 398]'
+  - '[^100]: [Ebenda S. 379]'
+  - '[^101]: Sinneswahrnehmung bedeutet hier dasselbe, was Kant Empfindung'
+  - >-
+    [^102]: Die Überwindung des wissenschaftlichen Materialismus»; Vortrag,
+    gehalten in der 3, allgemeinen Sitzung der Versammlung der Gesellschaft
+    Deutscher Naturforscher und Ärzte zu Lübeck am 20. 9. 1895; Leipzig 1895. —
+    Dies ist kurze Zeit, nachdem die betreffenden Äußerungen Ostwalds gemacht
+    worden sind, geschrieben.
+  - >-
+    [^163]: Dies ist im Beginne der neunziger Jahre des vorigen Jahrhunderts en
+    dem Was darüber heute zu sagen ist, darüber? [vgl. Anm.
+  - '[^104]: H, L. F, v. Helmholtz, Goethes Vorahnungen kommender wissen'
+  - >-
+    [^15]: «Grundlinien einer Erkenntnistheorie der Goetheschen Weltanschauung
+    mit besonderer Rücksicht auf Schiller» (1886), Gesamtausgabe Dornach 1960;
+    «Wahrheit und Wissenschaft. Vorspiel einer «Philosophie der Freiheit»»
+    (1892), Gesamtausgabe Dornach 1958; «Philosophie der Freiheit. Grundzüge
+    einer modernen Weltanschauung» (1894), Gesamtausgabe Dornach 1972.
+  - '[^16]: Goethes Anschauungen stehen in dem denkbar schärfsten Gegensatz'
+  - '[^17]: (Berlin 1894 [Gesamtausgabe Dornach 1973]).'
+  - '[^48]: Wie wenig Verständnis für die ethischen Anschauungen sowohl, wie'
+  - '[^108]: Yralienische Reise, 6. Sept. 1787.'
+book-structure:
+  - "# I EINLEITUNG:"
+  - "  Am 18. August des Jahres"
+  - "  Das Bedeutsame der Pflanzenmetamorphose liegt"
+  - "  Indem wir nun im folgenden"
+  - "# II DIE ENISTEHUNG DER METAMORPHOSENLEHRE:"
+  - "  Wenn man der Entstehungsgeschichte von"
+  - "  Als Goethe an die Leipziger"
+  - "  Der Begriff, den jene Extreme"
+  - "  Das, was aber festgehalten werden"
+  - "  Wir haben gesehen, daß Goethe"
+  - "  Als die unmittelbare Anregung zum"
+  - "  Nun verläßt der Dichter das"
+  - "  Linnes Bestrebungen gingen dahin, eine"
+  - "  Ungefähr in dieselbe Zeit, wie"
+  - "  Die nächsten eingehenden Beobachtungen der"
+  - "  Der Gedanke der Urpflanze bildet"
+  - "  Wenn wir nun auf diese"
+  - "  Indem die Kräfte, welche das"
+  - "  Wenn wir die Metamorphosenlehre Goethes,"
+  - "  Im September 1787 bei seinem"
+  - "# X ANY CAPITAL TITLE"
+  - "## 1. Methodologie:"
+  - "  Wir haben das Verhältnis von"
+  - "  In dem umstehenden Gebilde hängt"
+  - "## 2. Dogmatische und immanente Methode:"
+  - "  Ein wissenschaftliches Urteil kommt dadurch"
+  - "  Unsere Ausführungen haben gezeigt, daß"
+  - "  Damit ist die Ansicht abgewiesen,"
+  - "  Es geht nicht an, höhere"
+  - "  Wir haben uns noch mit"
+book-index: '1'
 text-before-first-chapter: müsse, um ihm erkennend beizukommen.
 text-after-last-chapter: Daten zur Herausgabe von Goethes
-boook-structure:
-  - # I EINLEITUNG
-    - Am 18. August des Jahres 1787
-    - Das Bedeutsame der Pflanzenmetamorphose liegt
-    - Indem wir nun im folgenden versuchen
-  - # II DIE ENISTEHUNG DER METAMORPHOSENLEHRE
-
-footnotes:
-    - 'Wer ein solches Ziel von vornherein für unerreichbar erklärt, der wird zum Verständnis Goethescher Naturanschauungen nie kommen; wer dagegen vorurteilslos, diese Frage offenlassend, an das Studium derselben geht, der wird sie nach Beendigung desselben gewiß bejahend beantworten. Es konnten wohl manchem durch einige Bemerkungen Goethes selbst Bedenken aufsteigen, wie z. B. folgende ist: «Wir hätten... ohne Anmaßung, die ersten Triebfedern der Naturwirkungen entdecken zu wollen, auf Äußerung der Kräfte, durch welche die Pflanze ein und dasselbe Organ nach und nach umbildet, unsere Aufmerksamkeit gerichtet.» Allein solche Aussprüche richten sich bei Goethe nie gegen die prinzipielle Möglichkeit, die Wesenheit der Dinge zu erkennen, sondern er ist nur vorsichtig genug über die physikalisch-mechanischen Bedingungen, welche dem Organismus zugrunde liegen, nicht vorschnell abzuurteilen, da er wohl wußte, daß solche Fragen nur im Laufe der Zeit gelöst werden können.'
-    - "Damit wollen wir keineswegs sagen, Goethe sei in dieser Hinsicht überhaupt nie verstanden worden. Im Gegenteil: Wir nehmen in dieser Ausgabe selbst wiederholt Anlaß, auf eine Reihe von Männern hinzuweisen, die uns als Fortsetzer und Ausarbeiter Goethescher Ideen erscheinen. Namen wie Voigt, Nees von Esenbeck, d'Alton (der altere und der jüngere), Schelver, C. G. Carus, Martius u. a. gehören in diese Reihe. Aber diese bauten eben auf der Grundlage der in den Goetheschen Schriften niedergelegten Anschauungen ihre Systeme auf, und man kann gerade von ihnen nicht sagen, daß sie auch ohne Goethe zu ihren Begriffen gelangt wären, wogegen aller"
-    - 'dings Zeitgenossen des letzteren - z. B. Josephi von Göttingen - selbständig auf den Zwischenknochen, oder Oken auf die Wirbeltheorie gekommen sind.'
-    - 'Siehe «Dichtung und Wahrheit», II. Teil, 6. Buch.'
-    - '«Dichtung und Wahrheit», II. Teil, 8. Buch.'
-    - '«Dichtung und Wahrheit», III. Teil, 11. Buch.'
-    - 'Siehe über die Autorschaft dieses Aufsatzes Anmerkung 1 am Schlüsse dieser Schrift.'
-    - 'Vgl. Natw. Sehr., 1. Bd..'
-    - '«Gerne schickte ich dir eine kleine botanische Lektion, wenn sie nur schon geschrieben wäre.» 2. April 1785.'
-    - 'Italienische Reise, 8. Sept. 1786.'
-    - 'Italienische Reise, 8. Okt. 1786.'
-    - "Unnötig wohl ist es zu sagen, daß die moderne Deszendenztheorie\ndamit durchaus nicht bezweifelt werden soll, oder daß ihre Behauptungen\ndamit eingeschränkt werden sollen; im Gegenteil, es wird\nihnen erst eine sichere Basis geschaffen."
-    - 'Italienische Reise.'
-    - 'Wir haben hier weniger die Entwicklungslehre derjenigen Naturforscher, die auf dem Boden der sinnenfälligen Empirie stehen, vor'
-    - 'Augen, als vielmehr die theoretischen Grundlagen, die Prinzipien, die dem Darwinismus zugrunde gelegt werden. Vor allem natürlich die Jenaische Schule mit Haeckel an der Spitze; in diesem Geiste ersten Ranges hat wohl die Darwinsche Lehre mit aller ihrer Einseitigkeit ihre konsequente Ausgestaltung gefunden.'
-    - 'Italienische Reise.'
-    - 'Italienische Reise.'
-    - 'In welchem Sinne diese Einzelheiten zum Ganzen stehen, werden wir an verschiedenen Stellen Gelegenheit haben auszuführen. Wollten wir einen Begriff der heutigen Wissenschaft für ein solches Zusammenwirken von belebten Teilwesen zu einem Ganzen entlehnen, so wäre es etwa der eines «Stockes» in der Zoologie. Es ist dies eine Art Staat von Lebewesen, ein Individuum, das wieder aus selbständigen Individuen besteht, ein Individuum höherer Art.'
-    - 'Italienische Reise.'
-    - 'Vgl. Natw. Sehr., 2. Bd., S. 68 ff.'
-    - 'Vgl. Natw. Sehr., 2. Bd., S.68.'
-    - 'Vgl. Natw. Sehr., 2. Bd., S.68.'
-    - 'Siehe Natw. Sehr., 1. Bd., S. 247.'
-    - 'Siehe Natw. Sehr., 2. Bd.'
-    - 'Siehe Natw. Sehr., 2. Bd.'
-    - 'Lavaters Fragmente II, 143.'
-    - 'Siehe Natw. Sehr., 2. Bd.'
-    - '«Ein beschwerlicher Liebesdienst, den ich übernommen habe, führt mich meiner Liebhaberei näher. Loder erklärt mir alle Beine und Muskeln, und ich werde in wenig Tagen vieles fassen.»'
-    - '«Mir hat er (Loder) in diesen acht Tagen, die wir, freilich soviel als meine Wächterschaft litt, fast ganz dazu anwandten, Osteologie und Myologie durchdemonstriert.»'
-    - 'Oken, Lehrbuch der Naturphilosophie. 2. Aufl., Jena 1831, S. 389.'
-    - 'Herder, a. a. O. I. Teil, 5. Buch, bzw. I. Teil, 2. Buch.'
-    - 'Briefe an J. H. Merck, Darmstadt 1835.'
-    - '«Es ist mir ein köstliches Vergnügen geworden, ich habe eine anatomische Entdeckung gemacht, die wichtig und schön ist.»'
-    - '«Ich habe gefunden - weder Gold noch Silber, aber was mir eine unsägliche Freude macht - das os intermaxillare am Menschen!»'
-    - 'Wir führten ihre Worte schon oben in anderem Zusammenhange an.'
-    - 'Italienische Reise.'
-    - 'Briefe an J. H . Merck, S. 438.'
-    - 'Ebenda S. 448.'
-    - 'Man nahm bisher an, daß Camper die Abhandlung anonym erhalten habe. Sie kam ihm auf einem Umwege zu: Goethe schickte sie erst an Sömmerring, dieser an Merck und der letztere sollte sie an Camper gelangen lassen. Nun befindet sich aber unter den Briefen Mercks an Camper, die noch ungedruckt sind, und die sich im Originale in der «Bibliotheque de la societe neerlandaise pour les progres de la medecine» zu Amsterdam befinden, ein Brief vom 17. Januar 1785 mit folgender Stelle (wir zitieren buchstäblich): «Monsieur de'
-    - 'Briefe an J. H. Merck, S. 466.'
-    - 'Ebenda, S. 469.'
-    - 'Ebenda S. 481.'
-    - 'Goethes Annalen zu 1790.'
-    - 'Knebels Literarischer Nachlaß etc., hg. v. Varnhagen v. Ense u. Th. Mundt, Leipzig 1835, II. Bd., S. 236.'
-    - 'Rudolf Wagner, Samuel Thomas von Sömmerrings Leben und Verkehr mit seinen Zeitgenossen, 1. Abt.: Briefe berühmter Zeitgenossen an Sömmerring S. 293.'
-    - 'Ebenda - s. Anm. 55 - S. 22.'
-    - 'Natw. Sehr., 1. Bd., S. 405.'
-    - 'Gespräche mit Eckermann, 2. Aug. 1830.'
-    - 'Goethes Naturwissenschaftliche Korrespondenz (1812-1832), hg. v. F. Th. Bratranek, I. Bd., S. 51.'
-    - 'Briefe an J. H. Merck, S. 476.'
-    - 'Vgl. Natw. Sehr., 1. Bd., S. 344 ff., wo einzelnes noch in Anmerkungen gesagt ist.'
-    - 'Einige Philosophen behaupten, daß wir die Erscheinungen der Sinnenwelt wohl auf ihre ursprünglichen Elemente (Kräfte) zurückführen können, daß wir aber diese ebensowenig wie das Wesen des Lebens erklären können. Demgegenüber ist zu bemerken, daß jene Elemente einfach sind, d. i. sich nicht weiter aus einfacheren Elementen zusammensetzen lassen. In ihrer Einfachheit sie abzuleiten, zu erklären, ist aber eine Unmöglichkeit, nicht weil unser Erkenntnisvermögen begrenzt ist, sondern weil sie auf sich selbst beruhen; sie sind uns in ihrer Unmittelbarkeit gegenwärtig, sie sind in sich abgeschlossen, aus nichts weiterem ableitbar.'
-    - 'Dies ist eben der Gegensatz des Organismus zur Maschine. Bei der letzteren ist alles Wechselwirkung der Teile. Es existiert nichts Wirkliches in der Maschine selbst außer dieser Wechselwirkung. Das einheitliche Prinzip, welches das Zusammenwirken jener Teile beherrscht, fehlt im Objekte selbst und liegt außerhalb desselben in dem Kopfe des Konstrukteurs als Plan. Nur die äußerste Kurzsichtigkeit kann leugnen, daß gerade darinnen die Differenz zwischen Organismus und Mechanismus besteht, daß dasjenige Prinzip, welches das Wechselverhältnis der Teile bewirkt, beim letzteren nur außerhalb (abstrakt) vorhanden ist, während es bei ersterem in dem Dinge selbst wirkliches Dasein gewinnt. So erscheinen dann auch die sinnlich wahrnehmbaren Verhältnisse des Organismus nicht als bloße Folge auseinander, sondern als beherrscht von jenem inneren Prinzipe, als Folge eines solchen, das nicht mehr sinnlich wahrnehmbar ist. In dieser Hinsicht ist es ebensowenig sinnlich wahrnehmbar, wie jener Plan im Kopfe des Konstrukteurs, der ja auch nur für den Geist da ist; ja es ist im wesentlichen jener Plan, nur daß er jetzt eingezogen ist in das Innere des Wesens und nicht mehr durch Vermittlung eines Dritten - jenes Konstrukteurs - seine Wirkungen vollzieht, sondern dieses direkt selbst tut.'
-    - 'Kant, Kritik der Urteilskraft; Ausgabe von Kehrbach, S. 294.'
-    - 'III. Teil, 14. Buch.'
-    - 'Italienische Reise, 5. Okt. 1787.'
-    - 'Einiger Attribute Gottes in denselben.'
-    - 'IV. Teil, 16. Buch.'
-    - 'Tag- und Jahres-Hefte 1811.'
-    - 'Masse, Richtung und Geschwindigkeit einer bewegten elastischen Kugel.'
-    - 'Die Frucht entsteht durch Auswachsung des unteren Teiles des Stempels (Fruchtknotens 1); sie stellt ein späteres Stadium desselben dar, kann also nur getrennt gezeichnet werden. In der Fruchtbildung tritt die letzte Ausdehnung ein. Das Pflanzenleben differenziert sich in ein abschließendes Organ, eigentliche Frucht, und in den Samen; in der ersteren sind gleichsam alle Momente der Erscheinung vereinigt, sie ist bloße Erscheinung, sie entfremdet sich dem Leben, wird totes Produkt. Im Samen sind alle inneren, wesentlichen Momente des Pflanzenlebens konzentriert. Aus ihm entsteht eine neue Pflanze. Er ist fast ganz ideell geworden, die Erscheinung ist bei ihm auf ein Minimum reduziert.'
-    - 'Italienische Reise, 2. Dez. 1786.'
-    - 'vgl. Natw. Sehr., 1. Bd., S. 344.'
-    - 'In der modernen Naturlehre versteht man unter Urorganismus gewöhnlich eine Urzelle (Urzytode), d. h. ein einfaches Wesen, welches auf der untersten Stufe der organischen Entwicklung steht. Man hat hier ein ganz bestimmtes, reales, sinnenfällig wirkliches Wesen im Auge. Wenn man im Goetheschen Sinne von Urorganismus spricht, so ist nicht dieses ins Auge zu fassen, sondern jene Essenz (Wesenheit), jenes gestaltende, entelechische Prinzip, welches bewirkt, daß jene Urzelle ein Organismus ist. Dieses Prinzip kommt im einfachsten Organismus ebenso wie im vollendetsten zur Erscheinung, nur in verschiedener Ausbildung. Es ist die Tierheit im Tiere, das, wodurch ein Wesen ein Organismus ist. Darwin setzt es von Anfang an voraus; es ist da, wird eingeführt und dann sagt er von ihm, daß es auf die Einflüsse der Außenwelt in dieser oder jener Weise reagierte. Es ist bei ihm ein unbestimmtes X, dieses unbestimmte X sucht Goethe zu erklären.'
-    - 'Goethes Naturwissenschaftliche Korrespondenz (1812-1823), hg. v. F. Th. Bratranek, 1. Bd., S. 28.'
-    - 'Ebenda, 2. Bd., S. 19 f.'
-    - 'Ebenda, 2. Bd., S. 366.'
-    - 'Goethe empfand dies sein unbewußtes Handeln oft als Dumpfheit. Siehe K. J. Schröer, Faust von Goethe, 6. Aufl., Stuttgart 1926, Bd. II, S. XXXIV ff.'
-    - 'Natw. Sehr., 1. Bd., S. 108 ff.'
-    - 'Natw. Sehr., 1. Bd., S. 217 ff.'
-    - Erkenntnistheorie86
-    - 'Rudolf Steiner, Grundlinien einer Erkenntnistheorie der Goetheschen Weltanschauung mit besonderer Rücksicht auf Schiller. Berlin u. Stuttgart 1886, 6. Aufl. Gesamtausgabe Dornach 1960.'
-    - 'Vgl. Natw. Sehr., 4. Bd., 2. Abt., S. 593, Anm.: «In meiner Em-'
-    - 'leitung S. XXXVIII zum 34. Bande dieser Goethe-Ausgabe sagte ich: Leider scheint der Aufsatz verlorengegangen zu sein, der den Ansichten Goethes über Erfahrung, Versuch und wissenschaftliches Erkennen zur besten Stütze dienen könnte. Er ist aber nicht verlorengegangen, sondern hat sich in der obigen Form im Goethe-Archiv gefunden. (Vgl. Weim. Goethe-Ausgabe II. Abt. Band 11, S. 38 ff.) Er trägt das Datum 15. Januar 1798 und ist am 17. an Schiller gesandt worden. Er stellt sich als Fortsetzung des Aufsatzes: <Der Versuch als Vermittler von Subjekt und Objekt> dar. Ich habe den Gedankengang des Aufsatzes aus dem Goethe-Schillerschen Briefwechsel entnommen und in genannter Einleitung S. XXXIX f. genau in der Weise angegeben, die sich jetzt vorgefunden hat. Inhaltlich wird durch den Aufsatz zu meinen Ausführungen nichts hinzugefügt; wohl aber wird meine aus Goethes übrigen Arbeiten gewonnene Ansicht über seine Methode und Erkenntnisweise in allen Punkten bestätigt.»'
-    - 'Sehr lesenswert ist Dr. Adolf Harpfs Aufsatz «Schopenhauer und Goethe» (Philos. Monatshefte 1885). Harpf, der auch schon eine treffliche Abhandlung über «Goethes Erkenntnisprinzip» (Philos. Monatshefte 1884) geschrieben hat, zeigt die Übereinstimmung des «immanenten Dogmatismus» Schopenhauers mit dem gegenständlichen Wissen Goethes. Den prinzipiellen Unterschied zwischen Goethe und Schopenhauer, wie wir ihn oben charakterisierten, findet Harpf, der selbst Schopenhauerianer ist, nicht heraus. Dennoch verdienen die Ausführungen Harpfs alle Aufmerksamkeit.'
-    - 'Damit soll nicht behauptet werden, daß in Hartmanns Ethik der Begriff der Liebe nicht seine Berücksichtigung finde. H. hat denselben in phänomenaler und metaphysischer Beziehung behandelt (siehe «Das sittliche Bewußtsein» 2. Aufl., S. 223-247, 629-631, 641, 638-641). Nur läßt er die Liebe nicht als das letzte Wort der Ethik gelten. Die opferwillige, liebevolle Hingabe an den Weltprozeß scheint ihm kein Letztes zu sein, sondern nur das Mittel zur Erlösung von der Unruhe des Daseins und zur Wiedergewinnung der verlorenen seligen Ruhe.'
-    - 'Siehe den Aufsatz: «Bedeutende Fördernis durch ein einziges geistreiches Wort», Natw. Sehr., 2. Bd., S. 31 ff.'
-    - '«Die Überwindung des wissenschaftlichen Materialismus»; Vortrag, gehalten in der 3. allgemeinen Sitzung der Versammlung der Gesellschaft Deutscher Naturforscher und Ärzte zu Lübeck am 20. 9.1895; Leipzig 1895. - Dies ist kurze Zeit, nachdem die betreffenden Äußerungen Ostwalds gemacht worden sind, geschrieben.'
-    - 'Dies ist im Beginne der neunziger Jahre des vorigen Jahrhunderts geschrieben. Was darüber heute zu sagen ist, darüber*'
-    - 'H. L. F. v. Helmholtz, Goethes Vorahnungen kommender wissenschaftlicher Ideen usw.; Berlin 1892, S. 34.'
-    - '«Grundlinien einer Erkenntnistheorie der Goetheschen Weltanschauung mit besonderer Rücksicht auf Schiller» (1886), Gesamtausgabe Dornach 1960; «Wahrheit und Wissenschaft. Vorspiel einer Philosophie der Freiheit» (1892), Gesamtausgabe Dornach 1958; «Philosophie der Freiheit. Grundzüge einer modernen Weltanschauung» (1894), Gesamtausgabe Dornach 1972.'
-    - 'Goethes Anschauungen stehen in dem denkbar schärfsten Gegensatz zur Kantschen Philosophie. Diese geht von der Auffassung aus, daß die Vorstellungswelt von den Gesetzen des menschlichen Geistes beherrscht werde und deshalb alles, was ihr von außen entgegengebracht wird, in ihr nur als subjektiver Abglanz vorhanden sein könne. Der Mensch nehme nicht das «An sich» der Dinge wahr, sondern die Erscheinung, die dadurch entsteht, daß die Dinge ihn affizieren und er diese Affektionen nach den Gesetzen seines Verstandes und seiner Vernunft verbindet. Daß durch diese Vernunft das Wesen der Dinge spricht, davon haben Kant und die Kantianer keine Ahnung. Deshalb konnte die Kantsche Philosophie für Goethe nie etwas bedeuten. Wenn er sich einzelne ihrer Sätze aneignete, so gab er ihnen einen völlig anderen Sinn, als sie innerhalb der Lehre ihres Urhebers haben. Es ist durch eine Notiz, die erst nach Eröffnung des Weimarischen Goethe-Archivs bekannt geworden ist, klar, daß Goethe den Gegensatz seiner Weltauffassung und der Kantschen sehr wohl durchschaute. Für ihn liegt der Grundfehler Kants darin, daß dieser «das subjektive Erkenntnisvermögen nun selbst als Objekt betrachtet und den Punkt, wo subjektiv und objektiv zusammentreffen, zwar scharf aber nicht ganz richtig sondert». Subjektiv und objektiv treten zusammen, wenn der Mensch das, was die Außenwelt ausspricht, und das, was sein Inneres vernehmen läßt, zum einigen Wesen der Dinge verbindet. Dann hört aber der Gegensatz von subjektiv und objektiv ganz auf; er verschwindet in der geeinten Wirklichkeit. Ich habe darauf schon hingedeutet in dieser Schrift S. 218 ff. Gegen meine damaligen Ausführungen polemisiert nun K. Vorländer im 1. Heft der «Kantstudien». Er findet, daß meine Anschauung über den Gegensatz von Goethescher und Kantscher Weltauffassung «mindestens stark einseitig und mit klaren Selbstzeugnissen Goethes in Widerspruch» sei und sich «aus dem völligen Mißverständnis der transzendentalen Methode» Kants von meiner Seite erkläre. Vorländer hat keine Ahnung von der Weltanschauung, in der Goethe lebte. Mit ihm zu polemisieren würde mir gar nichts nützen, denn wir sprechen verschiedene Sprachen. Wie klar sein Denken ist, zeigt sich darin, daß er bei meinen Sätzen nie weiß, was gemeint ist. Ich mache z. B. eine Bemerkung zu dem Goetheschen Satze: «Sobald der Mensch die Gegenstände um sich her gewahr wird, betrachtet er sie in bezug auf sich selbst, und mit Recht. Denn es hängt sein ganzes Schicksal davon ab, ob sie ihm gefallen oder mißfallen, ob sie ihn anziehen oder abstoßen, ob sie ihm nützen oder schaden. Diese ganz natürliche Art, die Sachen anzusehen und zu be-'
-    - 'urteilen, scheint so leicht zu sein, als sie notwendig i s t . . . Ein weit schwereres Tagewerk übernehmen diejenigen, deren lebhafter Trieb nach Kenntnis die Gegenstände der Natur an sich selbst und in ihren Verhältnissen untereinander zu beobachten strebt, sie suchen und untersuchen, was ist, und nicht was behagt.» Meine Bemerkung lautet: «Hier zeigt sich, wie Goethes Weltanschauung gerade der entgegengesetzte Pol der Kantschen ist. Für Kant gibt es überhaupt keine Ansicht über die Dinge, wie sie an sich sind, sondern nur wie sie in bezug auf uns erscheinen. Diese Ansicht läßt Goethe nur als ganz untergeordnete Art gelten, sich zu den Dingen in ein Verhältnis zu setzen.» Dazu sagt Vorländer: «Diese (Worte Goethes) wollen weiter nichts als einleitend den trivialen Unterschied zwischen dem Angenehmen und dem Wahren auseinandersetzen. Der Forscher soll suchen, <was ist und nicht was behagt>. Wer, wie Steiner, die letztere allerdings sehr untergeordnete Art, sich zu den Dingen in ein Verhältnis zu setzen, als diejenige Kants zu bezeichnen wagt, dem ist zu raten, daß er sich erst die Grundbegriffe der Kantschen Lehre, z. B. den Unterschied von subjektiver und objektiver Empfindung, etwa aus § 3 der Kr. d. U. klarmache.» Nun habe ich durchaus nicht, wie aus meinem Satze klar hervorgeht, gesagt, daß jene Art, sich zu den Dingen in ein Verhältnis zu setzen, die Kants ist, sondern daß Goethe die Kantsche Auffassung vom Verhältnis zwischen Subjekt und Objekt nicht entsprechend dem Verhältnis findet, in dem der Mensch zu den Dingen steht, wenn er erkennen will, wie sie an sich sind. Goethe ist der Ansicht, daß die Kantsche Definition nicht dem menschlichen Erkennen, sondern nur dem Verhältnisse entspricht, in das sich der Mensch zu den Dingen setzt, wenn er sie in bezug auf sein Gefallen und Mißfallen betrachtet. Wer einen Satz in einer solchen Weise mißverstehen kann wie Vorländery der mag es sich ersparen, andern Leuten Ratschläge zu geben über ihre philosophische Ausbildung, und lieber erst sich die Fähigkeit aneignen, einen Satz richtig lesen zu lernen. Goethesche Zitate aufsuchen und sie historisch zusammenstellen kann jeder; sie im Sinne der Goetheschen Weltanschauung deuten, kann jedenfalls Vorländer nicht.'

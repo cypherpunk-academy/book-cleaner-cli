@@ -1,16 +1,13 @@
-import {
-    LOG_COMPONENTS,
-    OCR_PAGE_HEIGHT,
-    OCR_PAGE_WIDTH,
-    OCR_WHITELIST,
-} from '@/constants';
+import { LOG_COMPONENTS, OCR_PAGE_HEIGHT, OCR_PAGE_WIDTH, OCR_WHITELIST } from '@/constants';
 import type { ConfigService } from '@/services/ConfigService';
 import type { LoggerService } from '@/services/LoggerService';
-import type { BookManifestInfo, FileInfo } from '@/types';
+import type { BookManifestInfo, FileInfo, FilenameMetadata, BookStructureSection } from '@/types';
 import { fixGermanUmlautErrors } from '@/utils/TextUtils';
 import type { Worker } from 'tesseract.js';
+import Tesseract from 'tesseract.js';
 import { GetTextAndStructureFromOcr } from './GetTextAndStructureFromOcr';
-import { checkForBookTextStartMarker } from './checkForBookTextStartMarker';
+import { checkForBookTextStartMarker, checkForBookTextEndMarker } from './checkForBookTextMarkers';
+import type { BookStructureService } from '@/services/BookStructureService';
 
 /**
  * OCR result interface with structured text recognition
@@ -49,11 +46,17 @@ export interface OCROptions {
 export class OCRService {
     private readonly logger: LoggerService;
     private readonly configService: ConfigService;
+    private readonly bookStructureService: BookStructureService;
     private readonly defaultLanguage = 'deu'; // Pure German for better umlaut recognition
 
-    constructor(logger: LoggerService, configService: ConfigService) {
+    constructor(
+        logger: LoggerService,
+        configService: ConfigService,
+        bookStructureService: BookStructureService,
+    ) {
         this.logger = logger;
         this.configService = configService;
+        this.bookStructureService = bookStructureService;
     }
 
     /**
@@ -99,13 +102,27 @@ export class OCRService {
             const language = options.language || this.defaultLanguage;
             const worker = await createWorker(language);
 
-            // Configure worker for better German text recognition with superscript support
+            // Configure worker for better German text recognition with graphics exclusion
             await worker.setParameters({
+                // Text recognition settings
                 tessedit_char_whitelist: OCR_WHITELIST,
                 preserve_interword_spaces: '1',
+
+                // Graphics exclusion settings
+                tessedit_do_invert: '0', // Don't invert images (helps exclude graphics)
+                tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK, // Process as single text block
+                tessedit_min_confidence: '60', // Minimum confidence for text recognition
+
+                // Text-only mode (exclude graphics)
+                textonly: '1', // Text-only mode (exclude graphics)
+
+                // Additional graphics exclusion parameters
+                tessedit_do_noise_removal: '1', // Remove noise that might be graphics
+                tessedit_do_deskew: '1', // Deskew text (graphics are often skewed)
+                tessedit_do_adaptive_threshold: '1', // Use adaptive thresholding for text
             });
 
-            console.log('🇩🇪 OCR optimized for German text with umlaut recognition');
+            console.log('🇩🇪 OCR optimized for German text with graphics exclusion');
 
             try {
                 // Check file path
@@ -143,17 +160,13 @@ export class OCRService {
                 return {
                     structuredText: '',
                     pageCount: 0,
-                    errors: [
-                        'Non-PDF files not fully supported in current implementation',
-                    ],
+                    errors: ['Non-PDF files not fully supported in current implementation'],
                 };
             } catch (workerError) {
                 // Handle worker-specific errors (like PDF reading issues)
                 throw new Error(
                     `OCR processing failed: ${
-                        workerError instanceof Error
-                            ? workerError.message
-                            : String(workerError)
+                        workerError instanceof Error ? workerError.message : String(workerError)
                     }`,
                 );
             } finally {
@@ -194,10 +207,7 @@ export class OCRService {
         bookManifest?: BookManifestInfo,
         options?: OCROptions,
     ): Promise<OCRResult> {
-        const ocrLogger = this.logger.getTaggedLogger(
-            LOG_COMPONENTS.PIPELINE_MANAGER,
-            'pdf_ocr',
-        );
+        const ocrLogger = this.logger.getTaggedLogger(LOG_COMPONENTS.PIPELINE_MANAGER, 'pdf_ocr');
 
         try {
             // Import pdf2pic dynamically
@@ -306,6 +316,20 @@ export class OCRService {
                         }
                     }
 
+                    // Check for end marker - if found, exit the loop
+                    const endBoundaryFound = checkForBookTextEndMarker(
+                        data.text,
+                        bookManifest,
+                        this.logger,
+                    );
+
+                    if (endBoundaryFound) {
+                        console.log(
+                            `📍 Found boundary end marker on page ${pageNumber} - stopping content processing`,
+                        );
+                        break; // Exit the loop
+                    }
+
                     // Convert Tesseract data to our OCRData format (handle null vs undefined)
                     const paragraphs = data.paragraphs;
 
@@ -380,22 +404,15 @@ export class OCRService {
                     }
                 } catch (pageError) {
                     const errorMsg = `Failed to process page ${pageNumber}: ${
-                        pageError instanceof Error
-                            ? pageError.message
-                            : String(pageError)
+                        pageError instanceof Error ? pageError.message : String(pageError)
                     }`;
                     errors.push(errorMsg);
                     console.log(
                         `❌ Page ${pageNumber} failed: ${
-                            pageError instanceof Error
-                                ? pageError.message
-                                : String(pageError)
+                            pageError instanceof Error ? pageError.message : String(pageError)
                         }`,
                     );
-                    ocrLogger.warn(
-                        { pageNumber, error: errorMsg },
-                        'Page processing failed',
-                    );
+                    ocrLogger.warn({ pageNumber, error: errorMsg }, 'Page processing failed');
                 }
             }
 
@@ -421,15 +438,12 @@ export class OCRService {
             );
 
             if (errors.length > 0) {
-                console.log(
-                    `⚠️  ${errors.length} pages had errors - check logs for details`,
-                );
+                console.log(`⚠️  ${errors.length} pages had errors - check logs for details`);
             }
 
             // Apply German umlaut corrections to structured text
             console.log('🔤 Applying German umlaut corrections...');
-            const fullStructuredText =
-                scanResults.textWithHeaders + scanResults.footnoteText;
+            const fullStructuredText = scanResults.textWithHeaders + scanResults.footnoteText;
             const { correctedText: correctedStructuredText } = fixGermanUmlautErrors(
                 fullStructuredText,
                 this.logger,
@@ -440,6 +454,15 @@ export class OCRService {
                 correctedStructuredText,
                 bookType,
             );
+
+            // Write book structure and footnotes to manifest if we have the metadata
+            if (bookManifest) {
+                await this.writeBookStructureToManifest(
+                    cleanedStructuredText,
+                    scanResults.footnoteText,
+                    bookManifest,
+                );
+            }
 
             ocrLogger.info(
                 {
@@ -509,10 +532,7 @@ export class OCRService {
         const firstCharOfSecond = secondText.charAt(0);
 
         // Check if last character is hyphen and first character is lowercase
-        if (
-            lastCharOfFirst === '-' &&
-            firstCharOfSecond === firstCharOfSecond.toLowerCase()
-        ) {
+        if (lastCharOfFirst === '-' && firstCharOfSecond === firstCharOfSecond.toLowerCase()) {
             // Remove hyphen and glue the texts together
             return trimmedFirstText.slice(0, -1) + secondText;
         }
@@ -523,10 +543,7 @@ export class OCRService {
     /**
      * Apply text removal patterns to clean text
      */
-    private async applyTextRemovalPatterns(
-        text: string,
-        bookType: string,
-    ): Promise<string> {
+    private async applyTextRemovalPatterns(text: string, bookType: string): Promise<string> {
         try {
             // Load book type configuration to get text removal patterns
             const bookTypesConfig = await this.configService.loadBookTypesConfig();
@@ -566,8 +583,7 @@ export class OCRService {
                         'Failed to apply text removal pattern',
                         {
                             pattern,
-                            error:
-                                error instanceof Error ? error.message : String(error),
+                            error: error instanceof Error ? error.message : String(error),
                         },
                     );
                 }
@@ -585,5 +601,111 @@ export class OCRService {
             );
             return text;
         }
+    }
+
+    /**
+     * Write book structure and footnotes to the manifest file.
+     */
+    private async writeBookStructureToManifest(
+        structuredText: string,
+        footnoteText: string,
+        bookManifest: BookManifestInfo,
+    ): Promise<void> {
+        try {
+            // Parse structured text to extract headers and paragraphs
+            const bookStructure = this.parseStructuredText(structuredText);
+            const footnotes = this.parseFootnotes(footnoteText);
+
+            // Update the book manifest with the extracted structure
+            const updatedManifest: BookManifestInfo = {
+                ...bookManifest,
+                'book-structure': bookStructure,
+                footnotes: footnotes as unknown as BookManifestInfo['footnotes'], // Cast to match the expected type
+            };
+
+            // Get the metadata from the book manifest to save it
+            const metadata: FilenameMetadata = {
+                author: bookManifest.author,
+                title: bookManifest.title,
+                bookIndex: bookManifest.bookIndex,
+                originalFilename: `${bookManifest.author}#${bookManifest.title}${bookManifest.bookIndex ? `#${bookManifest.bookIndex}` : ''}`,
+            };
+
+            // Save the updated manifest using the BookStructureService
+            await this.bookStructureService.saveBookManifest(metadata, updatedManifest);
+
+            this.logger.info(
+                LOG_COMPONENTS.PIPELINE_MANAGER,
+                'Book structure and footnotes written to manifest',
+                {
+                    structureItems: bookStructure.length,
+                    footnotesCount: footnotes.length,
+                },
+            );
+        } catch (error) {
+            this.logger.error(
+                LOG_COMPONENTS.PIPELINE_MANAGER,
+                'Failed to write book structure to manifest',
+                {
+                    error: error instanceof Error ? error.message : String(error),
+                },
+            );
+        }
+    }
+
+    /**
+     * Parse structured text to extract headers and their first 5 words of following paragraphs
+     */
+    private parseStructuredText(structuredText: string): string[] {
+        const structure: string[] = [];
+        const lines = structuredText.split('\n');
+
+        // Skip the footnotes section
+        const mainContent = structuredText.split('# FUSSNOTEN')[0] || structuredText;
+        const contentLines = mainContent.split('\n');
+
+        for (let i = 0; i < contentLines.length; i++) {
+            const line = contentLines[i]?.trim() || '';
+
+            // Check for headers (#, ##, ###)
+            if (line.startsWith('#')) {
+                // Add the header as is
+                structure.push(line);
+            } else if (line.length > 0) {
+                // This is a paragraph line - extract first 5 words
+                const words = line.split(/\s+/).filter((word) => word.length > 0);
+                if (words.length > 0) {
+                    const firstFiveWords = words.slice(0, 5).join(' ');
+                    structure.push(firstFiveWords);
+                }
+            }
+        }
+
+        return structure;
+    }
+
+    /**
+     * Parse footnotes from footnote text
+     */
+    private parseFootnotes(footnoteText: string): string[] {
+        const footnotes: string[] = [];
+        const lines = footnoteText.split('\n');
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+
+            // Skip empty lines and the "FUSSNOTEN" header
+            if (trimmedLine.length === 0 || trimmedLine === '# FUSSNOTEN') {
+                continue;
+            }
+
+            // Remove any footnote markers and add to array
+            const cleanFootnote = trimmedLine.replace(/^\[[MT]\]\s*/, '').trim();
+            if (cleanFootnote.length > 0) {
+                footnotes.push(cleanFootnote);
+            }
+        }
+
+        return footnotes;
     }
 }

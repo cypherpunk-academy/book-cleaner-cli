@@ -1,5 +1,5 @@
-import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
 import { LoggerService } from './src/services/LoggerService';
 import { OCRService } from './src/services/OCRService';
 import type { FileInfo } from './src/types';
@@ -79,10 +79,7 @@ async function testOCRParagraphFix() {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
         // Save structured text
-        const textOutputPath = join(
-            outputDir,
-            `steiner-einleitungen-pages1-10-${timestamp}.txt`,
-        );
+        const textOutputPath = join(outputDir, `steiner-einleitungen-pages1-10-${timestamp}.txt`);
         writeFileSync(textOutputPath, result.structuredText, 'utf8');
         console.log(`💾 Text saved to: ${textOutputPath}`);
 
@@ -127,9 +124,7 @@ async function testOCRParagraphFix() {
         if (issuesFound === 0) {
             console.log('   ✅ No obvious paragraph joining issues found in preview!');
         } else {
-            console.log(
-                `   ⚠️  Found ${issuesFound} potential paragraph joining issues`,
-            );
+            console.log(`   ⚠️  Found ${issuesFound} potential paragraph joining issues`);
         }
 
         console.log();
