@@ -533,6 +533,7 @@ export interface CLIOptions {
     logLevel?: LogLevel;
     config?: string;
     skipStartMarker?: boolean;
+    inferText?: string;
 }
 
 export interface CLIContext {

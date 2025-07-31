@@ -7,15 +7,11 @@ import {
     PARAGRAPH_END_MARKERS,
     TEXT_QUALITY_ENHANCEMENT,
 } from '../../../constants';
-import { BookTypesService } from '../../../services/BookTypesService';
+import { BookTypesService } from '../../../services/BookStructureService/index';
 import type { ConfigService } from '../../../services/ConfigService';
 import type { LoggerService } from '../../../services/LoggerService';
 import { AppError } from '../../../utils/AppError';
-import type {
-    QualityImprovement,
-    QualityIssue,
-    TextQualityAnalysisResult,
-} from './TextComparator';
+import type { QualityImprovement, QualityIssue, TextQualityAnalysisResult } from './TextComparator';
 
 /**
  * Text enhancement result interface
@@ -97,10 +93,7 @@ export class TextEnhancer {
      * @param manifestPath - Path to book manifest YAML file
      * @returns Preprocessing result with processed text and statistics
      */
-    async preprocessText(
-        text: string,
-        manifestPath: string,
-    ): Promise<TextPreprocessingResult> {
+    async preprocessText(text: string, manifestPath: string): Promise<TextPreprocessingResult> {
         const preprocessLogger = this.logger.getTextExtractionLogger(
             LOG_COMPONENTS.PIPELINE_MANAGER,
         );
@@ -119,21 +112,19 @@ export class TextEnhancer {
                 await this.applyManifestPatterns(text, manifestPath);
 
             // Step 2: Analyze paragraph structure
-            const paragraphAnalysis =
-                this.analyzeParagraphStructure(patternCleanedText);
+            const paragraphAnalysis = this.analyzeParagraphStructure(patternCleanedText);
 
             // Step 3: Normalize paragraphs if needed
-            const { normalizedText, normalizationStats } =
-                paragraphAnalysis.needsNormalization
-                    ? this.normalizeParagraphs(patternCleanedText)
-                    : {
-                          normalizedText: patternCleanedText,
-                          normalizationStats: {
-                              linesJoined: 0,
-                              hyphensRemoved: 0,
-                              paragraphsCreated: 0,
-                          },
-                      };
+            const { normalizedText, normalizationStats } = paragraphAnalysis.needsNormalization
+                ? this.normalizeParagraphs(patternCleanedText)
+                : {
+                      normalizedText: patternCleanedText,
+                      normalizationStats: {
+                          linesJoined: 0,
+                          hyphensRemoved: 0,
+                          paragraphsCreated: 0,
+                      },
+                  };
 
             const result: TextPreprocessingResult = {
                 processedText: normalizedText,
@@ -190,9 +181,7 @@ export class TextEnhancer {
             const manifest = parseYaml(manifestContent) as Record<string, unknown>;
 
             // Extract patterns from manifest
-            const manifestPatterns = manifest['text-removal-patterns'] as
-                | string[]
-                | undefined;
+            const manifestPatterns = manifest['text-removal-patterns'] as string[] | undefined;
             let allPatterns: string[] = [];
 
             if (manifestPatterns && Array.isArray(manifestPatterns)) {
@@ -200,31 +189,22 @@ export class TextEnhancer {
             }
 
             // Extract book-type and load additional patterns from book-types.yaml
-            const originalSection = manifest.original as
-                | Record<string, unknown>
-                | undefined;
+            const originalSection = manifest.original as Record<string, unknown> | undefined;
             if (originalSection && typeof originalSection === 'object') {
                 const bookType = originalSection['book-type'] as string | undefined;
                 if (bookType && typeof bookType === 'string') {
                     try {
                         const bookTypePatterns =
-                            await this.bookTypesService.getTextRemovalPatterns(
-                                bookType,
-                            );
+                            await this.bookTypesService.getTextRemovalPatterns(bookType);
                         allPatterns = [...allPatterns, ...bookTypePatterns];
                     } catch (error) {
-                        this.logger
-                            .getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER)
-                            .warn(
-                                {
-                                    bookType,
-                                    error:
-                                        error instanceof Error
-                                            ? error.message
-                                            : String(error),
-                                },
-                                'Failed to load patterns for book type, continuing with manifest patterns only',
-                            );
+                        this.logger.getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER).warn(
+                            {
+                                bookType,
+                                error: error instanceof Error ? error.message : String(error),
+                            },
+                            'Failed to load patterns for book type, continuing with manifest patterns only',
+                        );
                     }
                 }
             }
@@ -267,10 +247,7 @@ export class TextEnhancer {
                             }
                         } else {
                             // Treat as literal string if not in regex format
-                            const escaped = pattern.replace(
-                                /[.*+?^${}()|[\]\\]/g,
-                                '\\$&',
-                            );
+                            const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                             const regex = new RegExp(escaped, 'g');
 
                             // Count matches before replacement
@@ -288,18 +265,16 @@ export class TextEnhancer {
                         const charactersRemoved = beforeLength - afterLength;
 
                         // Log each pattern's results
-                        this.logger
-                            .getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER)
-                            .info(
-                                {
-                                    pattern,
-                                    replacementCount,
-                                    charactersRemoved,
-                                    beforeLength,
-                                    afterLength,
-                                },
-                                `Pattern application result: ${replacementCount} replacements, ${charactersRemoved} characters removed`,
-                            );
+                        this.logger.getTextExtractionLogger(LOG_COMPONENTS.PIPELINE_MANAGER).info(
+                            {
+                                pattern,
+                                replacementCount,
+                                charactersRemoved,
+                                beforeLength,
+                                afterLength,
+                            },
+                            `Pattern application result: ${replacementCount} replacements, ${charactersRemoved} characters removed`,
+                        );
                     }
                 }
             }
@@ -410,10 +385,7 @@ export class TextEnhancer {
                     const nextLineContent = nextLine?.trim() || '';
                     const nextFirstChar = nextLineContent.charAt(0);
 
-                    if (
-                        nextFirstChar &&
-                        nextFirstChar === nextFirstChar.toLowerCase()
-                    ) {
+                    if (nextFirstChar && nextFirstChar === nextFirstChar.toLowerCase()) {
                         // Next line starts with lowercase, remove hyphen
                         currentParagraph += trimmedLine.slice(0, -1); // Remove hyphen
                         hyphensRemoved++;
@@ -441,9 +413,7 @@ export class TextEnhancer {
         }
 
         // Join paragraphs with double newlines
-        const normalizedText = normalizedLines.join(
-            TEXT_QUALITY_ENHANCEMENT.PARAGRAPH_SEPARATOR,
-        );
+        const normalizedText = normalizedLines.join(TEXT_QUALITY_ENHANCEMENT.PARAGRAPH_SEPARATOR);
 
         return {
             normalizedText,
@@ -579,10 +549,7 @@ export class TextEnhancer {
 
             const processingTime = Date.now() - startTime;
             const issuesFixed = improvementsMade.length;
-            const issuesRemaining = Math.max(
-                0,
-                analysisResult.issues.length - issuesFixed,
-            );
+            const issuesRemaining = Math.max(0, analysisResult.issues.length - issuesFixed);
 
             const result: TextEnhancementResult = {
                 enhancedText,
@@ -645,9 +612,7 @@ export class TextEnhancer {
         const improvements: QualityImprovement[] = [];
 
         // Sort suggestions by position (reverse order to maintain positions)
-        const sortedSuggestions = [...suggestions].sort(
-            (a, b) => b.position - a.position,
-        );
+        const sortedSuggestions = [...suggestions].sort((a, b) => b.position - a.position);
 
         for (const suggestion of sortedSuggestions) {
             // Apply improvement based on type and options
@@ -684,10 +649,7 @@ export class TextEnhancer {
             // Remove the problematic text
             const before = enhancedText.slice(0, issue.position);
             const after = enhancedText.slice(issue.position + issue.length);
-            const replacement = this.getDebrisReplacement(
-                issue.problematicText,
-                options,
-            );
+            const replacement = this.getDebrisReplacement(issue.problematicText, options);
 
             enhancedText = before + replacement + after;
 
@@ -718,9 +680,7 @@ export class TextEnhancer {
         const brokenWordIssues = issues.filter((issue) => issue.type === 'broken_word');
 
         // Sort by position (reverse order to maintain positions)
-        const sortedIssues = [...brokenWordIssues].sort(
-            (a, b) => b.position - a.position,
-        );
+        const sortedIssues = [...brokenWordIssues].sort((a, b) => b.position - a.position);
 
         for (const issue of sortedIssues) {
             if (issue.suggestedFix) {
@@ -753,14 +713,10 @@ export class TextEnhancer {
         let enhancedText = text;
         const improvements: QualityImprovement[] = [];
 
-        const spellingIssues = issues.filter(
-            (issue) => issue.type === 'spelling_error',
-        );
+        const spellingIssues = issues.filter((issue) => issue.type === 'spelling_error');
 
         // Sort by position (reverse order to maintain positions)
-        const sortedIssues = [...spellingIssues].sort(
-            (a, b) => b.position - a.position,
-        );
+        const sortedIssues = [...spellingIssues].sort((a, b) => b.position - a.position);
 
         for (const issue of sortedIssues) {
             if (issue.suggestedFix && issue.confidence > 0.5) {
@@ -793,20 +749,13 @@ export class TextEnhancer {
         let enhancedText = text;
         const improvements: QualityImprovement[] = [];
 
-        const characterIssues = issues.filter(
-            (issue) => issue.type === 'weird_character',
-        );
+        const characterIssues = issues.filter((issue) => issue.type === 'weird_character');
 
         // Sort by position (reverse order to maintain positions)
-        const sortedIssues = [...characterIssues].sort(
-            (a, b) => b.position - a.position,
-        );
+        const sortedIssues = [...characterIssues].sort((a, b) => b.position - a.position);
 
         for (const issue of sortedIssues) {
-            const replacement = this.getCharacterReplacement(
-                issue.problematicText,
-                options,
-            );
+            const replacement = this.getCharacterReplacement(issue.problematicText, options);
             const before = enhancedText.slice(0, issue.position);
             const after = enhancedText.slice(issue.position + issue.length);
             enhancedText = before + replacement + after;
@@ -852,10 +801,7 @@ export class TextEnhancer {
     /**
      * Get replacement text for OCR debris
      */
-    private getDebrisReplacement(
-        debris: string,
-        _options: TextEnhancementOptions,
-    ): string {
+    private getDebrisReplacement(debris: string, _options: TextEnhancementOptions): string {
         // Common OCR debris replacements
         const replacements = new Map([
             [/[|]+/g, ' '],
@@ -876,10 +822,7 @@ export class TextEnhancer {
     /**
      * Get replacement text for weird characters
      */
-    private getCharacterReplacement(
-        character: string,
-        _options: TextEnhancementOptions,
-    ): string {
+    private getCharacterReplacement(character: string, _options: TextEnhancementOptions): string {
         // Common character replacements for OCR artifacts
         const replacements = new Map<string, string>([
             ['\u00A0', ' '], // Non-breaking space
@@ -929,8 +872,7 @@ export class TextEnhancer {
         if (improvements.length === 0) return 1.0;
 
         const avgConfidence =
-            improvements.reduce((sum, imp) => sum + imp.confidence, 0) /
-            improvements.length;
+            improvements.reduce((sum, imp) => sum + imp.confidence, 0) / improvements.length;
         return Math.min(1.0, avgConfidence);
     }
 }

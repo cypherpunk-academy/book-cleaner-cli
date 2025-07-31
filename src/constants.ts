@@ -220,11 +220,7 @@ export const QUALITY_SEVERITIES = {
 
 // ==================== Default Text Boundaries ====================
 
-export const DEFAULT_PARAGRAPH_MARKERS = [
-    '\\n\\n',
-    '\\r\\n\\r\\n',
-    '\\n\\r\\n\\r',
-] as const;
+export const DEFAULT_PARAGRAPH_MARKERS = ['\\n\\n', '\\r\\n\\r\\n', '\\n\\r\\n\\r'] as const;
 
 export const DEFAULT_SECTION_MARKERS = ['***', '---', '===', '~~~'] as const;
 
@@ -237,12 +233,7 @@ export const DEFAULT_CHAPTER_MARKERS = [
     'Section',
 ] as const;
 
-export const DEFAULT_FOOTNOTE_MARKERS = [
-    '\\d+\\)',
-    '\\d+\\.',
-    '\\*\\d+',
-    '\\[\\d+\\]',
-] as const;
+export const DEFAULT_FOOTNOTE_MARKERS = ['\\d+\\)', '\\d+\\.', '\\*\\d+', '\\[\\d+\\]'] as const;
 
 // ==================== Footnote Format Constants ====================
 
@@ -348,6 +339,7 @@ export const CLI_OPTIONS = {
     LOG_LEVEL: 'log-level',
     CONFIG: 'config',
     SKIP_START_MARKER: 'skip-start-marker',
+    INFER_TEXT: 'infer-text',
     ERROR_LOG_FILE: 'error-log-file',
     ERROR_OUTPUT_FORMAT: 'error-output-format',
     LOG_ERRORS_TO_STDERR: 'log-errors-to-stderr',
@@ -361,6 +353,7 @@ export const CLI_ALIASES = {
     [CLI_OPTIONS.LOG_LEVEL]: 'l',
     [CLI_OPTIONS.CONFIG]: 'c',
     [CLI_OPTIONS.SKIP_START_MARKER]: 's',
+    [CLI_OPTIONS.INFER_TEXT]: 'i',
     [CLI_OPTIONS.ERROR_LOG_FILE]: 'e',
     [CLI_OPTIONS.ERROR_OUTPUT_FORMAT]: 'f',
     [CLI_OPTIONS.LOG_ERRORS_TO_STDERR]: 'E',
@@ -382,9 +375,7 @@ export const ERROR_OUTPUT_FORMATS = {
     COMPACT: 'compact',
 } as const;
 
-export const VALID_ERROR_OUTPUT_FORMATS = Object.values(
-    ERROR_OUTPUT_FORMATS,
-) as readonly string[];
+export const VALID_ERROR_OUTPUT_FORMATS = Object.values(ERROR_OUTPUT_FORMATS) as readonly string[];
 
 // ==================== File System Constants ====================
 
@@ -416,10 +407,29 @@ export const RETRY_CONFIG = {
     MAX_DELAY: 10000,
 } as const;
 
+// ==================== Structure Inference Constants ====================
+
+export const STRUCTURE_INFERENCE_CONFIG = {
+    DEFAULT_CHUNK_SIZE: 5000,
+    DEFAULT_OVERLAP_PERCENTAGE: 20,
+    DEFAULT_MAX_RETRIES: 3,
+    DEFAULT_CONFIDENCE_THRESHOLD: 0.7,
+    DEFAULT_ENABLE_NEW_ENTRIES: true,
+    DEFAULT_ENABLE_CORRECTIONS: true,
+} as const;
+
+export const TEXT_SOURCE_PRIORITY = {
+    OCR_FILE: 'ocr_file',
+    CLI_TEXT_FILE: 'cli_text_file',
+    STEP2_EXTRACTED_TEXT: 'step2_extracted_text',
+} as const;
+
 // ==================== Environment Variables ====================
 
 export const ENV_VARS = {
     DEEPSEEK_API_KEY: 'DEEPSEEK_API_KEY',
+    DEEPSEEK_REST_API_KEY: 'DEEPSEEK_REST_API_KEY',
+    DEEPSEEK_REST_API_URI: 'DEEPSEEK_REST_API_URI',
     OPENAI_API_KEY: 'OPENAI_API_KEY',
     ANTHROPIC_API_KEY: 'ANTHROPIC_API_KEY',
     LOG_LEVEL: 'LOG_LEVEL',
@@ -477,13 +487,7 @@ export const STRUCTURE_ANALYSIS_PATTERNS = {
         /^(\d+)\.(\d+)\s+(.+)$/i,
         /^[A-Z][a-z]*\s+[A-Z][a-z]*$/,
     ],
-    FOOTNOTE_PATTERNS: [
-        /\[(\d+)\]/g,
-        /\((\d+)\)/g,
-        /(\d+)\)/g,
-        /\*(\d+)/g,
-        /¹|²|³|⁴|⁵|⁶|⁷|⁸|⁹|⁰/g,
-    ],
+    FOOTNOTE_PATTERNS: [/\[(\d+)\]/g, /\((\d+)\)/g, /(\d+)\)/g, /\*(\d+)/g, /¹|²|³|⁴|⁵|⁶|⁷|⁸|⁹|⁰/g],
     FOOTNOTE_MARKERS: [
         /^(\d+)\s*[\)\.]?\s*(.+)$/,
         /^\[(\d+)\]\s*(.+)$/,
@@ -494,13 +498,7 @@ export const STRUCTURE_ANALYSIS_PATTERNS = {
         /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*[:]\s*(.+)$/,
         /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*\((.+?)\)\s*[:]\s*(.+)$/,
     ],
-    PARAGRAPH_INDICATORS: [
-        /^\s*\d+\.\s+/,
-        /^\s*[a-z]\)\s+/,
-        /^\s*\*\s+/,
-        /^\s*-\s+/,
-        /^\s*•\s+/,
-    ],
+    PARAGRAPH_INDICATORS: [/^\s*\d+\.\s+/, /^\s*[a-z]\)\s+/, /^\s*\*\s+/, /^\s*-\s+/, /^\s*•\s+/],
 } as const;
 
 export const STRUCTURE_ANALYSIS_TYPES = {

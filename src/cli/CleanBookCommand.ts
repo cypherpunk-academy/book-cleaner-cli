@@ -41,6 +41,7 @@ import {
 } from '@/utils/ChalkUtils';
 import { FileUtils } from '@/utils/FileUtils';
 import { Command } from 'commander';
+import { promises as fs } from 'node:fs';
 // import ora, { type Ora } from "ora"; // Removed to fix interactive prompt issues
 
 // Commander.js option types (following .cursorrules #5 - no any keyword)
@@ -51,6 +52,7 @@ interface CommanderOptions {
     debug: boolean;
     logLevel: string;
     skipStartMarker: boolean;
+    inferText?: string;
 }
 
 /**
@@ -135,6 +137,10 @@ export class CleanBookCommand {
                 'Skip the start marker (e.g., "START OF THIS BOOK")',
                 false,
             )
+            .option(
+                `-${CLI_ALIASES[CLI_OPTIONS.INFER_TEXT]}, --${CLI_OPTIONS.INFER_TEXT} <filename>`,
+                'Path to text file for structure inference',
+            )
             .action(async (inputFile: string, options: CommanderOptions) => {
                 await this.execute(inputFile, options);
             });
@@ -148,7 +154,7 @@ export class CleanBookCommand {
 
         try {
             // Parse and validate options
-            const cliOptions = this.parseOptions(inputFile, options);
+            const cliOptions = await this.parseOptions(inputFile, options);
 
             // Update logger configuration
             this.updateLoggerConfig(cliOptions);
@@ -282,7 +288,7 @@ export class CleanBookCommand {
     /**
      * Parse and validate CLI options
      */
-    private parseOptions(inputFile: string, options: CommanderOptions): CLIOptions {
+    private async parseOptions(inputFile: string, options: CommanderOptions): Promise<CLIOptions> {
         // Validate required book type
         if (!options.bookType) {
             console.error('\n❌ Error: Book type is required\n');
@@ -307,6 +313,9 @@ export class CleanBookCommand {
             process.exit(1);
         }
 
+        // Note: infer-text file validation will be done during processing
+        // to allow the step to be omitted if the file doesn't exist
+
         const cliOptions: CLIOptions = {
             inputFile: path.resolve(inputFile),
             outputDir: options.outputDir
@@ -317,6 +326,7 @@ export class CleanBookCommand {
             debug: options.debug,
             logLevel: options.logLevel as LogLevel,
             skipStartMarker: options.skipStartMarker,
+            inferText: options.inferText,
         };
 
         return cliOptions;

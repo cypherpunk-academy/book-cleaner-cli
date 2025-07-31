@@ -12,10 +12,9 @@ import type { BookManifestInfo, FileFormatResult, FilenameMetadata } from '@/typ
 import { AppError } from '@/utils/AppError';
 import { FileUtils } from '@/utils/FileUtils';
 import yaml from 'js-yaml';
-import type { LoggerService } from './LoggerService';
-import { TextChunker } from './TextChunker';
+import type { LoggerService } from '../LoggerService';
+import { TextChunker } from '../TextChunker';
 import { StructureInferrer, type StructureInferenceResponse } from './StructureInferrer';
-import { DeepSeekService } from './DeepSeekService';
 
 /**
  * Information about configuration updates needed
