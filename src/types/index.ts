@@ -359,7 +359,7 @@ export interface BookManifestInfo {
     };
 
     // Book structure information (simple array format)
-    'book-structure'?: string[];
+    bookStructure?: string[];
 
     // Footnotes information
     footnotes?: string[];

@@ -439,6 +439,13 @@ export function detectAndProcessHeaders(
         newLineIndex = lineIndex + 1;
     }
 
+    const nextLineText = lines[newLineIndex]?.text?.trim();
+
+    // INSERT_YOUR_CODE
+    if (nextLineText && /^[a-zäöüß]/.test(nextLineText)) {
+        return null;
+    }
+
     const hashes = '#'.repeat(foundLevel ?? 0);
     const headerTextWithNewlines = `\n\n${hashes} ${headerText ?? headerText}\n\n`;
 

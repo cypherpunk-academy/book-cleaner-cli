@@ -148,8 +148,8 @@ export class BookStructureService {
             };
 
             // Handle book-structure as a simple array format
-            if (manifest['book-structure']) {
-                yamlManifest['book-structure'] = manifest['book-structure'];
+            if (manifest.bookStructure) {
+                yamlManifest['book-structure'] = manifest.bookStructure;
             }
 
             // Handle optional fields

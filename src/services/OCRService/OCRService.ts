@@ -619,7 +619,7 @@ export class OCRService {
             // Update the book manifest with the extracted structure
             const updatedManifest: BookManifestInfo = {
                 ...bookManifest,
-                'book-structure': bookStructure,
+                bookStructure: bookStructure,
                 footnotes: footnotes as unknown as BookManifestInfo['footnotes'], // Cast to match the expected type
             };
 
@@ -658,7 +658,6 @@ export class OCRService {
      */
     private parseStructuredText(structuredText: string): string[] {
         const structure: string[] = [];
-        const lines = structuredText.split('\n');
 
         // Skip the footnotes section
         const mainContent = structuredText.split('# FUSSNOTEN')[0] || structuredText;
@@ -670,6 +669,7 @@ export class OCRService {
             // Check for headers (#, ##, ###)
             if (line.startsWith('#')) {
                 // Add the header as is
+
                 structure.push(line);
             } else if (line.length > 0) {
                 // This is a paragraph line - extract first 5 words
